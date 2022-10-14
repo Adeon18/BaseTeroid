@@ -46,13 +46,14 @@ mat2 Rotate(float val) {
     return mat2(c, -s, s, c);
 }
 
-
+/* Get distance to the Box and put it in proper position */
 float getDistBox(vec3 point, Box box) {
     point -= box.pos;
     /// max(vec3, float) clamps vec field to 0 if they < 0;
     return length(max(abs(point) - vec3(box.wid, box.hig, box.dep), 0.));
 }
 
+/* Get distance to the Torus and put it in proper position */
 float getDistTorus(vec3 point, Torus tor) {
     point -= tor.pos;
     /// Projected distance to the outside layer of a torus
@@ -60,6 +61,7 @@ float getDistTorus(vec3 point, Torus tor) {
     return length(vec2(projDistToOut, point.y)) - tor.radSmol;
 }
 
+/* Get distance to the Capsule */
 float getDistCapsule(vec3 point, Capsule cap) {
     vec3 edge = cap.bot - cap.top;
     vec3 distToCapsule = point - cap.top;
@@ -71,6 +73,7 @@ float getDistCapsule(vec3 point, Capsule cap) {
     return length(point - pointHit) - cap.rad;
 }
 
+/* Get distance to the Cylinder */
 float getDistCylinder(vec3 point, Cylinder cap) {
     vec3 edge = cap.bot - cap.top;
     vec3 distToSide = point - cap.top;
@@ -88,6 +91,7 @@ float getDistCylinder(vec3 point, Cylinder cap) {
     return exteriorDist + interiorDist;
 }
 
+/* Get minimal distance to each object, objects are generated here for now */
 float getDist(vec3 point) {
     vec4 sphere = vec4(0, 1, 6, 1); // w = radius
 
@@ -108,7 +112,7 @@ float getDist(vec3 point) {
     return d;
 }
 
-// Get distance to final point
+/* Function fot getting a normal to the plane */
 vec3 getNormal(vec3 point) {
     float dist = getDist(point);
     vec2 offset = vec2(.01, 0);
@@ -120,9 +124,9 @@ vec3 getNormal(vec3 point) {
     );
 
     return normalize(normal);
-
 }
 
+/* Main ray marching function */
 float rayMarch(vec3 ro, vec3 rd) {
     float distToOrigin = 0.;
 
@@ -138,10 +142,8 @@ float rayMarch(vec3 ro, vec3 rd) {
     return distToOrigin;
 }
 
-float getLighting(vec3 point) {
-    // Global just for test
-    vec3 lightPos = vec3(0, 7, 0);
-    lightPos.xz += vec2(sin(iTime) * 2., cos(iTime) * 2.);
+/* Handle lighting and shadows */
+float getLighting(vec3 point, vec3 lightPos) {
 
     vec3 lightDir = normalize(lightPos - point);
     vec3 normal = getNormal(point);
@@ -150,7 +152,7 @@ float getLighting(vec3 point) {
 
     // Get shadows
     float distToLight = rayMarch(point + normal * SURF_DIST * 2., lightDir); // Get the point a bit off so the loop does not immediately end
-    if (distToLight < length(lightPos - point)) { lightIntencity *= .1; }
+    if (distToLight < length(lightPos - point)) { lightIntencity *= .3; }
 
     return clamp(lightIntencity, 0., 1.);
 }
@@ -187,7 +189,8 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     if (d < MAX_DIST) {
         vec3 p = ro + rd * d;
 
-        float diffusedLighting = getLighting(p);
+        float diffusedLighting = getLighting(p, vec3(0., 10., 0.));
+        diffusedLighting += getLighting(p, vec3(10., 10., 0.));
 
 
         col = vec3(diffusedLighting);
