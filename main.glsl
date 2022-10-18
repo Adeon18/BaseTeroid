@@ -35,6 +35,11 @@ struct Box {
     vec3 pos;
 };
 
+struct Sphere {
+    vec3 pos;
+	float rad;
+};
+
 /*
 * Rotate object in one plane:
 * use obj.xy = Rotate(val);
@@ -45,6 +50,11 @@ mat2 Rotate(float val) {
     float c = cos(val );
     return mat2(c, -s, s, c);
 }
+//-----------------------------------------------------------------------------
+/*
+ * Distance functions -> give us the distane to said object type
+ * NEGATIVE return on the inside and POSITIVE on the outside
+ */
 
 /* Get distance to the Box and put it in proper position */
 float getDistBox(vec3 point, Box box) {
@@ -92,16 +102,26 @@ float getDistCylinder(vec3 point, Cylinder cap) {
     return exteriorDist + interiorDist;
 }
 
+float getDistSphere(vec3 point, Sphere sphere) {
+    return length(point - sphere.pos) - sphere.rad;
+}
+
+float getDistPlane(vec3 point, vec3 plane) {
+    return dot(point, normalize(plane));
+}
+//-----------------------------------------------------------------------------
+
 /* Get minimal distance to each object, objects are generated here for now */
 float getDist(vec3 point) {
     // vec4 sphere = vec4(0, 1, 6, 1); // w = radius
 
-    // float distToSphere = length(point - sphere.xyz) - sphere.w;
-    float distToPlane = point.y;
+    float distToSphere = getDistSphere(point, Sphere(vec3(0, 1, 6), 1.));
+
+    float distToPlane = getDistPlane(point, vec3(0., 1., 0.));
 
     float distBox = getDistBox(point, Box(1., 1., 1., vec3(0, 1, 0)));
 
-    float d = min(distToPlane, distBox);
+    float d = min(distToSphere, distBox);
 
     return d;
 }
@@ -130,7 +150,7 @@ float rayMarch(vec3 ro, vec3 rd) {
 
         distToOrigin += distToScene;
 
-        if (distToOrigin > MAX_DIST || distToScene < SURF_DIST) { break; }
+        if (distToOrigin > MAX_DIST || abs(distToScene) < SURF_DIST) { break; }
     }
 
     return distToOrigin;
@@ -150,6 +170,16 @@ float getLighting(vec3 point, vec3 lightPos) {
 
     return clamp(lightIntencity, 0., 1.);
 }
+
+/*
+ * Add a new light point to the Scene
+ * Takes current light level, new light position and a point
+ * Takes max of current light and new light so that badly lit areas light up
+ */
+float addLight(float currentLight, vec3 newLightPos, vec3 point) {
+	return max(currentLight, getLighting(point, newLightPos));
+}
+
 
 // What the fuck
 vec3 R(vec2 uv, vec3 p, vec3 l, float z) {
@@ -183,7 +213,9 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     if (d < MAX_DIST) {
         vec3 p = ro + rd * d;
 
-        float diffusedLighting = getLighting(p, vec3(3, 5, 4));
+        float diffusedLighting = 0.;
+        diffusedLighting = addLight(diffusedLighting, vec3(3, 5, 4), p);
+        diffusedLighting = addLight(diffusedLighting, vec3(-3, 5, -4), p);
 
 
         col = vec3(diffusedLighting);
