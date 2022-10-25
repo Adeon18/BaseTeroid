@@ -4,6 +4,8 @@
 #define MAX_DIST 100.
 #define SURF_DIST .01
 
+#define PI 3.14159
+
 
 /*
 * Rotate object in one plane:
@@ -22,23 +24,23 @@ mat2 Rotate(float val) {
  */
 
 /* Get distance to the Box and put it in proper position */
-float getDistBox(vec3 point, Box box) {
-	point -= box.pos;
+float sdBox(vec3 point, Box box, float scale) {
+    /// By default the scale is inversed
+
     point = abs(point) - vec3(box.wid, box.hig, box.dep);
     /// Account for inner position for there not to be distorted black dots
-    return length(max(point, 0.)) + min(max(point.x, max(point.y, point.z)), 0.);
+    return (length(max(point, 0.)) + min(max(point.x, max(point.y, point.z)), 0.));
 }
 
 /* Get distance to the Torus and put it in proper position */
 float getDistTorus(vec3 point, Torus tor) {
-    point -= tor.pos;
     /// Projected distance to the outside layer of a torus
     float projDistToOut = length(point.xz) - tor.radBig;
     return length(vec2(projDistToOut, point.y)) - tor.radSmol;
 }
 
 /* Get distance to the Capsule */
-float getDistCapsule(vec3 point, Capsule cap) {
+float sdCapsule(vec3 point, Capsule cap) {
     vec3 edge = cap.bot - cap.top;
     vec3 distToCapsule = point - cap.top;
 
@@ -50,7 +52,7 @@ float getDistCapsule(vec3 point, Capsule cap) {
 }
 
 /* Get distance to the Cylinder */
-float getDistCylinder(vec3 point, Cylinder cap) {
+float sdCylinder(vec3 point, Cylinder cap) {
     vec3 edge = cap.bot - cap.top;
     vec3 distToSide = point - cap.top;
 
@@ -67,10 +69,41 @@ float getDistCylinder(vec3 point, Cylinder cap) {
     return exteriorDist + interiorDist;
 }
 
-float getDistSphere(vec3 point, Sphere sphere) {
-    return length(point - sphere.pos) - sphere.rad;
+float sdSphere(vec3 point, Sphere sphere) {
+    return length(point) - sphere.rad;
 }
 
-float getDistPlane(vec3 point, vec3 plane) {
+float sdPlane(vec3 point, vec3 plane) {
     return dot(point, normalize(plane));
+}
+
+float sdPyramid(vec3 p, float h) {
+    float m2 = h*h + 0.25;
+
+    p.xz = abs(p.xz);
+    p.xz = (p.z>p.x) ? p.zx : p.xz;
+    p.xz -= 0.5;
+
+    vec3 q = vec3( p.z, h*p.y - 0.5*p.x, h*p.x + 0.5*p.y);
+
+    float s = max(-q.x,0.0);
+    float t = clamp( (q.y-0.5*p.z)/(m2+0.25), 0.0, 1.0 );
+
+    float a = m2*(q.x+s)*(q.x+s) + q.y*q.y;
+    float b = m2*(q.x+0.5*t)*(q.x+0.5*t) + (q.y-m2*t)*(q.y-m2*t);
+
+    float d2 = min(q.y,-q.x*m2-q.y*0.5) > 0.0 ? 0.0 : min(a,b);
+
+    return sqrt( (d2+q.z*q.z)/m2 ) * sign(max(q.z,-p.y));
+}
+
+float createShip(vec3 point, vec3 posWithOffset) {
+    Piramid body = Piramid(vec3(0., 0., 0.) + posWithOffset, 1.5);
+
+    vec3 bodyPos = point - body.pos;
+
+    bodyPos.yz *= Rotate( - PI / 2.);
+    bodyPos *= vec3(1., 1., 2.);
+
+    return sdPyramid(bodyPos, body.height) / 2.5;
 }

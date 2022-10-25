@@ -1,4 +1,5 @@
 
+
 /* A Capsule has position of the top and bottom spheres and their radius */
 struct Capsule {
     vec3 top;
@@ -38,4 +39,10 @@ struct Box {
 struct Sphere {
     vec3 pos;
 	float rad;
+};
+
+
+struct Piramid {
+    vec3 pos;
+    float height;
 };

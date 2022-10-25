@@ -4,13 +4,16 @@
 float getDist(vec3 point) {
     // vec4 sphere = vec4(0, 1, 6, 1); // w = radius
 
-    float distToSphere = getDistSphere(point, Sphere(vec3(0, 1, 6), 1.));
+    Sphere sph = Sphere(vec3(0, 1, 6), 1.);
 
-    float distToPlane = getDistPlane(point, vec3(0., 1., 0.));
 
-    float distBox = getDistBox(point, Box(1., 1., 1., vec3(0, 1, 0)));
+    float distToSphere = sdSphere(point - sph.pos, sph);
 
-    float d = min(distToSphere, distBox);
+    float distToPlane = sdPlane(point, vec3(0., 0., 0.));
+
+    float distPiramid = createShip(point, vec3(0.));
+
+    float d = min(distToSphere, distPiramid);
 
     return d;
 }
