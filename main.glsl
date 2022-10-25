@@ -12,16 +12,17 @@ float getDist(vec3 point) {
     // vec4 sphere = vec4(0, 1, 6, 1); // w = radius
     // vec2 offset = texelFetch(iChannel0, ivec2(0, 0), 0).xy;
 
-    Sphere sph = Sphere(vec3(0, 1, 6), 1.);
+    Sphere sph = Sphere(vec3(10., 1., 0.), 1.);
 
 
     float distToSphere = sdSphere(point - sph.pos, sph);
-
-    float distToPlane = sdPlane(point, vec3(0., 0., 0.));
+    vec3 bp = vec3(4., 1., 1.);
+    float distToBox = sdBox(point - bp, Box(1., 1., 1., bp));
 
     float distPiramid = createShip(point, vec3(0.));
 
     float d = min(distToSphere, distPiramid);
+    d = min(distToBox, d);
 
     return d;
 }
@@ -106,7 +107,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 
     // Simple camera
     vec3 ro = vec3(0, 20, 0);
-    ro.yz *= Rotate(0.01);
+    ro.yz *= Rotate(PI / 2.);
     ro.xz *= Rotate(3.14);
 
     vec3 rd = R(uv, ro, vec3(0,0,0), .7);

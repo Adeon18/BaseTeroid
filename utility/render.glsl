@@ -19,12 +19,14 @@ mat2 Rotate(float val) {
 }
 //-----------------------------------------------------------------------------
 /*
- * Distance functions -> give us the distane to said object type
+ * Distance functions -> give us the distanсe to said object type
  * NEGATIVE return on the inside and POSITIVE on the outside
+ * * vec3 point: origin point - the position you want your object to be at
+ * * Object: obj to find distance to
  */
 
 /* Get distance to the Box and put it in proper position */
-float sdBox(vec3 point, Box box, float scale) {
+float sdBox(vec3 point, Box box) {
     /// By default the scale is inversed
 
     point = abs(point) - vec3(box.wid, box.hig, box.dep);
@@ -69,14 +71,19 @@ float sdCylinder(vec3 point, Cylinder cap) {
     return exteriorDist + interiorDist;
 }
 
+/* Get distance to the Sphere - The fastest! */
 float sdSphere(vec3 point, Sphere sphere) {
     return length(point) - sphere.rad;
 }
 
+/* Get distance to the Plane */
 float sdPlane(vec3 point, vec3 plane) {
     return dot(point, normalize(plane));
 }
 
+/*
+ * Get distance to the Piramid - for now used only in player creation
+ */
 float sdPyramid(vec3 p, float h) {
     float m2 = h*h + 0.25;
 
@@ -102,7 +109,6 @@ float createShip(vec3 point, vec3 posWithOffset) {
 
     vec3 bodyPos = point - body.pos;
 
-    bodyPos.yz *= Rotate( - PI / 2.);
     bodyPos *= vec3(1., 1., 2.);
 
     return sdPyramid(bodyPos, body.height) / 2.5;
