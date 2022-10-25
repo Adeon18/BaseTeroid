@@ -17,7 +17,7 @@ float getDist(vec3 point) {
 
 
     float distToSphere = sdSphere(point - sph.pos, sph);
-    vec3 bp = vec3(4., 1., 1.);
+    vec3 bp = vec3(5., 0., 0.);
     float distToBox = sdBox(point - bp, Box(1., 1., 1., bp));
 
     vec2 controls = texelFetch(iChannel1, ivec2(0, 0), 0).xy;
@@ -85,14 +85,20 @@ float addLight(float currentLight, vec3 newLightPos, vec3 point) {
 }
 
 
-// What the fuck
-vec3 R(vec2 uv, vec3 p, vec3 l, float z) {
-    vec3 f = normalize(l-p),
-        r = normalize(cross(vec3(0,1,0), f)),
-        u = cross(f,r),
-        c = p+f*z,
-        i = c + uv.x*r + uv.y*u,
-        d = normalize(i-p);
+// lookat - central point of the camera
+// z - zoom  ==  distance from camera to the screen
+// c - center point on the screen = ro + forward * zoom factor z
+// ro = ray origin
+// right - if we look straight from the camera on screen, it is x offset
+// up - if we look straight from the camera on screen, it is y offset
+// intersection - the point on the screen where ray passes through it
+vec3 getRd(vec2 uv, vec3 ro, vec3 lookat, float z) {
+    vec3 forward = normalize(lookat-ro),
+        right = normalize(cross(vec3(0,1,0), forward)),
+        up = cross(forward,right),
+        c = ro+forward*z,
+        intersection = c + uv.x*right + uv.y*up,
+        d = normalize(intersection-ro);
     return d;
 }
 
@@ -109,12 +115,23 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     vec3 col = vec3(0);
 
     // Simple camera
-    vec3 ro = vec3(0, 20, 0);
-    ro.yz *= Rotate(PI / 2.);
-    ro.xz *= Rotate(3.14);
 
-    vec3 rd = R(uv, ro, vec3(0,0,0), .7);
+    // use this variables to move camera
+    float cam_x = 0.;
+    float cam_y = 0.;
 
+    vec3 ro = vec3(-cam_x, cam_y, 20);
+    ro.xz *= Rotate(PI);
+    
+    // variables to control camera if we need it
+    vec3 lookat = vec3(cam_x, cam_y, 0.);
+    float zoom = 0.5;
+    // #########################################
+    
+    // get ray direction!!!
+    vec3 rd = getRd(uv, ro, lookat, zoom);
+    // ####################
+    
     float d = rayMarch(ro, rd);
 
     if (d < MAX_DIST) {
