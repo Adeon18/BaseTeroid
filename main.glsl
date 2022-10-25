@@ -121,7 +121,8 @@ float getDist(vec3 point) {
 
     float distBox = getDistBox(point, Box(1., 1., 1., vec3(0, 1, 0)));
 
-    float d = min(distToSphere, distBox);
+    float d = min(distToPlane, distBox);
+    d = min(distToSphere, d);
 
     return d;
 }
@@ -203,9 +204,9 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     vec3 col = vec3(0);
 
     // Simple camera
-    vec3 ro = vec3(0, 3, -5);
-    ro.yz *= Rotate(-mos.y+.4);
-    ro.xz *= Rotate(-mos.x*6.2831);
+    vec3 ro = vec3(0, 20, 0);
+    ro.yz *= Rotate(0.01);
+
     vec3 rd = R(uv, ro, vec3(0,0,0), .7);
 
     float d = rayMarch(ro, rd);
