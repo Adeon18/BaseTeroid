@@ -112,11 +112,16 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     vec3 col = vec3(0);
 
     // Simple camera
-    vec3 ro = vec3(0, 0, 20);
+
+    // use this variables to move camera
+    float cam_x = 0.;
+    float cam_y = 0.;
+
+    vec3 ro = vec3(-cam_x, -cam_y, 20);
     ro.xz *= Rotate(PI);
     
     // variables to control camera if we need it
-    vec3 lookat = vec3(0., 0., 0.);
+    vec3 lookat = vec3(cam_x, cam_y, 0.);
     float zoom = 0.5;
     // #########################################
     
