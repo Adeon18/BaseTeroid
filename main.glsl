@@ -16,7 +16,7 @@ float getDist(vec3 point) {
 
 
     float distToSphere = sdSphere(point - sph.pos, sph);
-    vec3 bp = vec3(5., 1., 0.);
+    vec3 bp = vec3(5., 0., 0.);
     float distToBox = sdBox(point - bp, Box(1., 1., 1., bp));
 
     float distPiramid = createShip(point, vec3(0.));
@@ -117,7 +117,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     float cam_x = 0.;
     float cam_y = 0.;
 
-    vec3 ro = vec3(-cam_x, -cam_y, 20);
+    vec3 ro = vec3(-cam_x, cam_y, 20);
     ro.xz *= Rotate(PI);
     
     // variables to control camera if we need it
