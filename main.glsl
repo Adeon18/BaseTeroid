@@ -1,3 +1,8 @@
+#iKeyboard
+
+#iChannel0 "file://input.glsl"
+
+
 #define MAX_STEPS 100
 #define MAX_DIST 100.
 #define SURF_DIST .01
@@ -114,12 +119,13 @@ float getDistPlane(vec3 point, vec3 plane) {
 /* Get minimal distance to each object, objects are generated here for now */
 float getDist(vec3 point) {
     // vec4 sphere = vec4(0, 1, 6, 1); // w = radius
+    vec2 offset = texelFetch(iChannel0, ivec2(0, 0), 0).xy;
 
     float distToSphere = getDistSphere(point, Sphere(vec3(0, 1, 6), 1.));
 
     float distToPlane = getDistPlane(point, vec3(0., 1., 0.));
 
-    float distBox = getDistBox(point, Box(1., 1., 1., vec3(0, 1, 0)));
+    float distBox = getDistBox(point, Box(1., 1., 1., vec3(0, 1, 0) + vec3(offset.x, 0, offset.y)));
 
     float d = min(distToPlane, distBox);
     d = min(distToSphere, d);
@@ -206,6 +212,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     // Simple camera
     vec3 ro = vec3(0, 20, 0);
     ro.yz *= Rotate(0.01);
+    ro.xz *= Rotate(3.14);
 
     vec3 rd = R(uv, ro, vec3(0,0,0), .7);
 
@@ -221,9 +228,8 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 
         col = vec3(diffusedLighting);
     }
-
     // Color correction
-    //col = pow(col, vec3(.95));
+    col = pow(col, vec3(.95));
 
     // Output to screen
     fragColor = vec4(col,1.0);
