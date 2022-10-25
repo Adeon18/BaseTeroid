@@ -3,7 +3,7 @@
 #iChannel0 "self"
 
 
-vec2 handleKeyboard(vec2 offset) {
+vec2 handleKeyboard(vec2 controls) {
     float velocity = 4. / 100.;
     
     vec2 direction = vec2(0., 0.);
@@ -23,15 +23,15 @@ vec2 handleKeyboard(vec2 offset) {
         direction += vec2(1., 0.);
     }
 
-    offset += direction * velocity;
-    return offset;
+    controls += direction * velocity;
+    return controls;
 }
 
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
-    vec2 offset = texelFetch(iChannel0, ivec2(0, 0), 0).xy;
+    vec2 controls = texelFetch(iChannel0, ivec2(0, 0), 0).xy;
 
-    offset = handleKeyboard(offset);
+    controls = handleKeyboard(controls);
 
-    fragColor = vec4(offset, 0, 0);
+    fragColor = vec4(controls, 0, 0);
 }

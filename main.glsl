@@ -7,6 +7,8 @@
 #define MAX_DIST 100.
 #define SURF_DIST .01
 
+vec2 controls = vec2(0.);
+
 /* A Capsule has position of the top and bottom spheres and their radius */
 struct Capsule {
     vec3 top;
@@ -119,13 +121,16 @@ float getDistPlane(vec3 point, vec3 plane) {
 /* Get minimal distance to each object, objects are generated here for now */
 float getDist(vec3 point) {
     // vec4 sphere = vec4(0, 1, 6, 1); // w = radius
-    vec2 offset = texelFetch(iChannel0, ivec2(0, 0), 0).xy;
+    // vec2 offset = texelFetch(iChannel0, ivec2(0, 0), 0).xy;
 
     float distToSphere = getDistSphere(point, Sphere(vec3(0, 1, 6), 1.));
 
     float distToPlane = getDistPlane(point, vec3(0., 1., 0.));
 
-    float distBox = getDistBox(point, Box(1., 1., 1., vec3(0, 1, 0) + vec3(offset.x, 0, offset.y)));
+    vec3 boxPos = vec3(0, 1, 0);
+    boxPos.xz *= Rotate(controls.x);
+
+    float distBox = getDistBox(point, Box(1., 1., 1., boxPos));
 
     float d = min(distToPlane, distBox);
     d = min(distToSphere, d);
@@ -202,6 +207,8 @@ vec3 R(vec2 uv, vec3 p, vec3 l, float z) {
 
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
+    controls = texelFetch(iChannel0, ivec2(0, 0), 0).xy;
+
     // Normalized pixel coordinates (from 0 to 1)
     vec2 uv = (fragCoord-.5*iResolution.xy) / iResolution.y;
 
