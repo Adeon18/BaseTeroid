@@ -1,8 +1,9 @@
-#include "utility/render.glsl"
+#include "utility/player.glsl"
 
 #iKeyboard
 
-#iChannel0 "file://input.glsl"
+#iChannel0 "file://utility/movement.glsl"
+#iChannel1 "file://utility/input.glsl"
 
 
 vec2 controls = vec2(0.);
@@ -19,7 +20,9 @@ float getDist(vec3 point) {
     vec3 bp = vec3(4., 1., 1.);
     float distToBox = sdBox(point - bp, Box(1., 1., 1., bp));
 
-    float distPiramid = createShip(point, vec3(0.));
+    vec2 controls = texelFetch(iChannel1, ivec2(0, 0), 0).xy;
+    vec2 offset = texelFetch(iChannel0, ivec2(0, 0), 0).xy;
+    float distPiramid = createPlayer(point, vec3(0.), vec3(controls, 0.), vec3(offset, 0.));
 
     float d = min(distToSphere, distPiramid);
     d = min(distToBox, d);

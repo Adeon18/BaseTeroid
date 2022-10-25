@@ -1,4 +1,5 @@
-
+#ifndef OBJECT_GLSL
+#define OBJECT_GLSL
 
 /* A Capsule has position of the top and bottom spheres and their radius */
 struct Capsule {
@@ -46,3 +47,5 @@ struct Piramid {
     vec3 pos;
     float height;
 };
+
+#endif // OBJECT_GLSL

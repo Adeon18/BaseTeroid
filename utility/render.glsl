@@ -1,3 +1,6 @@
+#ifndef RENDER_GLSL
+#define RENDER_GLSL
+
 #include "object.glsl"
 
 #define MAX_STEPS 100
@@ -104,12 +107,4 @@ float sdPyramid(vec3 p, float h) {
     return sqrt( (d2+q.z*q.z)/m2 ) * sign(max(q.z,-p.y));
 }
 
-float createShip(vec3 point, vec3 posWithOffset) {
-    Piramid body = Piramid(vec3(0., 0., 0.) + posWithOffset, 1.5);
-
-    vec3 bodyPos = point - body.pos;
-
-    bodyPos *= vec3(1., 1., 2.);
-
-    return sdPyramid(bodyPos, body.height) / 2.5;
-}
+#endif // RENDER_GLSL
