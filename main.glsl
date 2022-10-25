@@ -1,8 +1,16 @@
 #include "utility/render.glsl"
 
+#iKeyboard
+
+#iChannel0 "file://input.glsl"
+
+
+vec2 controls = vec2(0.);
+
 /* Get minimal distance to each object, objects are generated here for now */
 float getDist(vec3 point) {
     // vec4 sphere = vec4(0, 1, 6, 1); // w = radius
+    // vec2 offset = texelFetch(iChannel0, ivec2(0, 0), 0).xy;
 
     Sphere sph = Sphere(vec3(0, 1, 6), 1.);
 
@@ -87,6 +95,8 @@ vec3 R(vec2 uv, vec3 p, vec3 l, float z) {
 
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
+    controls = texelFetch(iChannel0, ivec2(0, 0), 0).xy;
+
     // Normalized pixel coordinates (from 0 to 1)
     vec2 uv = (fragCoord-.5*iResolution.xy) / iResolution.y;
 
@@ -95,9 +105,10 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     vec3 col = vec3(0);
 
     // Simple camera
-    vec3 ro = vec3(0, 3, -5);
-    ro.yz *= Rotate(-mos.y+.4);
-    ro.xz *= Rotate(-mos.x*6.2831);
+    vec3 ro = vec3(0, 20, 0);
+    ro.yz *= Rotate(0.01);
+    ro.xz *= Rotate(3.14);
+
     vec3 rd = R(uv, ro, vec3(0,0,0), .7);
 
     float d = rayMarch(ro, rd);
@@ -112,9 +123,8 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 
         col = vec3(diffusedLighting);
     }
-
     // Color correction
-    //col = pow(col, vec3(.95));
+    col = pow(col, vec3(.95));
 
     // Output to screen
     fragColor = vec4(col,1.0);
