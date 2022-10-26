@@ -122,16 +122,16 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 
     vec3 ro = vec3(-cam_x, cam_y, 20);
     ro.xz *= Rotate(PI);
-    
+
     // variables to control camera if we need it
     vec3 lookat = vec3(cam_x, cam_y, 0.);
     float zoom = 0.5;
     // #########################################
-    
+
     // get ray direction!!!
     vec3 rd = getRd(uv, ro, lookat, zoom);
     // ####################
-    
+
     float d = rayMarch(ro, rd);
 
     if (d < MAX_DIST) {
