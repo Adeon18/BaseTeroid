@@ -2,7 +2,9 @@
 
 #iChannel0 "self"
 
-
+/*
+ * Capture keyboard input
+*/
 vec2 handleKeyboard() {    
     vec2 direction = vec2(0., 0.);
 
@@ -21,6 +23,7 @@ vec2 handleKeyboard() {
     if (isKeyDown(Key_D)) {
         direction += vec2(1., 0.);
     }
+    
     return direction;
 }
 
