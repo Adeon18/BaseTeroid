@@ -1,9 +1,17 @@
 #iChannel0 "file://input.glsl"
 #iChannel1 "self"
+#iChannel2 "file://rotate.glsl"
+
+#include "render.glsl"
 
 vec2 calcOffset(vec2 offset) {
     float velocity = 20. / 100.;
     vec2 controls = texelFetch(iChannel0, ivec2(0, 0), 0).xy;
+
+    float rotationRad = texelFetch(iChannel2, ivec2(0, 0), 0).x;
+    mat2 rotationMat = Rotate(rotationRad);
+    controls *= rotationMat;
+    controls.x *= -1.;
 
     offset += controls * velocity;
     return offset;
