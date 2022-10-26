@@ -86,25 +86,36 @@ float sdPlane(vec3 point, vec3 plane) {
 
 /*
  * Get distance to the Piramid - for now used only in player creation
+ * Code "borrowed" from https://www.shadertoy.com/view/Ntd3DX
  */
-float sdPyramid(vec3 p, float h) {
-    float m2 = h*h + 0.25;
+float sdPyramid(vec3 position, float halfWidth, float halfDepth, float halfHeight) {
+    position.xz = abs(position.xz);
 
-    p.xz = abs(p.xz);
-    p.xz = (p.z>p.x) ? p.zx : p.xz;
-    p.xz -= 0.5;
+    // bottom
+    float s1 = abs(position.y) - halfHeight;
+    vec3 base = vec3(max(position.x - halfWidth, 0.0), abs(position.y + halfHeight), max(position.z - halfDepth, 0.0));
+    float d1 = dot(base, base);
 
-    vec3 q = vec3( p.z, h*p.y - 0.5*p.x, h*p.x + 0.5*p.y);
+    vec3 q = position - vec3(halfWidth, -halfHeight, halfDepth);
+    vec3 end = vec3(-halfWidth, 2.0 * halfHeight, -halfDepth);
+    vec3 segment = q - end * clamp(dot(q, end) / dot(end, end), 0.0, 1.0);
+    float d = dot(segment, segment);
 
-    float s = max(-q.x,0.0);
-    float t = clamp( (q.y-0.5*p.z)/(m2+0.25), 0.0, 1.0 );
-
-    float a = m2*(q.x+s)*(q.x+s) + q.y*q.y;
-    float b = m2*(q.x+0.5*t)*(q.x+0.5*t) + (q.y-m2*t)*(q.y-m2*t);
-
-    float d2 = min(q.y,-q.x*m2-q.y*0.5) > 0.0 ? 0.0 : min(a,b);
-
-    return sqrt( (d2+q.z*q.z)/m2 ) * sign(max(q.z,-p.y));
+    // side
+    vec3 normal1 = vec3(end.y, -end.x, 0.0);
+    float s2 = dot(q.xy, normal1.xy);
+    float d2 = d;
+    if (dot(q.xy, -end.xy) < 0.0 && dot(q, cross(normal1, end)) < 0.0) {
+        d2 = s2 * s2 / dot(normal1.xy, normal1.xy);
+    }
+    // front/back
+    vec3 normal2 = vec3(0.0, -end.z, end.y);
+    float s3 = dot(q.yz, normal2.yz);
+    float d3 = d;
+    if (dot(q.yz, -end.yz) < 0.0 && dot(q, cross(normal2, -end)) < 0.0) {
+        d3 = s3 * s3 / dot(normal2.yz, normal2.yz);
+    }
+    return sqrt(min(min(d1, d2), d3)) * sign(max(max(s1, s2), s3));
 }
 
 #endif // RENDER_GLSL

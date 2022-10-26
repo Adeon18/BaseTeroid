@@ -23,5 +23,5 @@ float createPlayer(vec3 point, vec3 originPos, vec3 controls, vec3 offset) {
     /// Flatten the piramid
     bodyPos *= vec3(1., 1., 2.);
 
-    return sdPyramid(bodyPos, body.height) / 2.5;
+    return sdPyramid(bodyPos, body.height / 2., body.height / 10., body.height / 1.5) / 2.;
 }
