@@ -10,9 +10,6 @@ vec2 controls = vec2(0.);
 
 /* Get minimal distance to each object, objects are generated here for now */
 float getDist(vec3 point) {
-    // vec4 sphere = vec4(0, 1, 6, 1); // w = radius
-    // vec2 offset = texelFetch(iChannel0, ivec2(0, 0), 0).xy;
-
     Sphere sph = Sphere(vec3(10., 1., 0.), 1.);
 
 

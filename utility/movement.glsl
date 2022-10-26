@@ -4,6 +4,9 @@
 
 #include "render.glsl"
 
+/*
+ * Calculate offset for the ship including rotation
+*/
 vec2 calcOffset(vec2 offset) {
     float turnSpeed = 0.1 / 100.;
     float velocity = 20. / 100.;
