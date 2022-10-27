@@ -12,7 +12,6 @@ vec2 calcOffset(vec2 offset) {
     float velocity = 20. / 100.;
     vec2 controls = texelFetch(iChannel0, ivec2(0, 0), 0).xy;
 
-
     controls.x *= turnSpeed;
     controls.y *= velocity;
     float rotationRad = texelFetch(iChannel2, ivec2(0, 0), 0).x;

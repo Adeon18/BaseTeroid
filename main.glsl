@@ -1,33 +1,29 @@
 #include "utility/player.glsl"
+#include "utility/asteroids.glsl"
 
 #iKeyboard
 
 #iChannel0 "file://utility/movement.glsl"
-#iChannel1 "file://utility/input.glsl"
-
-
-vec2 controls = vec2(0.);
 
 /* Get minimal distance to each object, objects are generated here for now */
 float getDist(vec3 point) {
-    Sphere sph = Sphere(vec3(10., 1., 0.), 1.);
+    // Sphere sph = Sphere(vec3(10., 1., 0.), 1.);
+    // float distToSphere = sdSphere(point - sph.pos, sph);
+    // vec3 bp = vec3(5., 0., 0.);
+    // float distToBox = sdBox(point - bp, Box(1., 1., 1., bp));
 
-
-    float distToSphere = sdSphere(point - sph.pos, sph);
-    vec3 bp = vec3(5., 0., 0.);
-    float distToBox = sdBox(point - bp, Box(1., 1., 1., bp));
-
-    vec2 controls = texelFetch(iChannel1, ivec2(0, 0), 0).xy;
     vec2 offset = texelFetch(iChannel0, ivec2(0, 0), 0).xy;
-    float distPiramid = createPlayer(point, vec3(0.), vec3(controls, 0.), vec3(offset, 0.));
+    float distPiramid = createPlayer(point, vec3(0.), vec3(offset, 0.));
 
-    float d = min(distToSphere, distPiramid);
-    d = min(distToBox, d);
+    float distAsteroids = createAsteroids(point, vec3(0.), vec3(offset, 0.));
 
+    float d = min(distPiramid, distAsteroids);
+    // d = min(distToBox, d);
+    // d = min(distToSphere, d);
     return d;
 }
 
-/* Function fot getting a normal to the plane */
+/* Function for getting a normal to the plane */
 vec3 getNormal(vec3 point) {
     float dist = getDist(point);
     vec2 offset = vec2(.01, 0);
@@ -67,9 +63,9 @@ float getLighting(vec3 point, vec3 lightPos) {
 
     // Get shadows
     float distToLight = rayMarch(point + normal * SURF_DIST * 2., lightDir); // Get the point a bit off so the loop does not immediately end
-    // if (distToLight < length(lightPos - point)) { lightIntencity *= .3; }
+    if (distToLight < length(lightPos - point)) { lightIntencity *= .3; }
 
-    return clamp(lightIntencity, 0., 1.);
+    return lightIntencity;
 }
 
 /*
@@ -77,10 +73,9 @@ float getLighting(vec3 point, vec3 lightPos) {
  * Takes current light level, new light position and a point
  * Takes max of current light and new light so that badly lit areas light up
  */
-float addLight(float currentLight, vec3 newLightPos, vec3 point) {
-	return max(currentLight, getLighting(point, newLightPos));
+void addLight(inout float currentLight, vec3 newLightPos, vec3 point) {
+	currentLight += getLighting(point, newLightPos);
 }
-
 
 // lookat - central point of the camera
 // z - zoom  ==  distance from camera to the screen
@@ -102,8 +97,6 @@ vec3 getRd(vec2 uv, vec3 ro, vec3 lookat, float z) {
 
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
-    controls = texelFetch(iChannel0, ivec2(0, 0), 0).xy;
-
     // Normalized pixel coordinates (from 0 to 1)
     vec2 uv = (fragCoord-.5*iResolution.xy) / iResolution.y;
 
@@ -117,7 +110,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     float cam_x = 0.;
     float cam_y = 0.;
 
-    vec3 ro = vec3(-cam_x, cam_y, 20);
+    vec3 ro = vec3(-cam_x, cam_y, 20.);
     ro.xz *= Rotate(PI);
 
     // variables to control camera if we need it
@@ -135,14 +128,13 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
         vec3 p = ro + rd * d;
 
         float diffusedLighting = 0.;
-        diffusedLighting = addLight(diffusedLighting, vec3(3, 5, 4), p);
-        diffusedLighting = addLight(diffusedLighting, vec3(-3, 5, -4), p);
-
+        addLight(diffusedLighting, vec3(3, 5, 4), p);
+        addLight(diffusedLighting, vec3(-3, 5, -4), p);
 
         col = vec3(diffusedLighting);
     }
     // Color correction
-    col = pow(col, vec3(.95));
+    col = pow(min(col, 1.0), vec3(.99));
 
     // Output to screen
     fragColor = vec4(col,1.0);

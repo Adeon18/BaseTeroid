@@ -12,7 +12,7 @@
 
 /*
 * Rotate object in one plane:
-* use obj.xy = Rotate(val);
+* use obj.xy *= Rotate(val);
 * to rotate the object by some value on the xy plane
 */
 mat2 Rotate(float val) {

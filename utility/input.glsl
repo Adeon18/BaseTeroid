@@ -1,7 +1,5 @@
 #iKeyboard
 
-#iChannel0 "self"
-
 /*
  * Capture keyboard input
 */
@@ -29,9 +27,7 @@ vec2 handleKeyboard() {
 
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
-    vec2 controls = texelFetch(iChannel0, ivec2(0, 0), 0).xy;
-
-    controls = handleKeyboard();
+    vec2 controls = handleKeyboard();
 
     fragColor = vec4(controls, 0, 0);
 }
