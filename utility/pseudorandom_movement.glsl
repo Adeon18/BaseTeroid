@@ -29,11 +29,6 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
             rnd_transform(rnd.x);
             rnd.y = modulo(rnd.y, 1.0);
             rnd_transform(rnd.y);
-            if (rnd.x < rnd.y) {
-                rnd.x = 0.01;
-            } else {
-                rnd.y = 0.01;
-            }
             rnd_transform(rnd.z);
             rnd_transform(rnd.w);
         } else {
