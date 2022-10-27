@@ -23,12 +23,17 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     if (fragCoord.x < NUM_ASTEROIDS && fragCoord.y < 1.) {
         rnd = texelFetch(iChannel0, ivec2(fragCoord.x, 0), 0);
         if (rnd.x == 0. || rnd.y == 0.) {
-            rnd.xyzw = vec4(0.01, 0.02, 0.03, 0.04) * fragCoord.x;
+            rnd.xyzw = vec4(0.01, 0.26, 0.76, 0.99) / NUM_ASTEROIDS * fragCoord.x;
         } else if (rnd.x > 1. || rnd.y > 1. || rnd.x < 0. || rnd.y < 0.) {
             rnd.x = modulo(rnd.x, 1.0);
             rnd_transform(rnd.x);
             rnd.y = modulo(rnd.y, 1.0);
             rnd_transform(rnd.y);
+            if (rnd.x < rnd.y) {
+                rnd.x = 0.01;
+            } else {
+                rnd.y = 0.01;
+            }
             rnd_transform(rnd.z);
             rnd_transform(rnd.w);
         } else {
