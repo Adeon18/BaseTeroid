@@ -1,5 +1,6 @@
 #include "utility/player.glsl"
 #include "utility/asteroids.glsl"
+#include "utility/render.glsl"
 
 #iKeyboard
 
@@ -15,7 +16,7 @@ float getDist(vec3 point) {
     vec2 offset = texelFetch(iChannel0, ivec2(0, 0), 0).xy;
     float distPiramid = createPlayer(point, vec3(0.), vec3(offset, 0.));
 
-    float distAsteroids = createAsteroids(point, vec3(0.), vec3(offset, 0.));
+    float distAsteroids = createAsteroids(point);
 
     float d = min(distPiramid, distAsteroids);
     // d = min(distToBox, d);
