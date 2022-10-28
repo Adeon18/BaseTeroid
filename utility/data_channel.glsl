@@ -9,6 +9,55 @@
 
 #iChannel0 "self"
 
+#iKeyboard
+
+#include "render.glsl"
+
+/*
+ * Capture keyboard input
+*/
+vec2 handleKeyboard() {
+    vec2 direction = vec2(0., 0.);
+
+    if (isKeyDown(Key_W)) {
+        direction += vec2(0., 1.);
+    }
+
+    if (isKeyDown(Key_S)) {
+        direction += vec2(0., -1.);
+    }
+
+    if (isKeyDown(Key_A)) {
+        direction += vec2(-1., 0.);
+    }
+
+    if (isKeyDown(Key_D)) {
+        direction += vec2(1., 0.);
+    }
+
+    return direction;
+}
+
+
+/*
+ * Calculate offset for the ship including rotation
+*/
+vec2 calcOffset(vec2 offset, vec2 controls, float rotationRad) {
+    float turnSpeed = 0.1 / 100.;
+    float velocity = 20. / 100.;
+
+    controls.x *= turnSpeed;
+    controls.y *= velocity;
+    mat2 rotationMat = Rotate(rotationRad);
+    controls *= rotationMat;
+    controls.x *= -1.;
+
+    offset += controls;
+    return offset;
+}
+
+
+
 float modulo(float a, float b) {
     return a - (b * floor(a/b));
 }
@@ -38,9 +87,14 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
         } else {
             outFrag.xy += (outFrag.zw * 2. - 1.) * SPEED;
         }
-    } else if (int(fragCoord.y) == PLAYER_LAYER) {
-        if (int(fragCoord.x) == 0) {
-            //vec2 controls =
+    } else if (int(fragCoord.y) == 1) {
+        if (int(fragCoord.x) < 100) {
+            outFrag = texelFetch(iChannel0, ivec2(fragCoord.x, fragCoord.y), 0);
+            vec2 controls = handleKeyboard();
+
+            /// Handle offset
+            outFrag.xy = calcOffset(outFrag.xy, controls, outFrag.z);
+            outFrag.z += controls.x * .1;
         }
     } else {
         discard;
