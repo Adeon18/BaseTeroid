@@ -2,8 +2,6 @@
 #include "utility/asteroids.glsl"
 #include "utility/render.glsl"
 
-#iKeyboard
-
 #iChannel0 "file://utility/data_channel.glsl"
 
 /* Get minimal distance to each object, objects are generated here for now */
