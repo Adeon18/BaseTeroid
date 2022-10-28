@@ -2,7 +2,7 @@
 #define ASTEROIDS_GLSL
 
 #include "render.glsl"
-#iChannel1 "file://utility/pseudorandom_movement.glsl"
+#iChannel1 "file://utility/data_channel.glsl"
 
 #define ASTEROID_DIST 5.
 #define NUM_ASTEROIDS 16
