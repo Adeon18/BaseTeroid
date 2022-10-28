@@ -4,6 +4,7 @@
 #define SPEED 0.01
 #define NUM_ASTEROIDS 16.
 
+/* Layers of data in pixels - basically Y coordinates */
 #define ASTEROID_LAYER 0
 #define PLAYER_LAYER 1
 
@@ -88,12 +89,13 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
             outFrag.xy += (outFrag.zw * 2. - 1.) * SPEED;
         }
     } else if (int(fragCoord.y) == 1) {
-        if (int(fragCoord.x) < 100) {
+        if (int(fragCoord.x) == 0) {
             outFrag = texelFetch(iChannel0, ivec2(fragCoord.x, fragCoord.y), 0);
             vec2 controls = handleKeyboard();
 
             /// Handle offset
             outFrag.xy = calcOffset(outFrag.xy, controls, outFrag.z);
+            /// Handle rotation
             outFrag.z += controls.x * .1;
         }
     } else {
