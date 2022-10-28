@@ -1,4 +1,5 @@
 #include "render.glsl"
+#include "common.glsl"
 
 #iChannel0 "file://data_channel.glsl"
 
@@ -8,7 +9,7 @@
 float createPlayer(vec3 point, vec3 originPos, vec3 offset) {
 
     /// Get Rotation radians and matrix
-    float rotationRad = texelFetch(iChannel0, ivec2(0, 1), 0).z;
+    float rotationRad = texelFetch(iChannel0, ivec2(P_ROTATION_COL, PLAYER_LAYER), 0).x;
     mat2 rotationMat = Rotate(rotationRad);
 
     /// Player body

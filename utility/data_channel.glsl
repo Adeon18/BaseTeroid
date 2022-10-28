@@ -4,15 +4,12 @@
 #define SPEED 0.01
 #define NUM_ASTEROIDS 16.
 
-/* Layers of data in pixels - basically Y coordinates */
-#define ASTEROID_LAYER 0
-#define PLAYER_LAYER 1
-
 #iChannel0 "self"
 
 #iKeyboard
 
 #include "render.glsl"
+#include "common.glsl"
 
 /*
  * Capture keyboard input
@@ -40,20 +37,34 @@ vec2 handleKeyboard() {
 }
 
 
+// float lerpThrottle = 0.;
 /*
  * Calculate offset for the ship including rotation
 */
-vec2 calcOffset(vec2 offset, vec2 controls, float rotationRad) {
+vec2 calcOffset(vec2 offset, vec2 controls, inout vec2 inertia, float rotationRad) {
     float turnSpeed = 0.1 / 100.;
     float velocity = 20. / 100.;
 
+    bool isThrottle = controls.y > 0.;
+
     controls.x *= turnSpeed;
     controls.y *= velocity;
+    // if (isThrottle) {
+    //     lerpThrottle = mix(lerpThrottle, 2., 0.3);
+    // }
+
     mat2 rotationMat = Rotate(rotationRad);
     controls *= rotationMat;
-    controls.x *= -1.;
+    controls.x *= -1.;  
+    if (isThrottle) {
+        // inertia = vec2(0., lerpThrottle) * rotationMat;
+        inertia = controls;
+    } else {
+        inertia.x = mix(inertia.x, 0., 0.01);
+        inertia.y = mix(inertia.y, 0., 0.01);
+    }
 
-    offset += controls;
+    offset += inertia;
     return offset;
 }
 
@@ -88,15 +99,19 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
         } else {
             outFrag.xy += (outFrag.zw * 2. - 1.) * SPEED;
         }
-    } else if (int(fragCoord.y) == 1) {
-        if (int(fragCoord.x) == 0) {
+    } else if (int(fragCoord.y) == PLAYER_LAYER) {
+        if (int(fragCoord.x) == P_MOVEMENT_COL) {
             outFrag = texelFetch(iChannel0, ivec2(fragCoord.x, fragCoord.y), 0);
+            float rotationTexel = texelFetch(iChannel0, ivec2(P_ROTATION_COL, fragCoord.y), 0).x;
             vec2 controls = handleKeyboard();
 
             /// Handle offset
-            outFrag.xy = calcOffset(outFrag.xy, controls, outFrag.z);
-            /// Handle rotation
-            outFrag.z += controls.x * .1;
+            outFrag.xy = calcOffset(outFrag.xy, controls, outFrag.zw, rotationTexel);
+        } else if (int(fragCoord.x) == P_ROTATION_COL) {
+            outFrag = texelFetch(iChannel0, ivec2(fragCoord.x, fragCoord.y), 0);
+            vec2 controls = handleKeyboard();
+
+            outFrag.x += controls.x * .1;
         }
     } else {
         discard;
