@@ -4,7 +4,7 @@
 
 #iKeyboard
 
-#iChannel0 "file://utility/movement.glsl"
+#iChannel0 "file://utility/data_channel.glsl"
 
 /* Get minimal distance to each object, objects are generated here for now */
 float getDist(vec3 point) {
@@ -13,7 +13,7 @@ float getDist(vec3 point) {
     // vec3 bp = vec3(5., 0., 0.);
     // float distToBox = sdBox(point - bp, Box(1., 1., 1., bp));
 
-    vec2 offset = texelFetch(iChannel0, ivec2(0, 0), 0).xy;
+    vec2 offset = texelFetch(iChannel0, ivec2(0, 1), 0).xy;
     float distPiramid = createPlayer(point, vec3(0.), vec3(offset, 0.));
 
     float distAsteroids = createAsteroids(point);

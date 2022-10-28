@@ -1,6 +1,6 @@
 #include "render.glsl"
 
-#iChannel2 "file://rotate.glsl"
+#iChannel0 "file://data_channel.glsl"
 
 /*
  * Create the player object(Piramid) and handle input transformation and rotation
@@ -8,7 +8,7 @@
 float createPlayer(vec3 point, vec3 originPos, vec3 offset) {
 
     /// Get Rotation radians and matrix
-    float rotationRad = texelFetch(iChannel2, ivec2(0, 0), 0).x;
+    float rotationRad = texelFetch(iChannel0, ivec2(0, 1), 0).z;
     mat2 rotationMat = Rotate(rotationRad);
 
     /// Player body
