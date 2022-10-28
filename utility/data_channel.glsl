@@ -45,6 +45,9 @@ vec2 calcOffset(vec2 offset, vec2 controls, inout vec2 inertia, float rotationRa
     float turnSpeed = 0.1 / 100.;
     float velocity = 20. / 100.;
 
+    float speed = 5.;
+    float maxSpeed = .1;
+
     bool isThrottle = controls.y > 0.;
 
     controls.x *= turnSpeed;
@@ -55,16 +58,19 @@ vec2 calcOffset(vec2 offset, vec2 controls, inout vec2 inertia, float rotationRa
 
     mat2 rotationMat = Rotate(rotationRad);
     controls *= rotationMat;
-    controls.x *= -1.;  
-    if (isThrottle) {
+    controls.x *= -1.;
+    
+    if (isThrottle && length(inertia) < maxSpeed) {
         // inertia = vec2(0., lerpThrottle) * rotationMat;
-        inertia = controls;
+        inertia.x = mix(inertia.x, controls.x, 0.005);
+        inertia.y = mix(inertia.y, controls.y, 0.005);
     } else {
         inertia.x = mix(inertia.x, 0., 0.01);
         inertia.y = mix(inertia.y, 0., 0.01);
     }
 
-    offset += inertia;
+    offset += inertia * speed;
+
     return offset;
 }
 
