@@ -1,13 +1,28 @@
+#include "utility/render.glsl"
 #include "utility/player.glsl"
 #include "utility/asteroids.glsl"
-#include "utility/render.glsl"
 
 #iChannel0 "file://utility/data_channel.glsl"
 
+// lookat - central point of the camera
+// z - zoom  ==  distance from camera to the screen
+// c - center point on the screen = ro + forward * zoom factor z
+// ro = ray origin
+// right - if we look straight from the camera on screen, it is x offset
+// up - if we look straight from the camera on screen, it is y offset
+// intersection - the point on the screen where ray passes through it
+vec3 getRd(vec2 uv, vec3 ro, vec3 lookat, float z) {
+    vec3 forward = normalize(lookat-ro),
+        right = normalize(cross(vec3(0, 1, 0), forward)),
+        up = cross(forward, right),
+        c = ro+forward*z,
+        intersection = c + uv.x*right + uv.y*up,
+        d = normalize(intersection-ro);
+    return d;
+}
+
 /* Get minimal distance to each object, objects are generated here for now */
 float getDist(vec3 point) {
-    // Sphere sph = Sphere(vec3(10., 1., 0.), 1.);
-    // float distToSphere = sdSphere(point - sph.pos, sph);
     // vec3 bp = vec3(5., 0., 0.);
     // float distToBox = sdBox(point - bp, Box(1., 1., 1., bp));
 
@@ -17,8 +32,7 @@ float getDist(vec3 point) {
     float distAsteroids = createAsteroids(point);
 
     float d = min(distPiramid, distAsteroids);
-    // d = min(distToBox, d);
-    // d = min(distToSphere, d);
+
     return d;
 }
 
@@ -75,24 +89,6 @@ float getLighting(vec3 point, vec3 lightPos) {
 void addLight(inout float currentLight, vec3 newLightPos, vec3 point) {
 	currentLight += getLighting(point, newLightPos);
 }
-
-// lookat - central point of the camera
-// z - zoom  ==  distance from camera to the screen
-// c - center point on the screen = ro + forward * zoom factor z
-// ro = ray origin
-// right - if we look straight from the camera on screen, it is x offset
-// up - if we look straight from the camera on screen, it is y offset
-// intersection - the point on the screen where ray passes through it
-vec3 getRd(vec2 uv, vec3 ro, vec3 lookat, float z) {
-    vec3 forward = normalize(lookat-ro),
-        right = normalize(cross(vec3(0,1,0), forward)),
-        up = cross(forward,right),
-        c = ro+forward*z,
-        intersection = c + uv.x*right + uv.y*up,
-        d = normalize(intersection-ro);
-    return d;
-}
-
 
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {

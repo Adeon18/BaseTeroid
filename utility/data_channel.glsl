@@ -1,9 +1,6 @@
 #ifndef DATA_CHANNEL_GLSL
 #define DATA_CHANNEL_GLSL
 
-#define SPEED 0.01
-#define NUM_ASTEROIDS 16.
-
 #iChannel0 "self"
 
 #iKeyboard
@@ -37,15 +34,22 @@ vec2 handleKeyboard() {
     return direction;
 }
 
-
-float modulo(float a, float b) {
-    return a - (b * floor(a/b));
+uint hash( uint x ) {
+    x += x << 10u;
+    x ^= x >>  6u;
+    x += x <<  3u;
+    x ^= x >> 11u;
+    x += x << 15u;
+    return x;
 }
-
-void rnd_transform(inout float x) {
-    x = (1. - x) * x * 3.99;
+// taken from https://stackoverflow.com/a/17479300/16471208
+float random(vec3 v) {
+    uvec3 uiv = floatBitsToUint(v);
+    uint m = hash(uiv.x ^ hash(uiv.y) ^ hash(uiv.z));
+    m &= 0x007FFFFFu; // keep mantissa
+    m |= 0x3F800000u; // add 1.0
+    return uintBitsToFloat(m) - 1.0;
 }
-
 
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
@@ -56,17 +60,32 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     */
     if (int(fragCoord.y) == ASTEROID_LAYER_ROW && fragCoord.x < NUM_ASTEROIDS) {
         outFrag = texelFetch(iChannel0, ivec2(fragCoord.x, 0), 0);
-        if (outFrag.x == 0. || outFrag.y == 0.) {
-            outFrag.xyzw = vec4(0.01, 0.26, 0.76, 0.99) / NUM_ASTEROIDS * fragCoord.x;
-        } else if (outFrag.x > 1. || outFrag.y > 1. || outFrag.x < 0. || outFrag.y < 0.) {
-            outFrag.x = modulo(outFrag.x, 1.0);
-            rnd_transform(outFrag.x);
-            outFrag.y = modulo(outFrag.y, 1.0);
-            rnd_transform(outFrag.y);
-            rnd_transform(outFrag.z);
-            rnd_transform(outFrag.w);
+        if (outFrag.x > 1. || outFrag.y > 1. || outFrag.x <= 0. || outFrag.y <= 0.) {
+            float d = random(vec3(fragCoord, iTime));
+            outFrag.zw = vec2(
+                random(vec3(fragCoord, iTime+1.)),
+                random(vec3(fragCoord, iTime+2.))
+            );
+            outFrag.zw = outFrag.zw * 2. - 1.;
+            if (d < 0.25) {
+                outFrag.x = 0.001;
+                outFrag.y = random(vec3(fragCoord, iTime+3.));
+                if (outFrag.z < 0.) { outFrag.z = -outFrag.z; }
+            } else if (d < 0.50) {
+                outFrag.x = random(vec3(fragCoord, iTime+3.));
+                outFrag.y = 0.001;
+                if (outFrag.w < 0.) { outFrag.w = -outFrag.w; }
+            } else if (d < 0.75) {
+                outFrag.x = 0.999;
+                outFrag.y = random(vec3(fragCoord, iTime+3.));
+                if (outFrag.z > 0.) { outFrag.z = -outFrag.z; }
+            } else {
+                outFrag.x = random(vec3(fragCoord, iTime+3.));
+                outFrag.y = 0.999;
+                if (outFrag.w > 0.) { outFrag.w = -outFrag.w; }
+            }
         } else {
-            outFrag.xy += (outFrag.zw * 2. - 1.) * SPEED;
+            outFrag.xy += outFrag.zw * ASTEROID_SPEED;
         }
     }
     /*
