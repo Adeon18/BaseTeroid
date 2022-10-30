@@ -22,7 +22,7 @@ vec3 getRd(vec2 uv, vec3 ro, vec3 lookat, float z) {
 }
 
 /* Get minimal distance to each object, objects are generated here for now */
-float getDist(vec3 point) {
+vec4 getDist(vec3 point) {
     // vec3 bp = vec3(5., 0., 0.);
     // float distToBox = sdBox(point - bp, Box(1., 1., 1., bp));
 
@@ -31,43 +31,48 @@ float getDist(vec3 point) {
 
     float distAsteroids = createAsteroids(point);
 
-    float d = min(distPiramid, distAsteroids);
+    /// Use respective colors for respective objects
+    vec4 colDist = minSd(vec4(PLAYER_COLOR, distPiramid), vec4(ASTEROID_COLOR, distAsteroids));
 
-    return d;
+    return colDist;
 }
 
 /* Function for getting a normal to the plane */
 vec3 getNormal(vec3 point) {
-    float dist = getDist(point);
+    float dist = getDist(point).w;
     vec2 offset = vec2(.01, 0);
 
     vec3 normal = dist - vec3(
-        getDist(point - offset.xyy),
-        getDist(point - offset.yxy),
-        getDist(point - offset.yyx)
+        getDist(point - offset.xyy).w,
+        getDist(point - offset.yxy).w,
+        getDist(point - offset.yyx).w
     );
 
     return normalize(normal);
 }
 
 /* Main ray marching function */
-float rayMarch(vec3 ro, vec3 rd) {
+float rayMarch(vec3 ro, vec3 rd, inout vec3 color) {
     float distToOrigin = 0.;
 
     for (int i = 0; i < MAX_STEPS; ++i) {
         vec3 currentLocation = ro + distToOrigin * rd;
-        float distToScene = getDist(currentLocation);
+        /// rgb + w as length
+        vec4 distToScene = getDist(currentLocation);
 
-        distToOrigin += distToScene;
+        distToOrigin += distToScene.w;
 
-        if (distToOrigin > MAX_DIST || abs(distToScene) < SURF_DIST) { break; }
+        if (distToOrigin > MAX_DIST || abs(distToScene.w) < SURF_DIST) {
+            color = distToScene.rgb;
+            break;
+        }
     }
 
     return distToOrigin;
 }
 
 /* Handle lighting and shadows */
-float getLighting(vec3 point, vec3 lightPos) {
+vec3 getLighting(vec3 point, vec3 lightPos, vec3 color) {
 
     vec3 lightDir = normalize(lightPos - point);
     vec3 normal = getNormal(point);
@@ -75,19 +80,20 @@ float getLighting(vec3 point, vec3 lightPos) {
     float lightIntencity = clamp(dot(normal, lightDir)*.5+.5, 0., 1.);
 
     // Get shadows
-    float distToLight = rayMarch(point + normal * SURF_DIST * 2., lightDir); // Get the point a bit off so the loop does not immediately end
+    float distToLight = rayMarch(point + normal * SURF_DIST * 2., lightDir, BASE_COLOR); // Get the point a bit off so the loop does not immediately end
     if (distToLight < length(lightPos - point)) { lightIntencity *= .3; }
 
-    return lightIntencity;
+    return color * lightIntencity;
 }
 
 /*
  * Add a new light point to the Scene
  * Takes current light level, new light position and a point
  * Takes max of current light and new light so that badly lit areas light up
+ * Takes color
  */
-void addLight(inout float currentLight, vec3 newLightPos, vec3 point) {
-	currentLight += getLighting(point, newLightPos);
+void addLight(inout vec3 currentLight, vec3 newLightPos, vec3 point, vec3 color) {
+	currentLight = max(getLighting(point, newLightPos, color), currentLight);
 }
 
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
@@ -117,16 +123,19 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     vec3 rd = getRd(uv, ro, lookat, zoom);
     // ####################
 
-    float d = rayMarch(ro, rd);
+    vec3 color = vec3(0.);
+    float d = rayMarch(ro, rd, color);
 
     if (d < MAX_DIST) {
         vec3 p = ro + rd * d;
 
-        float diffusedLighting = 0.;
-        addLight(diffusedLighting, vec3(3, 5, 4), p);
-        addLight(diffusedLighting, vec3(-3, 5, -4), p);
+        vec3 diffusedLighting = vec3(0.);
+        addLight(diffusedLighting, vec3(10, 10, -5), p, color);
+        addLight(diffusedLighting, vec3(-10, -10, -5), p, color);
+        addLight(diffusedLighting, vec3(10, -10, -5), p, color);
+        addLight(diffusedLighting, vec3(-10, 10, -5), p, color);
 
-        col = vec3(diffusedLighting);
+        col = diffusedLighting;
     }
     // Color correction
     col = pow(min(col, 1.0), vec3(.99));

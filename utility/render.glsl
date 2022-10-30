@@ -9,6 +9,11 @@
 
 #define PI 3.14159
 
+const vec3 PLAYER_COLOR = vec3(0.8, 0.25, 0.95);
+const vec3 ASTEROID_COLOR = vec3(0.95, 0.8, 0.25);
+/// This is just so that lighting raymarches well
+vec3 BASE_COLOR = vec3(1.0, 1.0, 1.0);
+
 
 /*
 * Rotate object in one plane:
@@ -19,6 +24,13 @@ mat2 Rotate(float val) {
     float s = sin(val);
     float c = cos(val );
     return mat2(c, -s, s, c);
+}
+
+/*
+ * Get the min distance vec4 from vec4(rgb, dist)
+*/
+vec4 minSd(vec4 first, vec4 second) {
+    return first.w < second.w? first : second;
 }
 //-----------------------------------------------------------------------------
 /*
