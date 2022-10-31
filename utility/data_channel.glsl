@@ -59,7 +59,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     * Pseudorandom generator for asteroid coordinate
     */
     if (int(fragCoord.y) == ASTEROID_LAYER_ROW && fragCoord.x < NUM_ASTEROIDS) {
-        outFrag = texelFetch(iChannel0, ivec2(fragCoord.x, 0), 0);
+        outFrag = texelFetch(iChannel0, ivec2(fragCoord.x, ASTEROID_LAYER_ROW), 0);
         if (outFrag.x > 1. || outFrag.y > 1. || outFrag.x <= 0. || outFrag.y <= 0.) {
             float d = random(vec3(fragCoord, iTime));
             outFrag.zw = vec2(
@@ -101,6 +101,20 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
         else if (int(fragCoord.x) == P_ROTATION_COL) {
             vec2 controls = handleKeyboard();
             handleRotation(outFrag, controls);
+        }
+    }
+    /*
+     * Camera properties(constant)
+    */
+    else if (int(fragCoord.y) == CAMERA_LAYER_ROW) {
+        if (int(fragCoord.x) == 0) {
+            // camera position is constant for now
+            outFrag.xy = vec2(0., 0.);
+            // height is constant for now
+            outFrag.z = 20.;
+            // zoom is constant for now
+            outFrag.w = 0.5;
+            // vec2 mos = iMouse.xy/iResolution.xy;
         }
     }
     /*

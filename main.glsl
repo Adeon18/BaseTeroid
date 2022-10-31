@@ -1,25 +1,10 @@
 #include "utility/render.glsl"
 #include "utility/player.glsl"
+#include "utility/camera.glsl"
+#include "utility/common.glsl"
 #include "utility/asteroids.glsl"
 
 #iChannel0 "file://utility/data_channel.glsl"
-
-// lookat - central point of the camera
-// z - zoom  ==  distance from camera to the screen
-// c - center point on the screen = ro + forward * zoom factor z
-// ro = ray origin
-// right - if we look straight from the camera on screen, it is x offset
-// up - if we look straight from the camera on screen, it is y offset
-// intersection - the point on the screen where ray passes through it
-vec3 getRd(vec2 uv, vec3 ro, vec3 lookat, float z) {
-    vec3 forward = normalize(lookat-ro),
-        right = normalize(cross(vec3(0, 1, 0), forward)),
-        up = cross(forward, right),
-        c = ro+forward*z,
-        intersection = c + uv.x*right + uv.y*up,
-        d = normalize(intersection-ro);
-    return d;
-}
 
 /* Get minimal distance to each object, objects are generated here for now */
 vec4 getDist(vec3 point) {
@@ -71,7 +56,11 @@ float rayMarch(vec3 ro, vec3 rd, inout vec3 color) {
     return distToOrigin;
 }
 
-/* Handle lighting and shadows */
+/*
+ * Handle lighting and shadows
+ * Takes current light level, new light position and a point
+ * Takes color
+ */
 vec3 getLighting(vec3 point, vec3 lightPos, vec3 color) {
 
     vec3 lightDir = normalize(lightPos - point);
@@ -86,60 +75,35 @@ vec3 getLighting(vec3 point, vec3 lightPos, vec3 color) {
     return color * lightIntencity;
 }
 
-/*
- * Add a new light point to the Scene
- * Takes current light level, new light position and a point
- * Takes max of current light and new light so that badly lit areas light up
- * Takes color
- */
-void addLight(inout vec3 currentLight, vec3 newLightPos, vec3 point, vec3 color) {
-	currentLight = max(getLighting(point, newLightPos, color), currentLight);
-}
-
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
     // Normalized pixel coordinates (from 0 to 1)
     vec2 uv = (fragCoord-.5*iResolution.xy) / iResolution.y;
 
-    vec2 mos = iMouse.xy/iResolution.xy;
+    // get ray origin & direction
+    vec4 camera_props = texelFetch(iChannel0, ivec2(0., CAMERA_LAYER_ROW), 0);
+    vec3 ro = getRo(camera_props);
+    vec3 rd = getRd(uv, ro, camera_props);
 
-    vec3 col = vec3(0);
-
-    // Simple camera
-
-    // use this variables to move camera
-    float cam_x = 0.;
-    float cam_y = 0.;
-
-    vec3 ro = vec3(-cam_x, cam_y, 20.);
-    ro.xz *= Rotate(PI);
-
-    // variables to control camera if we need it
-    vec3 lookat = vec3(cam_x, cam_y, 0.);
-    float zoom = 0.5;
-    // #########################################
-
-    // get ray direction!!!
-    vec3 rd = getRd(uv, ro, lookat, zoom);
-    // ####################
-
-    vec3 color = vec3(0.);
-    float d = rayMarch(ro, rd, color);
+    vec3 outCol = vec3(0);
+    vec3 lightColor = vec3(0.);
+    float d = rayMarch(ro, rd, lightColor);
 
     if (d < MAX_DIST) {
         vec3 p = ro + rd * d;
 
         vec3 diffusedLighting = vec3(0.);
-        addLight(diffusedLighting, vec3(10, 10, -5), p, color);
-        addLight(diffusedLighting, vec3(-10, -10, -5), p, color);
-        addLight(diffusedLighting, vec3(10, -10, -5), p, color);
-        addLight(diffusedLighting, vec3(-10, 10, -5), p, color);
+        diffusedLighting += 0.25 * getLighting(p, vec3(10, 10, -5), lightColor);
+        diffusedLighting += 0.25 * getLighting(p, vec3(-10, -10, -5), lightColor);
+        diffusedLighting += 0.25 * getLighting(p, vec3(10, -10, -5), lightColor);
+        diffusedLighting += 0.25 * getLighting(p, vec3(-10, 10, -5), lightColor);
+        diffusedLighting *= 1.354;
 
-        col = diffusedLighting;
+        outCol = diffusedLighting;
     }
     // Color correction
-    col = pow(min(col, 1.0), vec3(.99));
+    outCol = pow(min(outCol, 1.0), vec3(.99));
 
     // Output to screen
-    fragColor = vec4(col,1.0);
+    fragColor = vec4(outCol, 1.0);
 }
