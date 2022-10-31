@@ -101,6 +101,8 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
         else if (int(fragCoord.x) == P_ROTATION_COL) {
             vec2 controls = handleKeyboard();
             handleRotation(outFrag, controls);
+        } else {
+            discard;
         }
     }
     /*
@@ -115,6 +117,8 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
             // zoom is constant for now
             outFrag.w = 0.5;
             // vec2 mos = iMouse.xy/iResolution.xy;
+        } else {
+            discard;
         }
     }
     /*

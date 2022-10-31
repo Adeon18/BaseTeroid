@@ -85,7 +85,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     vec3 ro = getRo(camera_props);
     vec3 rd = getRd(uv, ro, camera_props);
 
-    vec3 outCol = vec3(0);
+    vec3 outCol = vec3(0.2666, 0.2784, 0.3529);
     vec3 lightColor = vec3(0.);
     float d = rayMarch(ro, rd, lightColor);
 

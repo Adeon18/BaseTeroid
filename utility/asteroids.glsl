@@ -18,7 +18,8 @@ float createAsteroids(vec3 point) {
     vec2 screenSize = (ro + upRightRD * dist).xy;
     screenSize += 1.;
 
-    for (int i = 0; i < int(NUM_ASTEROIDS); ++i) {
+    int num_asteroids = int(NUM_ASTEROIDS);
+    for (int i = 0; i < num_asteroids; ++i) {
         Sphere sph = Sphere(vec3((
             texelFetch(iChannel0, ivec2(i, 0), 0).xy * 2. - 1.
         ) * screenSize, 0.), 1.);

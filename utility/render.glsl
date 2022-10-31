@@ -9,8 +9,8 @@
 
 #define PI 3.14159
 
-const vec3 PLAYER_COLOR = vec3(0.8, 0.25, 0.95);
-const vec3 ASTEROID_COLOR = vec3(0.95, 0.8, 0.25);
+const vec3 PLAYER_COLOR = vec3(0.7411, 0.5764, 0.9764);
+const vec3 ASTEROID_COLOR = vec3(0.7, 0.7, 0.75);
 /// This is just so that lighting raymarches well
 vec3 BASE_COLOR = vec3(1.0, 1.0, 1.0);
 
