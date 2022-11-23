@@ -55,6 +55,21 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
     vec4 outFrag = vec4(0., 0., 0., 0.);
 
+    vec2 die = texelFetch(iChannel0, ivec2(P_COLLISION_COL, PLAYER_LAYER_ROW), 0).xy;
+    if (int(die.x) == 1) {
+        if (int(fragCoord.y) == PLAYER_LAYER_ROW && int(fragCoord.x) == P_COLLISION_COL) {
+            if (iTime - die.y > 2.) {
+                fragColor = vec4(0.);
+                return;
+            }
+            fragColor = vec4(die, 0., 0.);
+            return;
+        } else {
+            // fragColor = vec4(0.);
+            // return;
+        }
+    }
+
     /*
     * Pseudorandom generator for asteroid coordinate
     */
@@ -103,15 +118,15 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
             handleRotation(outFrag, controls);
         }
         else if (int(fragCoord.x) == P_COLLISION_COL) {
-            vec2 die = texelFetch(iChannel0, ivec2(P_COLLISION_COL, PLAYER_LAYER_ROW), 0).xy;
-            if (int(die.x) == 1) {
-                if (iTime - die.y > 2.) {
-                    outFrag = vec4(0.);
-                    return;
-                }
-                outFrag = vec4(die, 0., 0.);
-                return;
-            }
+            // vec2 die = texelFetch(iChannel0, ivec2(P_COLLISION_COL, PLAYER_LAYER_ROW), 0).xy;
+            // if (int(die.x) == 1) {
+            //     if (iTime - die.y > 2.) {
+            //         outFrag = vec4(0.);
+            //         return;
+            //     }
+            //     outFrag = vec4(die, 0., 0.);
+            //     return;
+            // }
 
             vec2 screenSize = texelFetch(iChannel0, ivec2(C_SCREEN_SIZE_COL, CAMERA_LAYER_ROW), 0).xy;
             vec2 offset = texelFetch(iChannel0, ivec2(P_MOVEMENT_COL, PLAYER_LAYER_ROW), 0).xy;
