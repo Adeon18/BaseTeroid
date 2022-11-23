@@ -9,3 +9,7 @@
 /* Asteroid properties */
 #define NUM_ASTEROIDS 5.
 #define ASTEROID_SPEED 0.007
+#define ASTEROID_RADIUS 1.
+
+/* Player Properties */
+#define PLAYER_HEIGHT 1.5

@@ -1,5 +1,6 @@
 #include "render.glsl"
 #include "common.glsl"
+#include "camera.glsl"
 
 #iChannel0 "file://data_channel.glsl"
 
@@ -13,17 +14,37 @@ float createPlayer(vec3 point, vec3 originPos, vec3 offset) {
     mat2 rotationMat = Rotate(rotationRad);
 
     /// Player body
-    Piramid body = Piramid(vec3(0., 0., 0.) + originPos, 1.5);
+    Piramid body = Piramid(originPos, PLAYER_HEIGHT);
+    float playerHeight = body.height / 2.;
 
     /// Handle body rotation and body movement
     vec3 bodyPos = point - body.pos;
     bodyPos -= offset;
+
+    /// To be removed
+    vec2 upRightUV = .5 * iResolution.xy / iResolution.y;
+    vec4 camera_props = texelFetch(iChannel0, ivec2(0., CAMERA_LAYER_ROW), 0);
+    vec3 ro = getRo(camera_props);
+    vec3 upRightRD = getRd(upRightUV, ro, camera_props);
+    float cosAngle = dot(-1. * ro, upRightRD) / length(ro);
+    float dist = length(ro) / cosAngle;
+    vec2 screenSize = (ro + upRightRD * dist).xy;
+    screenSize += 1.;
+
+    /// Collision detection with asteroids
+    for (int i = 0; i < int(NUM_ASTEROIDS); ++i) {
+        vec2 asteroidCoords = (texelFetch(iChannel0, ivec2(i, int(ASTEROID_LAYER_ROW)), 0).xy * 2. - 1.) * screenSize;
+        if (distance(offset.xy, asteroidCoords) < PLAYER_HEIGHT / 2. + ASTEROID_RADIUS) {
+            playerHeight = body.height / 4.;
+        }
+    }
+
     bodyPos.xy *= rotationMat;
 
     /// Flatten the piramid
     bodyPos *= vec3(1., 1., 2.);
 
-    return sdPyramid(bodyPos, body.height / 2., body.height / 10., body.height / 1.5) / 2.;
+    return sdPyramid(bodyPos, playerHeight, body.height / 10., body.height / 1.5) / 2.;
 }
 
 
