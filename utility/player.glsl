@@ -22,14 +22,9 @@ float createPlayer(vec3 point, vec3 originPos, vec3 offset) {
     bodyPos -= offset;
 
     /// To be removed
-    vec2 screenSize = texelFetch(iChannel0, ivec2(C_SCREEN_SIZE_COL, CAMERA_LAYER_ROW), 0).xy;
-
-    /// Collision detection with asteroids
-    for (int i = 0; i < int(NUM_ASTEROIDS); ++i) {
-        vec2 asteroidCoords = (texelFetch(iChannel0, ivec2(i, int(ASTEROID_LAYER_ROW)), 0).xy * 2. - 1.) * screenSize;
-        if (distance(offset.xy, asteroidCoords) < PLAYER_HEIGHT / 2. + ASTEROID_RADIUS) {
-            playerHeight = body.height / 4.;
-        }
+    float isCollided = texelFetch(iChannel0, ivec2(P_COLLISION_COL, PLAYER_LAYER_ROW), 0).x;
+    if (int(isCollided) == 1) {
+        playerHeight = body.height / 4.;
     }
 
     bodyPos.xy *= rotationMat;

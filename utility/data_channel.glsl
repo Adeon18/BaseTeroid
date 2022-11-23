@@ -101,7 +101,21 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
         else if (int(fragCoord.x) == P_ROTATION_COL) {
             vec2 controls = handleKeyboard();
             handleRotation(outFrag, controls);
-        } else {
+        }
+        else if (int(fragCoord.x) == P_COLLISION_COL) {
+            outFrag.x = 0.;
+            vec2 screenSize = texelFetch(iChannel0, ivec2(C_SCREEN_SIZE_COL, CAMERA_LAYER_ROW), 0).xy;
+            vec2 offset = texelFetch(iChannel0, ivec2(P_MOVEMENT_COL, PLAYER_LAYER_ROW), 0).xy;
+
+            /// Collision detection with asteroids
+            for (int i = 0; i < int(NUM_ASTEROIDS); ++i) {
+                vec2 asteroidCoords = (texelFetch(iChannel0, ivec2(i, int(ASTEROID_LAYER_ROW)), 0).xy * 2. - 1.) * screenSize;
+                if (distance(offset.xy, asteroidCoords) < PLAYER_HEIGHT / 2. + ASTEROID_RADIUS) {
+                    outFrag.x = 1.;
+                }
+            }
+        }
+         else {
             discard;
         }
     }

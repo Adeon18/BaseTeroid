@@ -5,6 +5,7 @@
 
 #define P_MOVEMENT_COL 0
 #define P_ROTATION_COL 1
+#define P_COLLISION_COL 2
 
 #define C_OPTIONS_COL 0
 #define C_SCREEN_SIZE_COL 1
