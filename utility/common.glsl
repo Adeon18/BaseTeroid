@@ -6,6 +6,9 @@
 #define P_MOVEMENT_COL 0
 #define P_ROTATION_COL 1
 
+#define C_OPTIONS_COL 0
+#define C_SCREEN_SIZE_COL 1
+
 /* Asteroid properties */
 #define NUM_ASTEROIDS 5.
 #define ASTEROID_SPEED 0.007

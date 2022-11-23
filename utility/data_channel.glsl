@@ -109,7 +109,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
      * Camera properties(constant)
     */
     else if (int(fragCoord.y) == CAMERA_LAYER_ROW) {
-        if (int(fragCoord.x) == 0) {
+        if (int(fragCoord.x) == C_OPTIONS_COL) {
             // camera position is constant for now
             outFrag.xy = vec2(0., 0.);
             // height is constant for now
@@ -117,6 +117,18 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
             // zoom is constant for now
             outFrag.w = 0.5;
             // vec2 mos = iMouse.xy/iResolution.xy;
+        } else if (int(fragCoord.x) == C_SCREEN_SIZE_COL) {
+            /// Screen size calculation -> this is scary
+            vec2 upRightUV = .5 * iResolution.xy / iResolution.y;
+            vec4 camera_props = texelFetch(iChannel0, ivec2(0., CAMERA_LAYER_ROW), 0);
+            vec3 ro = getRo(camera_props);
+            vec3 upRightRD = getRd(upRightUV, ro, camera_props);
+            float cosAngle = dot(-1. * ro, upRightRD) / length(ro);
+            float dist = length(ro) / cosAngle;
+            vec2 screenSize = (ro + upRightRD * dist).xy;
+            screenSize += 1.;
+
+            outFrag.xy = screenSize;
         } else {
             discard;
         }

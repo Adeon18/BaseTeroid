@@ -9,14 +9,7 @@
 float createAsteroids(vec3 point) {
     float distToSphere = 99999.;
 
-    vec2 upRightUV = .5 * iResolution.xy / iResolution.y;
-    vec4 camera_props = texelFetch(iChannel0, ivec2(0., CAMERA_LAYER_ROW), 0);
-    vec3 ro = getRo(camera_props);
-    vec3 upRightRD = getRd(upRightUV, ro, camera_props);
-    float cosAngle = dot(-1. * ro, upRightRD) / length(ro);
-    float dist = length(ro) / cosAngle;
-    vec2 screenSize = (ro + upRightRD * dist).xy;
-    screenSize += 1.;
+    vec2 screenSize = texelFetch(iChannel0, ivec2(C_SCREEN_SIZE_COL, CAMERA_LAYER_ROW), 0).xy;
 
     int num_asteroids = int(NUM_ASTEROIDS);
     for (int i = 0; i < num_asteroids; ++i) {
