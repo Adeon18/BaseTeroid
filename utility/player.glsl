@@ -21,18 +21,36 @@ float createPlayer(vec3 point, vec3 originPos, vec3 offset) {
     vec3 bodyPos = point - body.pos;
     bodyPos -= offset;
 
-    /// To be removed
-    float isCollided = texelFetch(iChannel0, ivec2(P_COLLISION_COL, PLAYER_LAYER_ROW), 0).x;
-    if (int(isCollided) == 1) {
-        playerHeight = body.height / 4.;
-    }
+    // Triangle from the ass
+    vec3 trianglePos = point - body.pos;
+    trianglePos -= offset;
+
+    mat2 rotate180 = Rotate(PI);
+    mat3 rotationMat2 = RotateOffset(rotationRad, 0., -PLAYER_HEIGHT);
+    mat3 translationMat = Translate3(0., -PLAYER_HEIGHT);
+    float prevZ = trianglePos.z;
+    trianglePos.z = 1.;
+    trianglePos.xy *= rotate180;
+    trianglePos *= translationMat;
+    trianglePos *= rotationMat2;
+    trianglePos.z = prevZ;
+
 
     bodyPos.xy *= rotationMat;
 
     /// Flatten the piramid
     bodyPos *= vec3(1., 1., 2.);
+    trianglePos *= vec3(1., 1., 2.);
 
-    return sdPyramid(bodyPos, playerHeight, body.height / 10., body.height / 1.5) / 2.;
+    vec2 controls = texelFetch(iChannel0, ivec2(P_CONTROLS_COL, PLAYER_LAYER_ROW), 0).xy;
+
+    if(controls.y != 1.){
+        return sdPyramid(bodyPos, playerHeight, body.height / 10., body.height / 1.5) / 2.;
+    }
+    else{
+        return min(sdPyramid(trianglePos, playerHeight/2.5, body.height / 25., body.height / 3.75) / 2., 
+                   sdPyramid(bodyPos, playerHeight, body.height / 10., body.height / 1.5) / 2.);
+    }
 }
 
 
@@ -40,7 +58,10 @@ float createPlayer(vec3 point, vec3 originPos, vec3 offset) {
  * Calculate offset for the ship including rotation
  * Calculate and apply acceleration and deceleration to the ship
 */
-vec2 calcOffset(vec2 offset, vec2 controls, inout vec2 inertia, float rotationRad) {
+vec2 calcOffset(vec2 offset, inout vec2 inertia, float rotationRad) {
+    // get controls
+    vec2 controls = texelFetch(iChannel0, ivec2(P_CONTROLS_COL, PLAYER_LAYER_ROW), 0).xy;
+
     /// Control values
     float turnSpeed = 0.1 / 100.;
     float velocity = 20. / 100.;
@@ -94,12 +115,12 @@ vec2 calcOffset(vec2 offset, vec2 controls, inout vec2 inertia, float rotationRa
  * .xy - offset
  * .zw - inertia
 */
-void handleMovement(inout vec4 outFrag, vec2 controls) {
+void handleMovement(inout vec4 outFrag) {
     outFrag = texelFetch(iChannel0, ivec2(P_MOVEMENT_COL, PLAYER_LAYER_ROW), 0);
     float rotationTexel = texelFetch(iChannel0, ivec2(P_ROTATION_COL, PLAYER_LAYER_ROW), 0).x;
 
     /// Handle offset
-    outFrag.xy = calcOffset(outFrag.xy, controls, outFrag.zw, rotationTexel);
+    outFrag.xy = calcOffset(outFrag.xy, outFrag.zw, rotationTexel);
 }
 
 /*
@@ -107,8 +128,8 @@ void handleMovement(inout vec4 outFrag, vec2 controls) {
  * outFrag ///< [in/out]
  * .x - rotation
 */
-void handleRotation(inout vec4 outFrag, vec2 controls) {
+void handleRotation(inout vec4 outFrag) {
+    vec2 controls = texelFetch(iChannel0, ivec2(P_CONTROLS_COL, PLAYER_LAYER_ROW), 0).xy;
     outFrag = texelFetch(iChannel0, ivec2(P_ROTATION_COL, PLAYER_LAYER_ROW), 0);
-
     outFrag.x += controls.x * .1;
 }
