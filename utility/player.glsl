@@ -67,7 +67,22 @@ vec2 calcOffset(vec2 offset, vec2 controls, inout vec2 inertia, float rotationRa
         inertia.y = mix(inertia.y, 0., acceleration);
     }
 
+    vec2 screenSize = texelFetch(iChannel0, ivec2(C_SCREEN_SIZE_COL, CAMERA_LAYER_ROW), 0).xy;
+    screenSize -= 1.0;
     offset += inertia * speed;
+
+    if(offset.x > screenSize.x){
+        offset.x -= screenSize.x * 2.;
+    }
+    else if(offset.x < -1. * screenSize.x){
+        offset.x += screenSize.x * 2.;
+    }
+    if(offset.y > screenSize.y){
+        offset.y -= screenSize.y * 2.;
+    }
+    else if(offset.y < -1. * screenSize.y){
+        offset.y += screenSize.y * 2.;
+    }
 
     return offset;
 }
