@@ -21,12 +21,6 @@ float createPlayer(vec3 point, vec3 originPos, vec3 offset) {
     vec3 bodyPos = point - body.pos;
     bodyPos -= offset;
 
-    /// To be removed
-    float isCollided = texelFetch(iChannel0, ivec2(P_COLLISION_COL, PLAYER_LAYER_ROW), 0).x;
-    if (int(isCollided) == 1) {
-        playerHeight = body.height / 4.;
-    }
-
     // Triangle from the ass
     vec3 trianglePos = point - body.pos;
     trianglePos -= offset;
