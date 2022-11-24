@@ -27,12 +27,40 @@ float createPlayer(vec3 point, vec3 originPos, vec3 offset) {
         playerHeight = body.height / 4.;
     }
 
+    // Triangle from the ass
+    vec3 trianglePos = point - body.pos;
+    trianglePos -= offset;
+
+    mat2 rotate180 = Rotate(PI);
+    mat3 rotationMat2 = RotateOffset(rotationRad, 0., -1.5);
+    mat3 translationMat = Translate3(0., -1.5);
+    float a = trianglePos.z;
+    trianglePos.z = 1.;
+    trianglePos.xy *= rotate180;
+    trianglePos *= translationMat;
+    trianglePos *= rotationMat2;
+
+
+    trianglePos.z = a;
+
+    // trianglePos *= rotationMat2;
+
+    // trianglePos -= vec3(triangleOffsetPos.xy, 0.) * 0.5;
+
     bodyPos.xy *= rotationMat;
 
     /// Flatten the piramid
     bodyPos *= vec3(1., 1., 2.);
+    trianglePos *= vec3(1., 1., 2.);
 
-    return sdPyramid(bodyPos, playerHeight, body.height / 10., body.height / 1.5) / 2.;
+    vec2 controls = texelFetch(iChannel0, ivec2(P_CONTROLS_COL, PLAYER_LAYER_ROW), 0).xy;
+
+    if(controls.y != 1.){
+        return sdPyramid(bodyPos, playerHeight, body.height / 10., body.height / 1.5) / 2.;
+    }
+    else{
+        return min(sdPyramid(trianglePos, playerHeight/3., body.height / 30., body.height / 4.5) / 2., sdPyramid(bodyPos, playerHeight, body.height / 10., body.height / 1.5) / 2.);
+    }
 }
 
 

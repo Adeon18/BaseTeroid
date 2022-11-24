@@ -112,6 +112,10 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
             vec2 controls = handleKeyboard();
             handleMovement(outFrag, controls);
         }
+        else if(int(fragCoord.x) == P_CONTROLS_COL){
+            vec2 controls = handleKeyboard();
+            outFrag.xy = controls;
+        }
         /// Handle player rotation
         else if (int(fragCoord.x) == P_ROTATION_COL) {
             vec2 controls = handleKeyboard();

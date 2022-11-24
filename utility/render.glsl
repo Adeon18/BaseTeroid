@@ -26,6 +26,24 @@ mat2 Rotate(float val) {
     return mat2(c, -s, s, c);
 }
 
+mat3 RotateOffset(float rotate, float x, float y){
+    mat3 rotateMat;
+    float s = sin(rotate);
+    float c = cos(rotate);
+    rotateMat[0] = vec3(c, -s, -x*c+y*s+x);
+    rotateMat[1] = vec3(s, c, -x*s-y*c+y);
+    rotateMat[2] = vec3(0., 0., 1.);
+    return rotateMat;
+}
+
+mat3 Translate3(float x, float y){
+    mat3 translateMat;
+    translateMat[0] = vec3(1., 0., x);
+    translateMat[1] = vec3(0., 1., y);
+    translateMat[2] = vec3(0., 0., 1.);
+    return translateMat;
+}
+
 /*
  * Get the min distance vec4 from vec4(rgb, dist)
 */
