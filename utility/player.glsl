@@ -58,7 +58,10 @@ float createPlayer(vec3 point, vec3 originPos, vec3 offset) {
  * Calculate offset for the ship including rotation
  * Calculate and apply acceleration and deceleration to the ship
 */
-vec2 calcOffset(vec2 offset, vec2 controls, inout vec2 inertia, float rotationRad) {
+vec2 calcOffset(vec2 offset, inout vec2 inertia, float rotationRad) {
+    // get controls
+    vec2 controls = texelFetch(iChannel0, ivec2(P_CONTROLS_COL, PLAYER_LAYER_ROW), 0).xy;
+
     /// Control values
     float turnSpeed = 0.1 / 100.;
     float velocity = 20. / 100.;
@@ -112,12 +115,12 @@ vec2 calcOffset(vec2 offset, vec2 controls, inout vec2 inertia, float rotationRa
  * .xy - offset
  * .zw - inertia
 */
-void handleMovement(inout vec4 outFrag, vec2 controls) {
+void handleMovement(inout vec4 outFrag) {
     outFrag = texelFetch(iChannel0, ivec2(P_MOVEMENT_COL, PLAYER_LAYER_ROW), 0);
     float rotationTexel = texelFetch(iChannel0, ivec2(P_ROTATION_COL, PLAYER_LAYER_ROW), 0).x;
 
     /// Handle offset
-    outFrag.xy = calcOffset(outFrag.xy, controls, outFrag.zw, rotationTexel);
+    outFrag.xy = calcOffset(outFrag.xy, outFrag.zw, rotationTexel);
 }
 
 /*
@@ -125,8 +128,8 @@ void handleMovement(inout vec4 outFrag, vec2 controls) {
  * outFrag ///< [in/out]
  * .x - rotation
 */
-void handleRotation(inout vec4 outFrag, vec2 controls) {
+void handleRotation(inout vec4 outFrag) {
+    vec2 controls = texelFetch(iChannel0, ivec2(P_CONTROLS_COL, PLAYER_LAYER_ROW), 0).xy;
     outFrag = texelFetch(iChannel0, ivec2(P_ROTATION_COL, PLAYER_LAYER_ROW), 0);
-
     outFrag.x += controls.x * .1;
 }
