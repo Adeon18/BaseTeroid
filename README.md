@@ -1,6 +1,6 @@
 # BaseTeroid
 **Baseteroid** is a game in a **_non-Euclidean space_** and written using **only a fragment
-shader with a [ShaderToy](https://www.shadertoy.com/) service. The game is heavily inspired by a popular arcade game **"Asteroid"**,
+shader** with a [ShaderToy](https://www.shadertoy.com/) service. The game is heavily inspired by a popular arcade game **"Asteroid"**,
 released in _November 1979_.
 
 **You can play out game _without downloading it_ it on the shadertoy service [here](https://www.shadertoy.com/view/csS3RR)**.
