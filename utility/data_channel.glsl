@@ -34,7 +34,7 @@ vec2 handleKeyboard() {
     return direction;
 }
 
-uint hash( uint x ) {
+uint hash(uint x) {
     x += x << 10u;
     x ^= x >>  6u;
     x += x <<  3u;
