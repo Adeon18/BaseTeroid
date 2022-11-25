@@ -55,6 +55,21 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
     vec4 outFrag = vec4(0., 0., 0., 0.);
 
+    vec2 die = texelFetch(iChannel0, ivec2(P_COLLISION_COL, PLAYER_LAYER_ROW), 0).xy;
+    if (int(die.x) == 1) {
+        if (int(fragCoord.y) == PLAYER_LAYER_ROW && int(fragCoord.x) == P_COLLISION_COL) {
+            if (iTime - die.y > 2.) {
+                fragColor = vec4(0.);
+                return;
+            }
+            fragColor = vec4(die, 0., 0.);
+            return;
+        } else {
+            fragColor = vec4(0.);
+            return;
+        }
+    }
+
     /*
     * Pseudorandom generator for asteroid coordinate
     */
@@ -94,14 +109,32 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     else if (int(fragCoord.y) == PLAYER_LAYER_ROW) {
         /// Handle Player movement
         if (int(fragCoord.x) == P_MOVEMENT_COL) {
+            handleMovement(outFrag);
+        }
+        else if(int(fragCoord.x) == P_CONTROLS_COL){
             vec2 controls = handleKeyboard();
-            handleMovement(outFrag, controls);
+            outFrag.xy = controls;
         }
         /// Handle player rotation
         else if (int(fragCoord.x) == P_ROTATION_COL) {
-            vec2 controls = handleKeyboard();
-            handleRotation(outFrag, controls);
-        } else {
+            handleRotation(outFrag);
+        }
+        else if (int(fragCoord.x) == P_COLLISION_COL) {
+            
+            vec2 screenSize = texelFetch(iChannel0, ivec2(C_SCREEN_SIZE_COL, CAMERA_LAYER_ROW), 0).xy;
+            vec2 offset = texelFetch(iChannel0, ivec2(P_MOVEMENT_COL, PLAYER_LAYER_ROW), 0).xy;
+
+            /// Collision detection with asteroids
+            for (int i = 0; i < int(NUM_ASTEROIDS); ++i) {
+                vec2 asteroidCoords = (texelFetch(iChannel0, ivec2(i, int(ASTEROID_LAYER_ROW)), 0).xy * 2. - 1.) * screenSize;
+                if (distance(offset.xy, asteroidCoords) < PLAYER_HEIGHT / 2. + ASTEROID_RADIUS &&
+                    (length(offset.xy) != 0. && length(asteroidCoords) != 0.)) {
+                    outFrag.x = 1.;
+                    outFrag.y = iTime;
+                }
+            }
+        }
+         else {
             discard;
         }
     }
@@ -109,7 +142,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
      * Camera properties(constant)
     */
     else if (int(fragCoord.y) == CAMERA_LAYER_ROW) {
-        if (int(fragCoord.x) == 0) {
+        if (int(fragCoord.x) == C_OPTIONS_COL) {
             // camera position is constant for now
             outFrag.xy = vec2(0., 0.);
             // height is constant for now
@@ -117,6 +150,18 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
             // zoom is constant for now
             outFrag.w = 0.5;
             // vec2 mos = iMouse.xy/iResolution.xy;
+        } else if (int(fragCoord.x) == C_SCREEN_SIZE_COL) {
+            /// Screen size calculation -> this is scary
+            vec2 upRightUV = .5 * iResolution.xy / iResolution.y;
+            vec4 camera_props = texelFetch(iChannel0, ivec2(0., CAMERA_LAYER_ROW), 0);
+            vec3 ro = getRo(camera_props);
+            vec3 upRightRD = getRd(upRightUV, ro, camera_props);
+            float cosAngle = dot(-1. * ro, upRightRD) / length(ro);
+            float dist = length(ro) / cosAngle;
+            vec2 screenSize = (ro + upRightRD * dist).xy;
+            screenSize += 1.;
+
+            outFrag.xy = screenSize;
         } else {
             discard;
         }

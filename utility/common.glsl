@@ -5,7 +5,16 @@
 
 #define P_MOVEMENT_COL 0
 #define P_ROTATION_COL 1
+#define P_CONTROLS_COL 2
+#define P_COLLISION_COL 3
+
+#define C_OPTIONS_COL 0
+#define C_SCREEN_SIZE_COL 1
 
 /* Asteroid properties */
 #define NUM_ASTEROIDS 5.
 #define ASTEROID_SPEED 0.007
+#define ASTEROID_RADIUS 1.
+
+/* Player Properties */
+#define PLAYER_HEIGHT 1.5

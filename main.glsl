@@ -87,6 +87,13 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 
     vec3 outCol = vec3(0.2666, 0.2784, 0.3529);
     vec3 lightColor = vec3(0.);
+
+    float die = texelFetch(iChannel0, ivec2(P_COLLISION_COL, PLAYER_LAYER_ROW), 0).x;
+    if (int(die) == 1) {
+        fragColor = vec4(0.7, 0., 0., 1.0);
+        return;
+    }
+
     float d = rayMarch(ro, rd, lightColor);
 
     if (d < MAX_DIST) {
