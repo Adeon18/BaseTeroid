@@ -5,6 +5,7 @@
 #include "utility/asteroids.glsl"
 
 #iChannel0 "file://utility/data_channel.glsl"
+#iChannel1 "file://img/game_over.png"
 
 /* Get minimal distance to each object, objects are generated here for now */
 vec4 getDist(vec3 point) {
@@ -90,7 +91,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
 
     float die = texelFetch(iChannel0, ivec2(P_COLLISION_COL, PLAYER_LAYER_ROW), 0).x;
     if (int(die) == 1) {
-        fragColor = vec4(0.7, 0., 0., 1.0);
+        fragColor = texture(iChannel1, fragCoord/iResolution.xy);
         return;
     }
 
