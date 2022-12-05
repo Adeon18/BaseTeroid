@@ -70,7 +70,6 @@ vec3 blackHoleNullParticleAccl(vec3 p) {
 /// color is the resulting color
 const float dt = 0.15;
 vec4 blackHoleRender(vec3 current_position, vec3 ray_velocity, inout vec3 color) {
-    float distToOrigin = 0.;
     // 4th coord is whether we found a point or diverged
     vec4 currentLocationAndMode = vec4(0.);
     for (int i = 0; i < MAX_STEPS; ++i) {
@@ -79,9 +78,9 @@ vec4 blackHoleRender(vec3 current_position, vec3 ray_velocity, inout vec3 color)
         ray_velocity += blackHoleNullParticleAccl(current_position) * dt;
 
         float vlen = length(ray_velocity);
-        if (vlen > colAndDist.w) {
-            ray_velocity *= colAndDist.w / vlen;
-        }
+        // if (vlen > colAndDist.w) {
+        //     ray_velocity *= colAndDist.w / vlen;
+        // }
 
         current_position += ray_velocity * dt;
 
@@ -95,6 +94,24 @@ vec4 blackHoleRender(vec3 current_position, vec3 ray_velocity, inout vec3 color)
             color = colAndDist.rgb;
             currentLocationAndMode = vec4(current_position, 1.);
             break;
+        }
+    }
+    if (currentLocationAndMode.w == 0.) {
+        ray_velocity = normalize(ray_velocity);
+        float distToOrigin = 0.;
+        for (int i = 0; i < MAX_STEPS; ++i) {
+            vec3 currentLocation = current_position + distToOrigin * ray_velocity;
+            /// rgb + w as length
+            vec4 colAndDist = getColAndDist(currentLocation);
+
+            distToOrigin += colAndDist.w;
+
+            if (distToOrigin > MAX_DIST) break;
+            if (abs(colAndDist.w) < SURF_DIST) {
+                color = colAndDist.rgb;
+                currentLocationAndMode = vec4(currentLocation, 1.);
+                break;
+            }
         }
     }
     return currentLocationAndMode;
