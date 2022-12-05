@@ -3,7 +3,7 @@
 
 #include "object.glsl"
 
-#define MAX_STEPS 100
+#define MAX_STEPS 64
 #define MAX_DIST 100.
 #define SURF_DIST .01
 
@@ -11,9 +11,6 @@
 
 const vec3 PLAYER_COLOR = vec3(0.7411, 0.5764, 0.9764);
 const vec3 ASTEROID_COLOR = vec3(0.7, 0.7, 0.75);
-/// This is just so that lighting raymarches well
-vec3 BASE_COLOR = vec3(1.0, 1.0, 1.0);
-
 
 /*
 * Rotate object in one plane:
