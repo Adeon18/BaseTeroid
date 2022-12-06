@@ -4471,7 +4471,7 @@ const float dt = 0.15;
 vec4 blackHoleRender(vec3 current_position, vec3 ray_velocity, inout vec3 color) {
     // 4th coord is whether we found a point or diverged
     vec4 currentLocationAndMode = vec4(0.);
-    for (int i = 0; i < MAX_STEPS * 10; ++i) {
+    for (int i = 0; i < MAX_STEPS * 3; ++i) {
         vec4 colAndDist = getColAndDist(current_position);
 
         ray_velocity += blackHoleNullParticleAccl(current_position) * dt;
@@ -4564,12 +4564,10 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     vec4 renderEndPointAndMode = blackHoleRender(ro, rd, objColor);
 
     if (renderEndPointAndMode.w == 1.) {
-        vec3 diffusedLighting = vec3(0.);
-        // diffusedLighting += 1. * getLighting(renderEndPointAndMode.xyz, vec3(10, 10, -5), objColor);
+        vec3 diffusedLighting = 1.354 * getLighting(renderEndPointAndMode.xyz, vec3(10, 10, -5), objColor);
         //diffusedLighting += 0.25 * getLighting(renderEndPointAndMode.xyz, vec3(-10, -10, -5), objColor);
-        // diffusedLighting += 0.5 * getLighting(renderEndPointAndMode.xyz, vec3(10, -10, -5), objColor);
+        // diffusedLighting += 0.25 * getLighting(renderEndPointAndMode.xyz, vec3(10, -10, -5), objColor);
         //diffusedLighting += 0.25 * getLighting(renderEndPointAndMode.xyz, vec3(-10, 10, -5), objColor);
-        diffusedLighting *= 1.354;
 
         outCol = diffusedLighting;
     }
