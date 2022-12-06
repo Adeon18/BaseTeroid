@@ -80,9 +80,9 @@ vec4 blackHoleRender(vec3 current_position, vec3 ray_velocity, inout vec3 color)
 
         ray_velocity += blackHoleNullParticleAccl(current_position) * dt;
 
-        float vlen = length(ray_velocity);
-        if (vlen > colAndDist.w) {
-            ray_velocity *= colAndDist.w / vlen;
+        float dist_to_travel = length(ray_velocity) * dt;
+        if (dist_to_travel > colAndDist.w) {
+            ray_velocity *= colAndDist.w / dist_to_travel;
         }
 
         current_position += ray_velocity * dt;
@@ -168,12 +168,10 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     vec4 renderEndPointAndMode = blackHoleRender(ro, rd, objColor);
 
     if (renderEndPointAndMode.w == 1.) {
-        vec3 diffusedLighting = vec3(0.);
-        diffusedLighting += 0.5 * getLighting(renderEndPointAndMode.xyz, vec3(10, 10, -5), objColor);
+        vec3 diffusedLighting = 1.354 * getLighting(renderEndPointAndMode.xyz, vec3(10, 10, -5), objColor);
         //diffusedLighting += 0.25 * getLighting(renderEndPointAndMode.xyz, vec3(-10, -10, -5), objColor);
-        diffusedLighting += 0.5 * getLighting(renderEndPointAndMode.xyz, vec3(10, -10, -5), objColor);
+        // diffusedLighting += 0.25 * getLighting(renderEndPointAndMode.xyz, vec3(10, -10, -5), objColor);
         //diffusedLighting += 0.25 * getLighting(renderEndPointAndMode.xyz, vec3(-10, 10, -5), objColor);
-        diffusedLighting *= 1.354;
 
         outCol = diffusedLighting;
     }
