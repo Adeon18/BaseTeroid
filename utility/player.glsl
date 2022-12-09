@@ -1,3 +1,6 @@
+#ifndef PLAYER_GLSL
+#define PLAYER_GLSL
+
 #include "render.glsl"
 #include "common.glsl"
 #include "camera.glsl"
@@ -133,3 +136,5 @@ void handleRotation(inout vec4 outFrag) {
     outFrag = texelFetch(iChannel0, ivec2(P_ROTATION_COL, PLAYER_LAYER_ROW), 0);
     outFrag.x += controls.x * .1;
 }
+
+#endif  // PLAYER_GLSL

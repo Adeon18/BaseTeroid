@@ -4471,7 +4471,7 @@ const float dt = 0.15;
 vec4 blackHoleRender(vec3 current_position, vec3 ray_velocity, inout vec3 color) {
     // 4th coord is whether we found a point or diverged
     vec4 currentLocationAndMode = vec4(0.);
-    for (int i = 0; i < MAX_STEPS * 3; ++i) {
+    for (int i = 0; i < MAX_STEPS * 5; ++i) {
         vec4 colAndDist = getColAndDist(current_position);
 
         ray_velocity += blackHoleNullParticleAccl(current_position) * dt;
