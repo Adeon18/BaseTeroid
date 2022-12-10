@@ -24,7 +24,7 @@ vec4 getColAndDist(vec3 point) {
     vec4 colDist = minSd(vec4(PLAYER_COLOR, distPiramid), vec4(ASTEROID_COLOR, distAsteroids));
 
     /// render event horizon
-    colDist = minSd(vec4(BH_pos, length(point - BH_pos) - BH_R), colDist);
+    colDist = minSd(vec4(vec3(0.), length(point - BH_pos) - BH_R), colDist);
 
     return colDist;
 }

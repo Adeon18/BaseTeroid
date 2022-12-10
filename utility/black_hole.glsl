@@ -3,8 +3,8 @@
 
 #include "utility/common.glsl"
 
-const vec3 BH_pos = vec3(-.5, 1.5, -16.);  // BH position
-const float BH_R = 0.5;                  // event horizon radius
+const vec3 BH_pos = vec3(-.5, 1.5, -14.);  // BH position
+const float BH_R = 1.;                     // event horizon radius
 /// how much acceleration a black hole exerts on a light particle
 vec3 blackHoleNullParticleAccl(vec3 p) {
     vec3 r = (p - BH_pos);

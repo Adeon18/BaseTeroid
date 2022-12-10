@@ -1870,8 +1870,8 @@ uniform float       iSampleRate;
 #define PLAYER_HEIGHT 1.5
 
 
-const vec3 BH_pos = vec3(-.5, 1.5, -16.);  // BH position
-const float BH_R = 0.5;                  // event horizon radius
+const vec3 BH_pos = vec3(-.5, 1.5, -14.);  // BH position
+const float BH_R = 1.;                     // event horizon radius
 /// how much acceleration a black hole exerts on a light particle
 vec3 blackHoleNullParticleAccl(vec3 p) {
     vec3 r = (p - BH_pos);
@@ -3443,8 +3443,8 @@ float createAsteroids(vec3 point) {
 #define PLAYER_HEIGHT 1.5
 
 
-const vec3 BH_pos = vec3(-.5, 1.5, -16.);  // BH position
-const float BH_R = 0.5;                  // event horizon radius
+const vec3 BH_pos = vec3(-.5, 1.5, -14.);  // BH position
+const float BH_R = 1.;                     // event horizon radius
 /// how much acceleration a black hole exerts on a light particle
 vec3 blackHoleNullParticleAccl(vec3 p) {
     vec3 r = (p - BH_pos);
@@ -3470,7 +3470,7 @@ vec4 getColAndDist(vec3 point) {
     vec4 colDist = minSd(vec4(PLAYER_COLOR, distPiramid), vec4(ASTEROID_COLOR, distAsteroids));
 
     /// render event horizon
-    colDist = minSd(vec4(BH_pos, length(point - BH_pos) - BH_R), colDist);
+    colDist = minSd(vec4(vec3(0.), length(point - BH_pos) - BH_R), colDist);
 
     return colDist;
 }
@@ -4951,8 +4951,8 @@ vec3 getRd(vec2 uv, vec3 ro, vec4 camera_props) {
 #define PLAYER_HEIGHT 1.5
 
 
-const vec3 BH_pos = vec3(-.5, 1.5, -16.);  // BH position
-const float BH_R = 0.5;                  // event horizon radius
+const vec3 BH_pos = vec3(-.5, 1.5, -14.);  // BH position
+const float BH_R = 1.;                     // event horizon radius
 /// how much acceleration a black hole exerts on a light particle
 vec3 blackHoleNullParticleAccl(vec3 p) {
     vec3 r = (p - BH_pos);
@@ -6608,8 +6608,8 @@ float createAsteroids(vec3 point) {
 #define PLAYER_HEIGHT 1.5
 
 
-const vec3 BH_pos = vec3(-.5, 1.5, -16.);  // BH position
-const float BH_R = 0.5;                  // event horizon radius
+const vec3 BH_pos = vec3(-.5, 1.5, -14.);  // BH position
+const float BH_R = 1.;                     // event horizon radius
 /// how much acceleration a black hole exerts on a light particle
 vec3 blackHoleNullParticleAccl(vec3 p) {
     vec3 r = (p - BH_pos);
@@ -6635,7 +6635,7 @@ vec4 getColAndDist(vec3 point) {
     vec4 colDist = minSd(vec4(PLAYER_COLOR, distPiramid), vec4(ASTEROID_COLOR, distAsteroids));
 
     /// render event horizon
-    colDist = minSd(vec4(BH_pos, length(point - BH_pos) - BH_R), colDist);
+    colDist = minSd(vec4(vec3(0.), length(point - BH_pos) - BH_R), colDist);
 
     return colDist;
 }
@@ -6957,9 +6957,9 @@ void main() {
 
     let renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, context: gl, preserveDrawingBuffer: true });
     let resolution = new THREE.Vector3();
-    let mouse = new THREE.Vector4(134, 482, -134, -482);
+    let mouse = new THREE.Vector4(230, 506, -230, -506);
     let mouseButton = new THREE.Vector4(0, 0, 0, 0);
-    let normalizedMouse = new THREE.Vector2(0.20229555236728838, 1);
+    let normalizedMouse = new THREE.Vector2(0.18938307030129126, 1);
     let frameCounter = 0;
 
     // Audio Init
@@ -7141,7 +7141,7 @@ void main() {
     keyBoardTexture.needsUpdate = true;
     let pressedKeys = [];
     let releasedKeys = [];
-    let toggledKeys = [83,16,65,87];
+    let toggledKeys = [16,68,65];
     for (let key of toggledKeys) {
         keyBoardData[key + 512] = 255; // Toggled
     }
