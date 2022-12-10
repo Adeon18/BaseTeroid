@@ -63,32 +63,32 @@ vec3 getLighting(vec3 point, vec3 lightPos, vec3 color) {
 /// current_position is the ray origin
 /// ray_velocity should be normalized
 /// color is the resulting color
-vec4 blackHoleRender(vec3 current_position, vec3 ray_velocity, inout vec3 color) {
+vec4 blackHoleRender(vec3 currentPosition, vec3 rayVelocity, inout vec3 color) {
     // 4th coord is whether we found a point or diverged
     vec4 currentLocationAndMode = vec4(0.);
-    for (int i = 0; i < MAX_STEPS * 5; ++i) {
-        vec4 colAndDist = getColAndDist(current_position);
+    for (int i = 0; i < MAX_STEPS; ++i) {
+        vec4 colAndDist = getColAndDist(currentPosition);
 
-        ray_velocity += blackHoleNullParticleAccl(current_position) * dt;
+        rayVelocity += blackHoleNullParticleAccl(currentPosition) * dt;
 
-        float dist_to_travel = length(ray_velocity) * dt;
+        float dist_to_travel = length(rayVelocity) * dt;
         if (dist_to_travel > colAndDist.w) {
-            ray_velocity *= colAndDist.w / dist_to_travel;
+            rayVelocity *= colAndDist.w / dist_to_travel;
         }
 
-        current_position += ray_velocity * dt;
+        currentPosition += rayVelocity * dt;
 
         // check that we got below event horizon
-        if (distance(BH_pos, current_position) < BH_R) {
+        if (distance(BH_pos, currentPosition) < BH_R) {
             color = vec3(0.);
-            currentLocationAndMode.xyzw = vec4(current_position, 1.);
+            currentLocationAndMode.xyzw = vec4(currentPosition, 1.);
             break;
         }
 
         // check that we landed on a point
         if (abs(colAndDist.w) < SURF_DIST) {
             color = colAndDist.rgb;
-            currentLocationAndMode = vec4(current_position, 1.);
+            currentLocationAndMode = vec4(currentPosition, 1.);
             break;
         }
     }
@@ -128,38 +128,7 @@ vec4 blackHoleRenderPrecomputed(vec2 fragCoord, inout vec3 color) {
             return vec4(vec3(0.), 1.);
         }
     }
-
-    // 4th coord is whether we found a point or diverged
-    vec3 currentPosition = currentPositionAndMode.xyz;
-    vec3 rayVelocity = rayVelocityAndMode.xyz;
-    vec4 currentLocationAndMode = vec4(0.);
-    for (int i = 0; i < MAX_STEPS; ++i) {
-        vec4 colAndDist = getColAndDist(currentPosition);
-
-        rayVelocity += blackHoleNullParticleAccl(currentPosition) * dt;
-
-        float dist_to_travel = length(rayVelocity) * dt;
-        if (dist_to_travel > colAndDist.w) {
-            rayVelocity *= colAndDist.w / dist_to_travel;
-        }
-
-        currentPosition += rayVelocity * dt;
-
-        // check that we got below event horizon
-        if (distance(BH_pos, currentPosition) < BH_R) {
-            color = vec3(0.);
-            currentLocationAndMode.xyzw = vec4(currentPosition, 1.);
-            break;
-        }
-
-        // check that we landed on a point
-        if (abs(colAndDist.w) < SURF_DIST) {
-            color = colAndDist.rgb;
-            currentLocationAndMode = vec4(currentPosition, 1.);
-            break;
-        }
-    }
-    return currentLocationAndMode;
+    return blackHoleRender(currentPositionAndMode.xyz, rayVelocityAndMode.xyz, color);
 }
 
 #endif  // RAY_GLSL
