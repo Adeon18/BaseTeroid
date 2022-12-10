@@ -249,7 +249,7 @@ struct Piramid {
 
 #endif // OBJECT_GLSL
 
-#define MAX_STEPS 64
+#define MAX_STEPS 16
 #define MAX_DIST 100.
 #define SURF_DIST .01
 
@@ -529,7 +529,7 @@ struct Piramid {
 
 #endif // OBJECT_GLSL
 
-#define MAX_STEPS 64
+#define MAX_STEPS 16
 #define MAX_DIST 100.
 #define SURF_DIST .01
 
@@ -730,7 +730,10 @@ uniform float       iSampleRate;
 
 #define SHADER_TOY
 
-    #ifndef RENDER_GLSL
+    #ifndef PLAYER_GLSL
+#define PLAYER_GLSL
+
+#ifndef RENDER_GLSL
 #define RENDER_GLSL
 
 #ifndef OBJECT_GLSL
@@ -785,7 +788,7 @@ struct Piramid {
 
 #endif // OBJECT_GLSL
 
-#define MAX_STEPS 64
+#define MAX_STEPS 16
 #define MAX_DIST 100.
 #define SURF_DIST .01
 
@@ -1007,7 +1010,7 @@ struct Piramid {
 
 #endif // OBJECT_GLSL
 
-#define MAX_STEPS 64
+#define MAX_STEPS 16
 #define MAX_DIST 100.
 #define SURF_DIST .01
 
@@ -1312,6 +1315,7 @@ void handleRotation(inout vec4 outFrag) {
     outFrag.x += controls.x * .1;
 }
 
+#endif  // PLAYER_GLSL
     void main() {}
 </script><script id='/Users/michael/uni/UCU/OS/BaseTeroid/utility/asteroids.glsl' type='x-shader/x-fragment'>#version 300 es
     precision highp float;
@@ -1399,7 +1403,7 @@ struct Piramid {
 
 #endif // OBJECT_GLSL
 
-#define MAX_STEPS 64
+#define MAX_STEPS 16
 #define MAX_DIST 100.
 #define SURF_DIST .01
 
@@ -1621,7 +1625,7 @@ struct Piramid {
 
 #endif // OBJECT_GLSL
 
-#define MAX_STEPS 64
+#define MAX_STEPS 16
 #define MAX_DIST 100.
 #define SURF_DIST .01
 
@@ -1813,9 +1817,9 @@ float createAsteroids(vec3 point) {
 
 #endif // ASTEROIDS_GLSL
     void main() {}
-</script>
-<script id='/Users/michael/uni/UCU/OS/BaseTeroid/utility/data_channel.glsl' type='x-shader/x-fragment'>
-uniform vec3        iResolution;
+</script><script id='/Users/michael/uni/UCU/OS/BaseTeroid/utility/black_hole.glsl' type='x-shader/x-fragment'>#version 300 es
+    precision highp float;
+    uniform vec3        iResolution;
 uniform float       iTime;
 uniform float       iTimeDelta;
 uniform int         iFrame;
@@ -1841,36 +1845,72 @@ uniform float       iSampleRate;
 
 #define SHADER_TOY
 
-const int Key_Backspace = 8, Key_Tab = 9, Key_Enter = 13, Key_Shift = 16, Key_Ctrl = 17, Key_Alt = 18, Key_Pause = 19, Key_Caps = 20, Key_Escape = 27, Key_PageUp = 33, Key_PageDown = 34, Key_End = 35,
-    Key_Home = 36, Key_LeftArrow = 37, Key_UpArrow = 38, Key_RightArrow = 39, Key_DownArrow = 40, Key_Insert = 45, Key_Delete = 46, Key_0 = 48, Key_1 = 49, Key_2 = 50, Key_3 = 51, Key_4 = 52,
-    Key_5 = 53, Key_6 = 54, Key_7 = 55, Key_8 = 56, Key_9 = 57, Key_A = 65, Key_B = 66, Key_C = 67, Key_D = 68, Key_E = 69, Key_F = 70, Key_G = 71, Key_H = 72,
-    Key_I = 73, Key_J = 74, Key_K = 75, Key_L = 76, Key_M = 77, Key_N = 78, Key_O = 79, Key_P = 80, Key_Q = 81, Key_R = 82, Key_S = 83, Key_T = 84, Key_U = 85,
-    Key_V = 86, Key_W = 87, Key_X = 88, Key_Y = 89, Key_Z = 90, Key_LeftWindow = 91, Key_RightWindows = 92, Key_Select = 93, Key_Numpad0 = 96, Key_Numpad1 = 97, Key_Numpad2 = 98, Key_Numpad3 = 99,
-    Key_Numpad4 = 100, Key_Numpad5 = 101, Key_Numpad6 = 102, Key_Numpad7 = 103, Key_Numpad8 = 104, Key_Numpad9 = 105, Key_NumpadMultiply = 106, Key_NumpadAdd = 107, Key_NumpadSubtract = 109, Key_NumpadPeriod = 110, Key_NumpadDivide = 111, Key_F1 = 112, Key_F2 = 113, Key_F3 = 114, Key_F4 = 115, Key_F5 = 116, Key_F6 = 117, Key_F7 = 118, Key_F8 = 119, Key_F9 = 120, Key_F10 = 121, Key_F11 = 122, Key_F12 = 123, Key_NumLock = 144, Key_ScrollLock = 145,
-    Key_SemiColon = 186, Key_Equal = 187, Key_Comma = 188, Key_Dash = 189, Key_Period = 190, Key_ForwardSlash = 191, Key_GraveAccent = 192, Key_OpenBracket = 219, Key_BackSlash = 220, Key_CloseBraket = 221, Key_SingleQuote = 222;
+    #ifndef BLACK_HOLE_GLSL
+#define BLACK_HOLE_GLSL
 
-bool isKeyDown(int key) {
-    vec2 uv = vec2(float(key) / 255.0, 0.125);
-    return texture2D(iKeyboard, uv).r > 0.0;
+/* Layers of data in pixels - basically Y coordinates */
+#define ASTEROID_LAYER_ROW 0
+#define PLAYER_LAYER_ROW 1
+#define CAMERA_LAYER_ROW 2
+
+#define P_MOVEMENT_COL 0
+#define P_ROTATION_COL 1
+#define P_CONTROLS_COL 2
+#define P_COLLISION_COL 3
+
+#define C_OPTIONS_COL 0
+#define C_SCREEN_SIZE_COL 1
+
+/* Asteroid properties */
+#define NUM_ASTEROIDS 5.
+#define ASTEROID_SPEED 0.007
+#define ASTEROID_RADIUS 1.
+
+/* Player Properties */
+#define PLAYER_HEIGHT 1.5
+
+
+const vec3 BH_pos = vec3(-.5, 1.5, -16.);  // BH position
+const float BH_R = 0.5;                  // event horizon radius
+/// how much acceleration a black hole exerts on a light particle
+vec3 blackHoleNullParticleAccl(vec3 p) {
+    vec3 r = (p - BH_pos);
+    return -1.5 * BH_R * r / pow(length(r), 5.0);
 }
-bool isKeyPressed(int key) {
-    vec2 uv = vec2(float(key) / 255.0, 0.375);
-    return texture2D(iKeyboard, uv).r > 0.0;
-}
-bool isKeyToggled(int key) {
-    vec2 uv = vec2(float(key) / 255.0, 0.625);
-    return texture2D(iKeyboard, uv).r > 0.0;
-}
-bool isKeyReleased(int key) {
-    vec2 uv = vec2(float(key) / 255.0, 0.875);
-    return texture2D(iKeyboard, uv).r > 0.0;
-}
-#ifndef DATA_CHANNEL_GLSL
-#define DATA_CHANNEL_GLSL
+const float dt = 0.15;
 
+#endif  // BLACK_HOLE_GLSL
+    void main() {}
+</script><script id='/Users/michael/uni/UCU/OS/BaseTeroid/utility/ray.glsl' type='x-shader/x-fragment'>#version 300 es
+    precision highp float;
+    uniform vec3        iResolution;
+uniform float       iTime;
+uniform float       iTimeDelta;
+uniform int         iFrame;
+uniform vec4        iDate;
+uniform vec3        iChannelResolution[10];
+uniform vec4        iMouse;
+uniform vec4        iMouseButton;
+uniform sampler2D   iChannel0;
+uniform sampler2D   iChannel1;
+uniform sampler2D   iChannel2;
+uniform sampler2D   iChannel3;
+uniform sampler2D   iChannel4;
+uniform sampler2D   iChannel5;
+uniform sampler2D   iChannel6;
+uniform sampler2D   iChannel7;
+uniform sampler2D   iChannel8;
+uniform sampler2D   iChannel9;
+uniform sampler2D   iKeyboard;
+uniform float       iSampleRate;
 
+#define iGlobalTime iTime
+#define iGlobalFrame iFrame
 
+#define SHADER_TOY
 
+    #ifndef RAY_GLSL
+#define RAY_GLSL
 
 #ifndef RENDER_GLSL
 #define RENDER_GLSL
@@ -1927,7 +1967,7 @@ struct Piramid {
 
 #endif // OBJECT_GLSL
 
-#define MAX_STEPS 64
+#define MAX_STEPS 16
 #define MAX_DIST 100.
 #define SURF_DIST .01
 
@@ -2070,26 +2110,8 @@ float sdPyramid(vec3 position, float halfWidth, float halfDepth, float halfHeigh
 }
 
 #endif // RENDER_GLSL
-/* Layers of data in pixels - basically Y coordinates */
-#define ASTEROID_LAYER_ROW 0
-#define PLAYER_LAYER_ROW 1
-#define CAMERA_LAYER_ROW 2
-
-#define P_MOVEMENT_COL 0
-#define P_ROTATION_COL 1
-#define P_CONTROLS_COL 2
-#define P_COLLISION_COL 3
-
-#define C_OPTIONS_COL 0
-#define C_SCREEN_SIZE_COL 1
-
-/* Asteroid properties */
-#define NUM_ASTEROIDS 5.
-#define ASTEROID_SPEED 0.007
-#define ASTEROID_RADIUS 1.
-
-/* Player Properties */
-#define PLAYER_HEIGHT 1.5
+#ifndef PLAYER_GLSL
+#define PLAYER_GLSL
 
 #ifndef RENDER_GLSL
 #define RENDER_GLSL
@@ -2146,7 +2168,7 @@ struct Piramid {
 
 #endif // OBJECT_GLSL
 
-#define MAX_STEPS 64
+#define MAX_STEPS 16
 #define MAX_DIST 100.
 #define SURF_DIST .01
 
@@ -2368,7 +2390,7 @@ struct Piramid {
 
 #endif // OBJECT_GLSL
 
-#define MAX_STEPS 64
+#define MAX_STEPS 16
 #define MAX_DIST 100.
 #define SURF_DIST .01
 
@@ -2673,647 +2695,7 @@ void handleRotation(inout vec4 outFrag) {
     outFrag.x += controls.x * .1;
 }
 
-
-/*
- * Capture keyboard input
-*/
-vec2 handleKeyboard() {
-    vec2 direction = vec2(0., 0.);
-
-    if (isKeyDown(Key_W)) {
-        direction += vec2(0., 1.);
-    }
-
-    if (isKeyDown(Key_S)) {
-        direction += vec2(0., -1.);
-    }
-
-    if (isKeyDown(Key_A)) {
-        direction += vec2(-1., 0.);
-    }
-
-    if (isKeyDown(Key_D)) {
-        direction += vec2(1., 0.);
-    }
-
-    return direction;
-}
-
-uint hash(uint x) {
-    x += x << 10u;
-    x ^= x >>  6u;
-    x += x <<  3u;
-    x ^= x >> 11u;
-    x += x << 15u;
-    return x;
-}
-// taken from https://stackoverflow.com/a/17479300/16471208
-float random(vec3 v) {
-    uvec3 uiv = floatBitsToUint(v);
-    uint m = hash(uiv.x ^ hash(uiv.y) ^ hash(uiv.z));
-    m &= 0x007FFFFFu; // keep mantissa
-    m |= 0x3F800000u; // add 1.0
-    return uintBitsToFloat(m) - 1.0;
-}
-
-void mainImage( out vec4 fragColor, in vec2 fragCoord )
-{
-    vec4 outFrag = vec4(0., 0., 0., 0.);
-
-    vec2 die = texelFetch(iChannel0, ivec2(P_COLLISION_COL, PLAYER_LAYER_ROW), 0).xy;
-    if (int(die.x) == 1) {
-        if (int(fragCoord.y) == PLAYER_LAYER_ROW && int(fragCoord.x) == P_COLLISION_COL) {
-            if (iTime - die.y > 2.) {
-                fragColor = vec4(0.);
-                return;
-            }
-            fragColor = vec4(die, 0., 0.);
-            return;
-        } else {
-            fragColor = vec4(0.);
-            return;
-        }
-    }
-
-    /*
-    * Pseudorandom generator for asteroid coordinate
-    */
-    if (int(fragCoord.y) == ASTEROID_LAYER_ROW && fragCoord.x < NUM_ASTEROIDS) {
-        outFrag = texelFetch(iChannel0, ivec2(fragCoord.x, ASTEROID_LAYER_ROW), 0);
-        if (outFrag.x > 1. || outFrag.y > 1. || outFrag.x <= 0. || outFrag.y <= 0.) {
-            float d = random(vec3(fragCoord, iTime));
-            outFrag.zw = vec2(
-                random(vec3(fragCoord, iTime+1.)),
-                random(vec3(fragCoord, iTime+2.))
-            );
-            outFrag.zw = outFrag.zw * 2. - 1.;
-            if (d < 0.25) {
-                outFrag.x = 0.001;
-                outFrag.y = random(vec3(fragCoord, iTime+3.));
-                if (outFrag.z < 0.) { outFrag.z = -outFrag.z; }
-            } else if (d < 0.50) {
-                outFrag.x = random(vec3(fragCoord, iTime+3.));
-                outFrag.y = 0.001;
-                if (outFrag.w < 0.) { outFrag.w = -outFrag.w; }
-            } else if (d < 0.75) {
-                outFrag.x = 0.999;
-                outFrag.y = random(vec3(fragCoord, iTime+3.));
-                if (outFrag.z > 0.) { outFrag.z = -outFrag.z; }
-            } else {
-                outFrag.x = random(vec3(fragCoord, iTime+3.));
-                outFrag.y = 0.999;
-                if (outFrag.w > 0.) { outFrag.w = -outFrag.w; }
-            }
-        } else {
-            outFrag.xy += outFrag.zw * ASTEROID_SPEED;
-        }
-    }
-    /*
-     * Player shenanigans
-    */
-    else if (int(fragCoord.y) == PLAYER_LAYER_ROW) {
-        /// Handle Player movement
-        if (int(fragCoord.x) == P_MOVEMENT_COL) {
-            handleMovement(outFrag);
-        }
-        else if(int(fragCoord.x) == P_CONTROLS_COL){
-            vec2 controls = handleKeyboard();
-            outFrag.xy = controls;
-        }
-        /// Handle player rotation
-        else if (int(fragCoord.x) == P_ROTATION_COL) {
-            handleRotation(outFrag);
-        }
-        else if (int(fragCoord.x) == P_COLLISION_COL) {
-            
-            vec2 screenSize = texelFetch(iChannel0, ivec2(C_SCREEN_SIZE_COL, CAMERA_LAYER_ROW), 0).xy;
-            vec2 offset = texelFetch(iChannel0, ivec2(P_MOVEMENT_COL, PLAYER_LAYER_ROW), 0).xy;
-
-            /// Collision detection with asteroids
-            for (int i = 0; i < int(NUM_ASTEROIDS); ++i) {
-                vec2 asteroidCoords = (texelFetch(iChannel0, ivec2(i, int(ASTEROID_LAYER_ROW)), 0).xy * 2. - 1.) * screenSize;
-                if (distance(offset.xy, asteroidCoords) < PLAYER_HEIGHT / 2. + ASTEROID_RADIUS &&
-                    (length(offset.xy) != 0. && length(asteroidCoords) != 0.)) {
-                    outFrag.x = 1.;
-                    outFrag.y = iTime;
-                }
-            }
-        }
-         else {
-            discard;
-        }
-    }
-    /*
-     * Camera properties(constant)
-    */
-    else if (int(fragCoord.y) == CAMERA_LAYER_ROW) {
-        if (int(fragCoord.x) == C_OPTIONS_COL) {
-            // camera position is constant for now
-            outFrag.xy = vec2(0., 0.);
-            // height is constant for now
-            outFrag.z = 20.;
-            // zoom is constant for now
-            outFrag.w = 0.5;
-            // vec2 mos = iMouse.xy/iResolution.xy;
-        } else if (int(fragCoord.x) == C_SCREEN_SIZE_COL) {
-            /// Screen size calculation -> this is scary
-            vec2 upRightUV = .5 * iResolution.xy / iResolution.y;
-            vec4 camera_props = texelFetch(iChannel0, ivec2(0., CAMERA_LAYER_ROW), 0);
-            vec3 ro = getRo(camera_props);
-            vec3 upRightRD = getRd(upRightUV, ro, camera_props);
-            float cosAngle = dot(-1. * ro, upRightRD) / length(ro);
-            float dist = length(ro) / cosAngle;
-            vec2 screenSize = (ro + upRightRD * dist).xy;
-            screenSize += 1.;
-
-            outFrag.xy = screenSize;
-        } else {
-            discard;
-        }
-    }
-    /*
-     * Discard all other pixels
-    */
-    else {
-        discard;
-    }
-
-    fragColor = outFrag;
-}
-
-#endif // DATA_CHANNEL_GLSL
-void main() {
-    vec2 fragCoord = gl_FragCoord.xy;
-    mainImage(gl_FragColor, fragCoord);
-}
-</script><script id='/Users/michael/uni/UCU/OS/BaseTeroid/main.glsl' type='x-shader/x-fragment'>
-uniform vec3        iResolution;
-uniform float       iTime;
-uniform float       iTimeDelta;
-uniform int         iFrame;
-uniform vec4        iDate;
-uniform vec3        iChannelResolution[10];
-uniform vec4        iMouse;
-uniform vec4        iMouseButton;
-uniform sampler2D   iChannel0;
-uniform sampler2D   iChannel1;
-uniform sampler2D   iChannel2;
-uniform sampler2D   iChannel3;
-uniform sampler2D   iChannel4;
-uniform sampler2D   iChannel5;
-uniform sampler2D   iChannel6;
-uniform sampler2D   iChannel7;
-uniform sampler2D   iChannel8;
-uniform sampler2D   iChannel9;
-uniform sampler2D   iKeyboard;
-uniform float       iSampleRate;
-
-#define iGlobalTime iTime
-#define iGlobalFrame iFrame
-
-#define SHADER_TOY
-
-const int Key_Backspace = 8, Key_Tab = 9, Key_Enter = 13, Key_Shift = 16, Key_Ctrl = 17, Key_Alt = 18, Key_Pause = 19, Key_Caps = 20, Key_Escape = 27, Key_PageUp = 33, Key_PageDown = 34, Key_End = 35,
-    Key_Home = 36, Key_LeftArrow = 37, Key_UpArrow = 38, Key_RightArrow = 39, Key_DownArrow = 40, Key_Insert = 45, Key_Delete = 46, Key_0 = 48, Key_1 = 49, Key_2 = 50, Key_3 = 51, Key_4 = 52,
-    Key_5 = 53, Key_6 = 54, Key_7 = 55, Key_8 = 56, Key_9 = 57, Key_A = 65, Key_B = 66, Key_C = 67, Key_D = 68, Key_E = 69, Key_F = 70, Key_G = 71, Key_H = 72,
-    Key_I = 73, Key_J = 74, Key_K = 75, Key_L = 76, Key_M = 77, Key_N = 78, Key_O = 79, Key_P = 80, Key_Q = 81, Key_R = 82, Key_S = 83, Key_T = 84, Key_U = 85,
-    Key_V = 86, Key_W = 87, Key_X = 88, Key_Y = 89, Key_Z = 90, Key_LeftWindow = 91, Key_RightWindows = 92, Key_Select = 93, Key_Numpad0 = 96, Key_Numpad1 = 97, Key_Numpad2 = 98, Key_Numpad3 = 99,
-    Key_Numpad4 = 100, Key_Numpad5 = 101, Key_Numpad6 = 102, Key_Numpad7 = 103, Key_Numpad8 = 104, Key_Numpad9 = 105, Key_NumpadMultiply = 106, Key_NumpadAdd = 107, Key_NumpadSubtract = 109, Key_NumpadPeriod = 110, Key_NumpadDivide = 111, Key_F1 = 112, Key_F2 = 113, Key_F3 = 114, Key_F4 = 115, Key_F5 = 116, Key_F6 = 117, Key_F7 = 118, Key_F8 = 119, Key_F9 = 120, Key_F10 = 121, Key_F11 = 122, Key_F12 = 123, Key_NumLock = 144, Key_ScrollLock = 145,
-    Key_SemiColon = 186, Key_Equal = 187, Key_Comma = 188, Key_Dash = 189, Key_Period = 190, Key_ForwardSlash = 191, Key_GraveAccent = 192, Key_OpenBracket = 219, Key_BackSlash = 220, Key_CloseBraket = 221, Key_SingleQuote = 222;
-
-bool isKeyDown(int key) {
-    vec2 uv = vec2(float(key) / 255.0, 0.125);
-    return texture2D(iKeyboard, uv).r > 0.0;
-}
-bool isKeyPressed(int key) {
-    vec2 uv = vec2(float(key) / 255.0, 0.375);
-    return texture2D(iKeyboard, uv).r > 0.0;
-}
-bool isKeyToggled(int key) {
-    vec2 uv = vec2(float(key) / 255.0, 0.625);
-    return texture2D(iKeyboard, uv).r > 0.0;
-}
-bool isKeyReleased(int key) {
-    vec2 uv = vec2(float(key) / 255.0, 0.875);
-    return texture2D(iKeyboard, uv).r > 0.0;
-}
-#ifndef RENDER_GLSL
-#define RENDER_GLSL
-
-#ifndef OBJECT_GLSL
-#define OBJECT_GLSL
-
-/* A Capsule has position of the top and bottom spheres and their radius */
-struct Capsule {
-    vec3 top;
-    vec3 bot;
-    float rad;
-};
-
-/* A Cylinder is the same as Capsule but the algorithms are different */
-struct Cylinder {
-    vec3 top;
-    vec3 bot;
-    float rad;
-};
-
-/* A Torus has a main radius and the thickness of the tube and position */
-struct Torus {
-    float radBig;
-    float radSmol;
-    vec3 pos;
-};
-
-/*
-* A box has width height and depth(all calculated from center to sides)
-* and position
-*/
-struct Box {
-    // width, height, depth can be put in a vec3
-    float wid;
-    float hig;
-    float dep;
-    vec3 pos;
-};
-
-/*
- * A fucking sphere, idk
-*/
-struct Sphere {
-    vec3 pos;
-	float rad;
-};
-
-
-struct Piramid {
-    vec3 pos;
-    float height;
-};
-
-#endif // OBJECT_GLSL
-
-#define MAX_STEPS 64
-#define MAX_DIST 100.
-#define SURF_DIST .01
-
-#define PI 3.14159
-
-const vec3 PLAYER_COLOR = vec3(0.7411, 0.5764, 0.9764);
-const vec3 ASTEROID_COLOR = vec3(0.7, 0.7, 0.75);
-
-/*
-* Rotate object in one plane:
-* use obj.xy *= Rotate(val);
-* to rotate the object by some value on the xy plane
-*/
-mat2 Rotate(float val) {
-    float s = sin(val);
-    float c = cos(val );
-    return mat2(c, -s, s, c);
-}
-
-mat3 RotateOffset(float rotate, float x, float y){
-    mat3 rotateMat;
-    float s = sin(rotate);
-    float c = cos(rotate);
-    rotateMat[0] = vec3(c, -s, -x*c+y*s+x);
-    rotateMat[1] = vec3(s, c, -x*s-y*c+y);
-    rotateMat[2] = vec3(0., 0., 1.);
-    return rotateMat;
-}
-
-mat3 Translate3(float x, float y){
-    mat3 translateMat;
-    translateMat[0] = vec3(1., 0., x);
-    translateMat[1] = vec3(0., 1., y);
-    translateMat[2] = vec3(0., 0., 1.);
-    return translateMat;
-}
-
-/*
- * Get the min distance vec4 from vec4(rgb, dist)
-*/
-vec4 minSd(vec4 first, vec4 second) {
-    return first.w < second.w? first : second;
-}
-//-----------------------------------------------------------------------------
-/*
- * Distance functions -> give us the distanсe to said object type
- * NEGATIVE return on the inside and POSITIVE on the outside
- * * vec3 point: origin point - the position you want your object to be at
- * * Object: obj to find distance to
- */
-
-/* Get distance to the Box and put it in proper position */
-float sdBox(vec3 point, Box box) {
-    /// By default the scale is inversed
-
-    point = abs(point) - vec3(box.wid, box.hig, box.dep);
-    /// Account for inner position for there not to be distorted black dots
-    return (length(max(point, 0.)) + min(max(point.x, max(point.y, point.z)), 0.));
-}
-
-/* Get distance to the Torus and put it in proper position */
-float getDistTorus(vec3 point, Torus tor) {
-    /// Projected distance to the outside layer of a torus
-    float projDistToOut = length(point.xz) - tor.radBig;
-    return length(vec2(projDistToOut, point.y)) - tor.radSmol;
-}
-
-/* Get distance to the Capsule */
-float sdCapsule(vec3 point, Capsule cap) {
-    vec3 edge = cap.bot - cap.top;
-    vec3 distToCapsule = point - cap.top;
-
-    float distToHit = dot(edge, distToCapsule) / dot(edge, edge);
-    distToHit = clamp(distToHit, 0., 1.);
-
-    vec3 pointHit = cap.top + distToHit*edge;
-    return length(point - pointHit) - cap.rad;
-}
-
-/* Get distance to the Cylinder */
-float sdCylinder(vec3 point, Cylinder cap) {
-    vec3 edge = cap.bot - cap.top;
-    vec3 distToSide = point - cap.top;
-
-    float distToHit = dot(edge, distToSide) / dot(edge, edge);
-    // distToHit = clamp(distToHit, 0., 1.);
-
-    vec3 pointHit = cap.top + distToHit*edge;
-    // X-axis dist to cylinder
-    float xDist = length(point - pointHit) - cap.rad;
-    float yDist = (abs(distToHit - .5) - .5) * length(edge);
-
-    float exteriorDist = length(max(vec2(xDist, yDist), 0.));
-    float interiorDist = min(max(xDist, yDist), 0.);
-    return exteriorDist + interiorDist;
-}
-
-/* Get distance to the Sphere - The fastest! */
-float sdSphere(vec3 point, Sphere sphere) {
-    return length(point) - sphere.rad;
-}
-
-/* Get distance to the Plane */
-float sdPlane(vec3 point, vec3 plane) {
-    return dot(point, normalize(plane));
-}
-
-/*
- * Get distance to the Piramid - for now used only in player creation
- * Code "borrowed" from https://www.shadertoy.com/view/Ntd3DX
- */
-float sdPyramid(vec3 position, float halfWidth, float halfDepth, float halfHeight) {
-    position.xz = abs(position.xz);
-
-    // bottom
-    float s1 = abs(position.y) - halfHeight;
-    vec3 base = vec3(max(position.x - halfWidth, 0.0), abs(position.y + halfHeight), max(position.z - halfDepth, 0.0));
-    float d1 = dot(base, base);
-
-    vec3 q = position - vec3(halfWidth, -halfHeight, halfDepth);
-    vec3 end = vec3(-halfWidth, 2.0 * halfHeight, -halfDepth);
-    vec3 segment = q - end * clamp(dot(q, end) / dot(end, end), 0.0, 1.0);
-    float d = dot(segment, segment);
-
-    // side
-    vec3 normal1 = vec3(end.y, -end.x, 0.0);
-    float s2 = dot(q.xy, normal1.xy);
-    float d2 = d;
-    if (dot(q.xy, -end.xy) < 0.0 && dot(q, cross(normal1, end)) < 0.0) {
-        d2 = s2 * s2 / dot(normal1.xy, normal1.xy);
-    }
-    // front/back
-    vec3 normal2 = vec3(0.0, -end.z, end.y);
-    float s3 = dot(q.yz, normal2.yz);
-    float d3 = d;
-    if (dot(q.yz, -end.yz) < 0.0 && dot(q, cross(normal2, -end)) < 0.0) {
-        d3 = s3 * s3 / dot(normal2.yz, normal2.yz);
-    }
-    return sqrt(min(min(d1, d2), d3)) * sign(max(max(s1, s2), s3));
-}
-
-#endif // RENDER_GLSL
-#ifndef RENDER_GLSL
-#define RENDER_GLSL
-
-#ifndef OBJECT_GLSL
-#define OBJECT_GLSL
-
-/* A Capsule has position of the top and bottom spheres and their radius */
-struct Capsule {
-    vec3 top;
-    vec3 bot;
-    float rad;
-};
-
-/* A Cylinder is the same as Capsule but the algorithms are different */
-struct Cylinder {
-    vec3 top;
-    vec3 bot;
-    float rad;
-};
-
-/* A Torus has a main radius and the thickness of the tube and position */
-struct Torus {
-    float radBig;
-    float radSmol;
-    vec3 pos;
-};
-
-/*
-* A box has width height and depth(all calculated from center to sides)
-* and position
-*/
-struct Box {
-    // width, height, depth can be put in a vec3
-    float wid;
-    float hig;
-    float dep;
-    vec3 pos;
-};
-
-/*
- * A fucking sphere, idk
-*/
-struct Sphere {
-    vec3 pos;
-	float rad;
-};
-
-
-struct Piramid {
-    vec3 pos;
-    float height;
-};
-
-#endif // OBJECT_GLSL
-
-#define MAX_STEPS 64
-#define MAX_DIST 100.
-#define SURF_DIST .01
-
-#define PI 3.14159
-
-const vec3 PLAYER_COLOR = vec3(0.7411, 0.5764, 0.9764);
-const vec3 ASTEROID_COLOR = vec3(0.7, 0.7, 0.75);
-
-/*
-* Rotate object in one plane:
-* use obj.xy *= Rotate(val);
-* to rotate the object by some value on the xy plane
-*/
-mat2 Rotate(float val) {
-    float s = sin(val);
-    float c = cos(val );
-    return mat2(c, -s, s, c);
-}
-
-mat3 RotateOffset(float rotate, float x, float y){
-    mat3 rotateMat;
-    float s = sin(rotate);
-    float c = cos(rotate);
-    rotateMat[0] = vec3(c, -s, -x*c+y*s+x);
-    rotateMat[1] = vec3(s, c, -x*s-y*c+y);
-    rotateMat[2] = vec3(0., 0., 1.);
-    return rotateMat;
-}
-
-mat3 Translate3(float x, float y){
-    mat3 translateMat;
-    translateMat[0] = vec3(1., 0., x);
-    translateMat[1] = vec3(0., 1., y);
-    translateMat[2] = vec3(0., 0., 1.);
-    return translateMat;
-}
-
-/*
- * Get the min distance vec4 from vec4(rgb, dist)
-*/
-vec4 minSd(vec4 first, vec4 second) {
-    return first.w < second.w? first : second;
-}
-//-----------------------------------------------------------------------------
-/*
- * Distance functions -> give us the distanсe to said object type
- * NEGATIVE return on the inside and POSITIVE on the outside
- * * vec3 point: origin point - the position you want your object to be at
- * * Object: obj to find distance to
- */
-
-/* Get distance to the Box and put it in proper position */
-float sdBox(vec3 point, Box box) {
-    /// By default the scale is inversed
-
-    point = abs(point) - vec3(box.wid, box.hig, box.dep);
-    /// Account for inner position for there not to be distorted black dots
-    return (length(max(point, 0.)) + min(max(point.x, max(point.y, point.z)), 0.));
-}
-
-/* Get distance to the Torus and put it in proper position */
-float getDistTorus(vec3 point, Torus tor) {
-    /// Projected distance to the outside layer of a torus
-    float projDistToOut = length(point.xz) - tor.radBig;
-    return length(vec2(projDistToOut, point.y)) - tor.radSmol;
-}
-
-/* Get distance to the Capsule */
-float sdCapsule(vec3 point, Capsule cap) {
-    vec3 edge = cap.bot - cap.top;
-    vec3 distToCapsule = point - cap.top;
-
-    float distToHit = dot(edge, distToCapsule) / dot(edge, edge);
-    distToHit = clamp(distToHit, 0., 1.);
-
-    vec3 pointHit = cap.top + distToHit*edge;
-    return length(point - pointHit) - cap.rad;
-}
-
-/* Get distance to the Cylinder */
-float sdCylinder(vec3 point, Cylinder cap) {
-    vec3 edge = cap.bot - cap.top;
-    vec3 distToSide = point - cap.top;
-
-    float distToHit = dot(edge, distToSide) / dot(edge, edge);
-    // distToHit = clamp(distToHit, 0., 1.);
-
-    vec3 pointHit = cap.top + distToHit*edge;
-    // X-axis dist to cylinder
-    float xDist = length(point - pointHit) - cap.rad;
-    float yDist = (abs(distToHit - .5) - .5) * length(edge);
-
-    float exteriorDist = length(max(vec2(xDist, yDist), 0.));
-    float interiorDist = min(max(xDist, yDist), 0.);
-    return exteriorDist + interiorDist;
-}
-
-/* Get distance to the Sphere - The fastest! */
-float sdSphere(vec3 point, Sphere sphere) {
-    return length(point) - sphere.rad;
-}
-
-/* Get distance to the Plane */
-float sdPlane(vec3 point, vec3 plane) {
-    return dot(point, normalize(plane));
-}
-
-/*
- * Get distance to the Piramid - for now used only in player creation
- * Code "borrowed" from https://www.shadertoy.com/view/Ntd3DX
- */
-float sdPyramid(vec3 position, float halfWidth, float halfDepth, float halfHeight) {
-    position.xz = abs(position.xz);
-
-    // bottom
-    float s1 = abs(position.y) - halfHeight;
-    vec3 base = vec3(max(position.x - halfWidth, 0.0), abs(position.y + halfHeight), max(position.z - halfDepth, 0.0));
-    float d1 = dot(base, base);
-
-    vec3 q = position - vec3(halfWidth, -halfHeight, halfDepth);
-    vec3 end = vec3(-halfWidth, 2.0 * halfHeight, -halfDepth);
-    vec3 segment = q - end * clamp(dot(q, end) / dot(end, end), 0.0, 1.0);
-    float d = dot(segment, segment);
-
-    // side
-    vec3 normal1 = vec3(end.y, -end.x, 0.0);
-    float s2 = dot(q.xy, normal1.xy);
-    float d2 = d;
-    if (dot(q.xy, -end.xy) < 0.0 && dot(q, cross(normal1, end)) < 0.0) {
-        d2 = s2 * s2 / dot(normal1.xy, normal1.xy);
-    }
-    // front/back
-    vec3 normal2 = vec3(0.0, -end.z, end.y);
-    float s3 = dot(q.yz, normal2.yz);
-    float d3 = d;
-    if (dot(q.yz, -end.yz) < 0.0 && dot(q, cross(normal2, -end)) < 0.0) {
-        d3 = s3 * s3 / dot(normal2.yz, normal2.yz);
-    }
-    return sqrt(min(min(d1, d2), d3)) * sign(max(max(s1, s2), s3));
-}
-
-#endif // RENDER_GLSL
-/* Layers of data in pixels - basically Y coordinates */
-#define ASTEROID_LAYER_ROW 0
-#define PLAYER_LAYER_ROW 1
-#define CAMERA_LAYER_ROW 2
-
-#define P_MOVEMENT_COL 0
-#define P_ROTATION_COL 1
-#define P_CONTROLS_COL 2
-#define P_COLLISION_COL 3
-
-#define C_OPTIONS_COL 0
-#define C_SCREEN_SIZE_COL 1
-
-/* Asteroid properties */
-#define NUM_ASTEROIDS 5.
-#define ASTEROID_SPEED 0.007
-#define ASTEROID_RADIUS 1.
-
-/* Player Properties */
-#define PLAYER_HEIGHT 1.5
-
+#endif  // PLAYER_GLSL
 #ifndef CAMERA_GLSL
 #define CAMERA_GLSL
 
@@ -3372,370 +2754,7 @@ struct Piramid {
 
 #endif // OBJECT_GLSL
 
-#define MAX_STEPS 64
-#define MAX_DIST 100.
-#define SURF_DIST .01
-
-#define PI 3.14159
-
-const vec3 PLAYER_COLOR = vec3(0.7411, 0.5764, 0.9764);
-const vec3 ASTEROID_COLOR = vec3(0.7, 0.7, 0.75);
-
-/*
-* Rotate object in one plane:
-* use obj.xy *= Rotate(val);
-* to rotate the object by some value on the xy plane
-*/
-mat2 Rotate(float val) {
-    float s = sin(val);
-    float c = cos(val );
-    return mat2(c, -s, s, c);
-}
-
-mat3 RotateOffset(float rotate, float x, float y){
-    mat3 rotateMat;
-    float s = sin(rotate);
-    float c = cos(rotate);
-    rotateMat[0] = vec3(c, -s, -x*c+y*s+x);
-    rotateMat[1] = vec3(s, c, -x*s-y*c+y);
-    rotateMat[2] = vec3(0., 0., 1.);
-    return rotateMat;
-}
-
-mat3 Translate3(float x, float y){
-    mat3 translateMat;
-    translateMat[0] = vec3(1., 0., x);
-    translateMat[1] = vec3(0., 1., y);
-    translateMat[2] = vec3(0., 0., 1.);
-    return translateMat;
-}
-
-/*
- * Get the min distance vec4 from vec4(rgb, dist)
-*/
-vec4 minSd(vec4 first, vec4 second) {
-    return first.w < second.w? first : second;
-}
-//-----------------------------------------------------------------------------
-/*
- * Distance functions -> give us the distanсe to said object type
- * NEGATIVE return on the inside and POSITIVE on the outside
- * * vec3 point: origin point - the position you want your object to be at
- * * Object: obj to find distance to
- */
-
-/* Get distance to the Box and put it in proper position */
-float sdBox(vec3 point, Box box) {
-    /// By default the scale is inversed
-
-    point = abs(point) - vec3(box.wid, box.hig, box.dep);
-    /// Account for inner position for there not to be distorted black dots
-    return (length(max(point, 0.)) + min(max(point.x, max(point.y, point.z)), 0.));
-}
-
-/* Get distance to the Torus and put it in proper position */
-float getDistTorus(vec3 point, Torus tor) {
-    /// Projected distance to the outside layer of a torus
-    float projDistToOut = length(point.xz) - tor.radBig;
-    return length(vec2(projDistToOut, point.y)) - tor.radSmol;
-}
-
-/* Get distance to the Capsule */
-float sdCapsule(vec3 point, Capsule cap) {
-    vec3 edge = cap.bot - cap.top;
-    vec3 distToCapsule = point - cap.top;
-
-    float distToHit = dot(edge, distToCapsule) / dot(edge, edge);
-    distToHit = clamp(distToHit, 0., 1.);
-
-    vec3 pointHit = cap.top + distToHit*edge;
-    return length(point - pointHit) - cap.rad;
-}
-
-/* Get distance to the Cylinder */
-float sdCylinder(vec3 point, Cylinder cap) {
-    vec3 edge = cap.bot - cap.top;
-    vec3 distToSide = point - cap.top;
-
-    float distToHit = dot(edge, distToSide) / dot(edge, edge);
-    // distToHit = clamp(distToHit, 0., 1.);
-
-    vec3 pointHit = cap.top + distToHit*edge;
-    // X-axis dist to cylinder
-    float xDist = length(point - pointHit) - cap.rad;
-    float yDist = (abs(distToHit - .5) - .5) * length(edge);
-
-    float exteriorDist = length(max(vec2(xDist, yDist), 0.));
-    float interiorDist = min(max(xDist, yDist), 0.);
-    return exteriorDist + interiorDist;
-}
-
-/* Get distance to the Sphere - The fastest! */
-float sdSphere(vec3 point, Sphere sphere) {
-    return length(point) - sphere.rad;
-}
-
-/* Get distance to the Plane */
-float sdPlane(vec3 point, vec3 plane) {
-    return dot(point, normalize(plane));
-}
-
-/*
- * Get distance to the Piramid - for now used only in player creation
- * Code "borrowed" from https://www.shadertoy.com/view/Ntd3DX
- */
-float sdPyramid(vec3 position, float halfWidth, float halfDepth, float halfHeight) {
-    position.xz = abs(position.xz);
-
-    // bottom
-    float s1 = abs(position.y) - halfHeight;
-    vec3 base = vec3(max(position.x - halfWidth, 0.0), abs(position.y + halfHeight), max(position.z - halfDepth, 0.0));
-    float d1 = dot(base, base);
-
-    vec3 q = position - vec3(halfWidth, -halfHeight, halfDepth);
-    vec3 end = vec3(-halfWidth, 2.0 * halfHeight, -halfDepth);
-    vec3 segment = q - end * clamp(dot(q, end) / dot(end, end), 0.0, 1.0);
-    float d = dot(segment, segment);
-
-    // side
-    vec3 normal1 = vec3(end.y, -end.x, 0.0);
-    float s2 = dot(q.xy, normal1.xy);
-    float d2 = d;
-    if (dot(q.xy, -end.xy) < 0.0 && dot(q, cross(normal1, end)) < 0.0) {
-        d2 = s2 * s2 / dot(normal1.xy, normal1.xy);
-    }
-    // front/back
-    vec3 normal2 = vec3(0.0, -end.z, end.y);
-    float s3 = dot(q.yz, normal2.yz);
-    float d3 = d;
-    if (dot(q.yz, -end.yz) < 0.0 && dot(q, cross(normal2, -end)) < 0.0) {
-        d3 = s3 * s3 / dot(normal2.yz, normal2.yz);
-    }
-    return sqrt(min(min(d1, d2), d3)) * sign(max(max(s1, s2), s3));
-}
-
-#endif // RENDER_GLSL
-
-vec3 getRo(vec4 camera_props) {
-    vec3 ro = vec3(-camera_props.x, camera_props.y, camera_props.z);
-    ro.xz *= Rotate(PI);
-    return ro;
-}
-
-// lookat - central point of the camera
-// zoom - zoom  ==  distance from camera to the screen
-// c - center point on the screen = ro + forward * zoom factor z
-// ro = ray origin
-// right - if we look straight from the camera on screen, it is x offset
-// up - if we look straight from the camera on screen, it is y offset
-// intersection - the point on the screen where ray passes through it
-vec3 getRd(vec2 uv, vec3 ro, vec4 camera_props) {
-    // variables to control camera if we need it
-    vec3 lookat = vec3(camera_props.xy, 0.);
-    float zoom = camera_props.w;
-
-    vec3 forward = normalize(lookat - ro),
-        right = normalize(cross(vec3(0, 1, 0), forward)),
-        up = cross(forward, right),
-        c = ro + forward * zoom,
-        intersection = c + uv.x * right + uv.y * up,
-        d = normalize(intersection - ro);
-    return d;
-}
-
-#endif // CAMERA_GLSL
-
-
-
-/*
- * Create the player object(Piramid) and handle input transformation and rotation
-*/
-float createPlayer(vec3 point, vec3 originPos, vec3 offset) {
-
-    /// Get Rotation radians and matrix
-    float rotationRad = texelFetch(iChannel0, ivec2(P_ROTATION_COL, PLAYER_LAYER_ROW), 0).x;
-    mat2 rotationMat = Rotate(rotationRad);
-
-    /// Player body
-    Piramid body = Piramid(originPos, PLAYER_HEIGHT);
-    float playerHeight = body.height / 2.;
-
-    /// Handle body rotation and body movement
-    vec3 bodyPos = point - body.pos;
-    bodyPos -= offset;
-
-    // Triangle from the ass
-    vec3 trianglePos = point - body.pos;
-    trianglePos -= offset;
-
-    mat2 rotate180 = Rotate(PI);
-    mat3 rotationMat2 = RotateOffset(rotationRad, 0., -PLAYER_HEIGHT);
-    mat3 translationMat = Translate3(0., -PLAYER_HEIGHT);
-    float prevZ = trianglePos.z;
-    trianglePos.z = 1.;
-    trianglePos.xy *= rotate180;
-    trianglePos *= translationMat;
-    trianglePos *= rotationMat2;
-    trianglePos.z = prevZ;
-
-
-    bodyPos.xy *= rotationMat;
-
-    /// Flatten the piramid
-    bodyPos *= vec3(1., 1., 2.);
-    trianglePos *= vec3(1., 1., 2.);
-
-    vec2 controls = texelFetch(iChannel0, ivec2(P_CONTROLS_COL, PLAYER_LAYER_ROW), 0).xy;
-
-    if(controls.y != 1.){
-        return sdPyramid(bodyPos, playerHeight, body.height / 10., body.height / 1.5) / 2.;
-    }
-    else{
-        return min(sdPyramid(trianglePos, playerHeight/2.5, body.height / 25., body.height / 3.75) / 2., 
-                   sdPyramid(bodyPos, playerHeight, body.height / 10., body.height / 1.5) / 2.);
-    }
-}
-
-
-/*
- * Calculate offset for the ship including rotation
- * Calculate and apply acceleration and deceleration to the ship
-*/
-vec2 calcOffset(vec2 offset, inout vec2 inertia, float rotationRad) {
-    // get controls
-    vec2 controls = texelFetch(iChannel0, ivec2(P_CONTROLS_COL, PLAYER_LAYER_ROW), 0).xy;
-
-    /// Control values
-    float turnSpeed = 0.1 / 100.;
-    float velocity = 20. / 100.;
-    /// Inertia values
-    float speed = 5.;
-    float maxSpeed = .1;
-    float acceleration = 0.005;
-
-    bool isThrottle = controls.y > 0.;      /* Get if throttling */
-
-    controls.x *= turnSpeed;
-    controls.y *= velocity;
-
-    mat2 rotationMat = Rotate(rotationRad);
-    controls *= rotationMat;
-    controls.x *= -1.;
-
-    /// Acceleration/deceleration
-    if (isThrottle && length(inertia) < maxSpeed) {
-        inertia.x = mix(inertia.x, controls.x, acceleration);
-        inertia.y = mix(inertia.y, controls.y, acceleration);
-    } else {
-        inertia.x = mix(inertia.x, 0., acceleration);
-        inertia.y = mix(inertia.y, 0., acceleration);
-    }
-
-    vec2 screenSize = texelFetch(iChannel0, ivec2(C_SCREEN_SIZE_COL, CAMERA_LAYER_ROW), 0).xy;
-    screenSize -= 1.0;
-    offset += inertia * speed;
-
-    if(offset.x > screenSize.x){
-        offset.x -= screenSize.x * 2.;
-    }
-    else if(offset.x < -1. * screenSize.x){
-        offset.x += screenSize.x * 2.;
-    }
-    if(offset.y > screenSize.y){
-        offset.y -= screenSize.y * 2.;
-    }
-    else if(offset.y < -1. * screenSize.y){
-        offset.y += screenSize.y * 2.;
-    }
-
-    return offset;
-}
-
-/*
- * Player movement wrapper for the data channel
- * Handles ofsset and inetria
- * outFrag ///< [in/out]
- * .xy - offset
- * .zw - inertia
-*/
-void handleMovement(inout vec4 outFrag) {
-    outFrag = texelFetch(iChannel0, ivec2(P_MOVEMENT_COL, PLAYER_LAYER_ROW), 0);
-    float rotationTexel = texelFetch(iChannel0, ivec2(P_ROTATION_COL, PLAYER_LAYER_ROW), 0).x;
-
-    /// Handle offset
-    outFrag.xy = calcOffset(outFrag.xy, outFrag.zw, rotationTexel);
-}
-
-/*
- * Player rotation wrapper for the data channel
- * outFrag ///< [in/out]
- * .x - rotation
-*/
-void handleRotation(inout vec4 outFrag) {
-    vec2 controls = texelFetch(iChannel0, ivec2(P_CONTROLS_COL, PLAYER_LAYER_ROW), 0).xy;
-    outFrag = texelFetch(iChannel0, ivec2(P_ROTATION_COL, PLAYER_LAYER_ROW), 0);
-    outFrag.x += controls.x * .1;
-}
-
-#ifndef CAMERA_GLSL
-#define CAMERA_GLSL
-
-#ifndef RENDER_GLSL
-#define RENDER_GLSL
-
-#ifndef OBJECT_GLSL
-#define OBJECT_GLSL
-
-/* A Capsule has position of the top and bottom spheres and their radius */
-struct Capsule {
-    vec3 top;
-    vec3 bot;
-    float rad;
-};
-
-/* A Cylinder is the same as Capsule but the algorithms are different */
-struct Cylinder {
-    vec3 top;
-    vec3 bot;
-    float rad;
-};
-
-/* A Torus has a main radius and the thickness of the tube and position */
-struct Torus {
-    float radBig;
-    float radSmol;
-    vec3 pos;
-};
-
-/*
-* A box has width height and depth(all calculated from center to sides)
-* and position
-*/
-struct Box {
-    // width, height, depth can be put in a vec3
-    float wid;
-    float hig;
-    float dep;
-    vec3 pos;
-};
-
-/*
- * A fucking sphere, idk
-*/
-struct Sphere {
-    vec3 pos;
-	float rad;
-};
-
-
-struct Piramid {
-    vec3 pos;
-    float height;
-};
-
-#endif // OBJECT_GLSL
-
-#define MAX_STEPS 64
+#define MAX_STEPS 16
 #define MAX_DIST 100.
 #define SURF_DIST .01
 
@@ -3986,7 +3005,7 @@ struct Piramid {
 
 #endif // OBJECT_GLSL
 
-#define MAX_STEPS 64
+#define MAX_STEPS 16
 #define MAX_DIST 100.
 #define SURF_DIST .01
 
@@ -4208,7 +3227,7 @@ struct Piramid {
 
 #endif // OBJECT_GLSL
 
-#define MAX_STEPS 64
+#define MAX_STEPS 16
 #define MAX_DIST 100.
 #define SURF_DIST .01
 
@@ -4399,17 +3418,43 @@ float createAsteroids(vec3 point) {
 }
 
 #endif // ASTEROIDS_GLSL
+#ifndef BLACK_HOLE_GLSL
+#define BLACK_HOLE_GLSL
+
+/* Layers of data in pixels - basically Y coordinates */
+#define ASTEROID_LAYER_ROW 0
+#define PLAYER_LAYER_ROW 1
+#define CAMERA_LAYER_ROW 2
+
+#define P_MOVEMENT_COL 0
+#define P_ROTATION_COL 1
+#define P_CONTROLS_COL 2
+#define P_COLLISION_COL 3
+
+#define C_OPTIONS_COL 0
+#define C_SCREEN_SIZE_COL 1
+
+/* Asteroid properties */
+#define NUM_ASTEROIDS 5.
+#define ASTEROID_SPEED 0.007
+#define ASTEROID_RADIUS 1.
+
+/* Player Properties */
+#define PLAYER_HEIGHT 1.5
 
 
-
-
-const vec3 BH_pos = vec3(0., 0., -10.);  // BH position
-const float BH_R = 0.5;  // event horizon radius
+const vec3 BH_pos = vec3(-.5, 1.5, -16.);  // BH position
+const float BH_R = 0.5;                  // event horizon radius
 /// how much acceleration a black hole exerts on a light particle
 vec3 blackHoleNullParticleAccl(vec3 p) {
     vec3 r = (p - BH_pos);
     return -1.5 * BH_R * r / pow(length(r), 5.0);
 }
+const float dt = 0.15;
+
+#endif  // BLACK_HOLE_GLSL
+
+
 
 /* Get minimal distance to each object, objects are generated here for now */
 vec4 getColAndDist(vec3 point) {
@@ -4425,7 +3470,7 @@ vec4 getColAndDist(vec3 point) {
     vec4 colDist = minSd(vec4(PLAYER_COLOR, distPiramid), vec4(ASTEROID_COLOR, distAsteroids));
 
     /// render event horizon
-    colDist = minSd(vec4(BH_pos, length(point) - BH_R), colDist);
+    colDist = minSd(vec4(BH_pos, length(point - BH_pos) - BH_R), colDist);
 
     return colDist;
 }
@@ -4444,30 +3489,26 @@ vec3 getNormal(vec3 point) {
     return normalize(normal);
 }
 
-/* Main ray marching function */
-// float rayMarch(vec3 ro, vec3 rd, inout vec3 color) {
-//     float distToOrigin = 0.;
-
-//     for (int i = 0; i < MAX_STEPS; ++i) {
-//         vec3 currentLocation = ro + distToOrigin * rd;
-//         /// rgb + w as length
-//         vec4 distToScene = getColAndDist(currentLocation);
-
-//         distToOrigin += distToScene.w;
-
-//         if (distToOrigin > MAX_DIST || abs(distToScene.w) < SURF_DIST) {
-//             color = distToScene.rgb;
-//             break;
-//         }
-//     }
-
-//     return distToOrigin;
-// }
+/*
+ * Handle lighting and shadows
+ * Takes current light level, new light position and a point
+ * Takes color
+ */
+vec3 getLighting(vec3 point, vec3 lightPos, vec3 color) {
+    vec3 lightDir = normalize(lightPos - point);
+    vec3 normal = getNormal(point);
+    float lightIntencity = clamp(dot(normal, lightDir)*.5+.5, 0., 1.);
+    // Get shadows
+    // Use a point a bit off so the loop does not immediately end
+    // vec3 stopColor = vec3(0.);
+    // vec3 lightStopPoint = blackHoleRender(point + normal * SURF_DIST * 2., lightDir, stopColor).xyz;
+    // if (length(point - lightStopPoint) > SURF_DIST) { lightIntencity *= .3; }
+    return color * lightIntencity;
+}
 
 /// current_position is the ray origin
 /// ray_velocity should be normalized
 /// color is the resulting color
-const float dt = 0.15;
 vec4 blackHoleRender(vec3 current_position, vec3 ray_velocity, inout vec3 color) {
     // 4th coord is whether we found a point or diverged
     vec4 currentLocationAndMode = vec4(0.);
@@ -4497,32 +3538,3120 @@ vec4 blackHoleRender(vec3 current_position, vec3 ray_velocity, inout vec3 color)
             break;
         }
     }
-    // if (currentLocationAndMode.w == 0.) {
-    //     ray_velocity = normalize(ray_velocity);
-    //     float distToOrigin = 0.;
-    //     for (int i = 0; i < MAX_STEPS; ++i) {
-    //         vec3 currentLocation = current_position + distToOrigin * ray_velocity;
-    //         /// rgb + w as length
-    //         vec4 colAndDist = getColAndDist(currentLocation);
-
-    //         distToOrigin += colAndDist.w;
-
-    //         // check that we got below event horizon
-    //         if (distance(BH_pos, currentLocation) < BH_R) {
-    //             color = vec3(0.);
-    //             currentLocationAndMode.xyzw = vec4(current_position, 1.);
-    //             break;
-    //         }
-
-    //         if (distToOrigin > MAX_DIST) break;
-    //         if (abs(colAndDist.w) < SURF_DIST) {
-    //             color = colAndDist.rgb;
-    //             currentLocationAndMode = vec4(currentLocation, 1.);
-    //             break;
-    //         }
-    //     }
-    // }
     return currentLocationAndMode;
+}
+
+/// color is the resulting color
+vec4 blackHoleRenderPrecomputed(vec2 fragCoord, inout vec3 color) {
+    /// interpolate position and velocity
+    vec2 flooredfragCoord = floor(fragCoord);  // remove possible .5
+    vec4 currentPositionAndMode = vec4(0.);
+    vec4 rayVelocityAndMode = vec4(0.);
+    if (
+        flooredfragCoord.x <= 1. || flooredfragCoord.y <= 0. ||
+        flooredfragCoord.x >= (iResolution.x-1.) || flooredfragCoord.y >= (iResolution.y-1.)
+    ) {
+        color = vec3(0.);
+        return vec4(vec3(0.), 1.);  /// we are at border, so inteprpolation is not possible
+    } else {
+        bool is_velocity = (flooredfragCoord.x-2.*floor(flooredfragCoord.x/2.)) == 0.;
+        if (is_velocity) {
+            rayVelocityAndMode = texelFetch(iChannel2, ivec2(flooredfragCoord), 0);
+            currentPositionAndMode = (
+                texelFetch(iChannel2, ivec2(flooredfragCoord-vec2(1., 0.)), 0) * .5 +
+                texelFetch(iChannel2, ivec2(flooredfragCoord+vec2(1., 0.)), 0) * .5
+            );
+        } else {
+            currentPositionAndMode = texelFetch(iChannel2, ivec2(flooredfragCoord), 0);
+            rayVelocityAndMode = (
+                texelFetch(iChannel2, ivec2(flooredfragCoord-vec2(1., 0.)), 0) * .5 +
+                texelFetch(iChannel2, ivec2(flooredfragCoord+vec2(1., 0.)), 0) * .5
+            );
+        }
+        /// if we reached black hole in any of them, return 0
+        if ((rayVelocityAndMode.w + currentPositionAndMode.w) < 2.) {
+            color = vec3(0.);
+            return vec4(vec3(0.), 1.);
+        }
+    }
+
+    // 4th coord is whether we found a point or diverged
+    vec3 currentPosition = currentPositionAndMode.xyz;
+    vec3 rayVelocity = rayVelocityAndMode.xyz;
+    vec4 currentLocationAndMode = vec4(0.);
+    for (int i = 0; i < MAX_STEPS; ++i) {
+        vec4 colAndDist = getColAndDist(currentPosition);
+
+        rayVelocity += blackHoleNullParticleAccl(currentPosition) * dt;
+
+        float dist_to_travel = length(rayVelocity) * dt;
+        if (dist_to_travel > colAndDist.w) {
+            rayVelocity *= colAndDist.w / dist_to_travel;
+        }
+
+        currentPosition += rayVelocity * dt;
+
+        // check that we got below event horizon
+        if (distance(BH_pos, currentPosition) < BH_R) {
+            color = vec3(0.);
+            currentLocationAndMode.xyzw = vec4(currentPosition, 1.);
+            break;
+        }
+
+        // check that we landed on a point
+        if (abs(colAndDist.w) < SURF_DIST) {
+            color = colAndDist.rgb;
+            currentLocationAndMode = vec4(currentPosition, 1.);
+            break;
+        }
+    }
+    return currentLocationAndMode;
+}
+
+#endif  // RAY_GLSL
+    void main() {}
+</script>
+<script id='/Users/michael/uni/UCU/OS/BaseTeroid/utility/data_channel.glsl' type='x-shader/x-fragment'>
+uniform vec3        iResolution;
+uniform float       iTime;
+uniform float       iTimeDelta;
+uniform int         iFrame;
+uniform vec4        iDate;
+uniform vec3        iChannelResolution[10];
+uniform vec4        iMouse;
+uniform vec4        iMouseButton;
+uniform sampler2D   iChannel0;
+uniform sampler2D   iChannel1;
+uniform sampler2D   iChannel2;
+uniform sampler2D   iChannel3;
+uniform sampler2D   iChannel4;
+uniform sampler2D   iChannel5;
+uniform sampler2D   iChannel6;
+uniform sampler2D   iChannel7;
+uniform sampler2D   iChannel8;
+uniform sampler2D   iChannel9;
+uniform sampler2D   iKeyboard;
+uniform float       iSampleRate;
+
+#define iGlobalTime iTime
+#define iGlobalFrame iFrame
+
+#define SHADER_TOY
+
+const int Key_Backspace = 8, Key_Tab = 9, Key_Enter = 13, Key_Shift = 16, Key_Ctrl = 17, Key_Alt = 18, Key_Pause = 19, Key_Caps = 20, Key_Escape = 27, Key_PageUp = 33, Key_PageDown = 34, Key_End = 35,
+    Key_Home = 36, Key_LeftArrow = 37, Key_UpArrow = 38, Key_RightArrow = 39, Key_DownArrow = 40, Key_Insert = 45, Key_Delete = 46, Key_0 = 48, Key_1 = 49, Key_2 = 50, Key_3 = 51, Key_4 = 52,
+    Key_5 = 53, Key_6 = 54, Key_7 = 55, Key_8 = 56, Key_9 = 57, Key_A = 65, Key_B = 66, Key_C = 67, Key_D = 68, Key_E = 69, Key_F = 70, Key_G = 71, Key_H = 72,
+    Key_I = 73, Key_J = 74, Key_K = 75, Key_L = 76, Key_M = 77, Key_N = 78, Key_O = 79, Key_P = 80, Key_Q = 81, Key_R = 82, Key_S = 83, Key_T = 84, Key_U = 85,
+    Key_V = 86, Key_W = 87, Key_X = 88, Key_Y = 89, Key_Z = 90, Key_LeftWindow = 91, Key_RightWindows = 92, Key_Select = 93, Key_Numpad0 = 96, Key_Numpad1 = 97, Key_Numpad2 = 98, Key_Numpad3 = 99,
+    Key_Numpad4 = 100, Key_Numpad5 = 101, Key_Numpad6 = 102, Key_Numpad7 = 103, Key_Numpad8 = 104, Key_Numpad9 = 105, Key_NumpadMultiply = 106, Key_NumpadAdd = 107, Key_NumpadSubtract = 109, Key_NumpadPeriod = 110, Key_NumpadDivide = 111, Key_F1 = 112, Key_F2 = 113, Key_F3 = 114, Key_F4 = 115, Key_F5 = 116, Key_F6 = 117, Key_F7 = 118, Key_F8 = 119, Key_F9 = 120, Key_F10 = 121, Key_F11 = 122, Key_F12 = 123, Key_NumLock = 144, Key_ScrollLock = 145,
+    Key_SemiColon = 186, Key_Equal = 187, Key_Comma = 188, Key_Dash = 189, Key_Period = 190, Key_ForwardSlash = 191, Key_GraveAccent = 192, Key_OpenBracket = 219, Key_BackSlash = 220, Key_CloseBraket = 221, Key_SingleQuote = 222;
+
+bool isKeyDown(int key) {
+    vec2 uv = vec2(float(key) / 255.0, 0.125);
+    return texture2D(iKeyboard, uv).r > 0.0;
+}
+bool isKeyPressed(int key) {
+    vec2 uv = vec2(float(key) / 255.0, 0.375);
+    return texture2D(iKeyboard, uv).r > 0.0;
+}
+bool isKeyToggled(int key) {
+    vec2 uv = vec2(float(key) / 255.0, 0.625);
+    return texture2D(iKeyboard, uv).r > 0.0;
+}
+bool isKeyReleased(int key) {
+    vec2 uv = vec2(float(key) / 255.0, 0.875);
+    return texture2D(iKeyboard, uv).r > 0.0;
+}
+#ifndef DATA_CHANNEL_GLSL
+#define DATA_CHANNEL_GLSL
+
+
+
+
+
+#ifndef RENDER_GLSL
+#define RENDER_GLSL
+
+#ifndef OBJECT_GLSL
+#define OBJECT_GLSL
+
+/* A Capsule has position of the top and bottom spheres and their radius */
+struct Capsule {
+    vec3 top;
+    vec3 bot;
+    float rad;
+};
+
+/* A Cylinder is the same as Capsule but the algorithms are different */
+struct Cylinder {
+    vec3 top;
+    vec3 bot;
+    float rad;
+};
+
+/* A Torus has a main radius and the thickness of the tube and position */
+struct Torus {
+    float radBig;
+    float radSmol;
+    vec3 pos;
+};
+
+/*
+* A box has width height and depth(all calculated from center to sides)
+* and position
+*/
+struct Box {
+    // width, height, depth can be put in a vec3
+    float wid;
+    float hig;
+    float dep;
+    vec3 pos;
+};
+
+/*
+ * A fucking sphere, idk
+*/
+struct Sphere {
+    vec3 pos;
+	float rad;
+};
+
+
+struct Piramid {
+    vec3 pos;
+    float height;
+};
+
+#endif // OBJECT_GLSL
+
+#define MAX_STEPS 16
+#define MAX_DIST 100.
+#define SURF_DIST .01
+
+#define PI 3.14159
+
+const vec3 PLAYER_COLOR = vec3(0.7411, 0.5764, 0.9764);
+const vec3 ASTEROID_COLOR = vec3(0.7, 0.7, 0.75);
+
+/*
+* Rotate object in one plane:
+* use obj.xy *= Rotate(val);
+* to rotate the object by some value on the xy plane
+*/
+mat2 Rotate(float val) {
+    float s = sin(val);
+    float c = cos(val );
+    return mat2(c, -s, s, c);
+}
+
+mat3 RotateOffset(float rotate, float x, float y){
+    mat3 rotateMat;
+    float s = sin(rotate);
+    float c = cos(rotate);
+    rotateMat[0] = vec3(c, -s, -x*c+y*s+x);
+    rotateMat[1] = vec3(s, c, -x*s-y*c+y);
+    rotateMat[2] = vec3(0., 0., 1.);
+    return rotateMat;
+}
+
+mat3 Translate3(float x, float y){
+    mat3 translateMat;
+    translateMat[0] = vec3(1., 0., x);
+    translateMat[1] = vec3(0., 1., y);
+    translateMat[2] = vec3(0., 0., 1.);
+    return translateMat;
+}
+
+/*
+ * Get the min distance vec4 from vec4(rgb, dist)
+*/
+vec4 minSd(vec4 first, vec4 second) {
+    return first.w < second.w? first : second;
+}
+//-----------------------------------------------------------------------------
+/*
+ * Distance functions -> give us the distanсe to said object type
+ * NEGATIVE return on the inside and POSITIVE on the outside
+ * * vec3 point: origin point - the position you want your object to be at
+ * * Object: obj to find distance to
+ */
+
+/* Get distance to the Box and put it in proper position */
+float sdBox(vec3 point, Box box) {
+    /// By default the scale is inversed
+
+    point = abs(point) - vec3(box.wid, box.hig, box.dep);
+    /// Account for inner position for there not to be distorted black dots
+    return (length(max(point, 0.)) + min(max(point.x, max(point.y, point.z)), 0.));
+}
+
+/* Get distance to the Torus and put it in proper position */
+float getDistTorus(vec3 point, Torus tor) {
+    /// Projected distance to the outside layer of a torus
+    float projDistToOut = length(point.xz) - tor.radBig;
+    return length(vec2(projDistToOut, point.y)) - tor.radSmol;
+}
+
+/* Get distance to the Capsule */
+float sdCapsule(vec3 point, Capsule cap) {
+    vec3 edge = cap.bot - cap.top;
+    vec3 distToCapsule = point - cap.top;
+
+    float distToHit = dot(edge, distToCapsule) / dot(edge, edge);
+    distToHit = clamp(distToHit, 0., 1.);
+
+    vec3 pointHit = cap.top + distToHit*edge;
+    return length(point - pointHit) - cap.rad;
+}
+
+/* Get distance to the Cylinder */
+float sdCylinder(vec3 point, Cylinder cap) {
+    vec3 edge = cap.bot - cap.top;
+    vec3 distToSide = point - cap.top;
+
+    float distToHit = dot(edge, distToSide) / dot(edge, edge);
+    // distToHit = clamp(distToHit, 0., 1.);
+
+    vec3 pointHit = cap.top + distToHit*edge;
+    // X-axis dist to cylinder
+    float xDist = length(point - pointHit) - cap.rad;
+    float yDist = (abs(distToHit - .5) - .5) * length(edge);
+
+    float exteriorDist = length(max(vec2(xDist, yDist), 0.));
+    float interiorDist = min(max(xDist, yDist), 0.);
+    return exteriorDist + interiorDist;
+}
+
+/* Get distance to the Sphere - The fastest! */
+float sdSphere(vec3 point, Sphere sphere) {
+    return length(point) - sphere.rad;
+}
+
+/* Get distance to the Plane */
+float sdPlane(vec3 point, vec3 plane) {
+    return dot(point, normalize(plane));
+}
+
+/*
+ * Get distance to the Piramid - for now used only in player creation
+ * Code "borrowed" from https://www.shadertoy.com/view/Ntd3DX
+ */
+float sdPyramid(vec3 position, float halfWidth, float halfDepth, float halfHeight) {
+    position.xz = abs(position.xz);
+
+    // bottom
+    float s1 = abs(position.y) - halfHeight;
+    vec3 base = vec3(max(position.x - halfWidth, 0.0), abs(position.y + halfHeight), max(position.z - halfDepth, 0.0));
+    float d1 = dot(base, base);
+
+    vec3 q = position - vec3(halfWidth, -halfHeight, halfDepth);
+    vec3 end = vec3(-halfWidth, 2.0 * halfHeight, -halfDepth);
+    vec3 segment = q - end * clamp(dot(q, end) / dot(end, end), 0.0, 1.0);
+    float d = dot(segment, segment);
+
+    // side
+    vec3 normal1 = vec3(end.y, -end.x, 0.0);
+    float s2 = dot(q.xy, normal1.xy);
+    float d2 = d;
+    if (dot(q.xy, -end.xy) < 0.0 && dot(q, cross(normal1, end)) < 0.0) {
+        d2 = s2 * s2 / dot(normal1.xy, normal1.xy);
+    }
+    // front/back
+    vec3 normal2 = vec3(0.0, -end.z, end.y);
+    float s3 = dot(q.yz, normal2.yz);
+    float d3 = d;
+    if (dot(q.yz, -end.yz) < 0.0 && dot(q, cross(normal2, -end)) < 0.0) {
+        d3 = s3 * s3 / dot(normal2.yz, normal2.yz);
+    }
+    return sqrt(min(min(d1, d2), d3)) * sign(max(max(s1, s2), s3));
+}
+
+#endif // RENDER_GLSL
+/* Layers of data in pixels - basically Y coordinates */
+#define ASTEROID_LAYER_ROW 0
+#define PLAYER_LAYER_ROW 1
+#define CAMERA_LAYER_ROW 2
+
+#define P_MOVEMENT_COL 0
+#define P_ROTATION_COL 1
+#define P_CONTROLS_COL 2
+#define P_COLLISION_COL 3
+
+#define C_OPTIONS_COL 0
+#define C_SCREEN_SIZE_COL 1
+
+/* Asteroid properties */
+#define NUM_ASTEROIDS 5.
+#define ASTEROID_SPEED 0.007
+#define ASTEROID_RADIUS 1.
+
+/* Player Properties */
+#define PLAYER_HEIGHT 1.5
+
+#ifndef PLAYER_GLSL
+#define PLAYER_GLSL
+
+#ifndef RENDER_GLSL
+#define RENDER_GLSL
+
+#ifndef OBJECT_GLSL
+#define OBJECT_GLSL
+
+/* A Capsule has position of the top and bottom spheres and their radius */
+struct Capsule {
+    vec3 top;
+    vec3 bot;
+    float rad;
+};
+
+/* A Cylinder is the same as Capsule but the algorithms are different */
+struct Cylinder {
+    vec3 top;
+    vec3 bot;
+    float rad;
+};
+
+/* A Torus has a main radius and the thickness of the tube and position */
+struct Torus {
+    float radBig;
+    float radSmol;
+    vec3 pos;
+};
+
+/*
+* A box has width height and depth(all calculated from center to sides)
+* and position
+*/
+struct Box {
+    // width, height, depth can be put in a vec3
+    float wid;
+    float hig;
+    float dep;
+    vec3 pos;
+};
+
+/*
+ * A fucking sphere, idk
+*/
+struct Sphere {
+    vec3 pos;
+	float rad;
+};
+
+
+struct Piramid {
+    vec3 pos;
+    float height;
+};
+
+#endif // OBJECT_GLSL
+
+#define MAX_STEPS 16
+#define MAX_DIST 100.
+#define SURF_DIST .01
+
+#define PI 3.14159
+
+const vec3 PLAYER_COLOR = vec3(0.7411, 0.5764, 0.9764);
+const vec3 ASTEROID_COLOR = vec3(0.7, 0.7, 0.75);
+
+/*
+* Rotate object in one plane:
+* use obj.xy *= Rotate(val);
+* to rotate the object by some value on the xy plane
+*/
+mat2 Rotate(float val) {
+    float s = sin(val);
+    float c = cos(val );
+    return mat2(c, -s, s, c);
+}
+
+mat3 RotateOffset(float rotate, float x, float y){
+    mat3 rotateMat;
+    float s = sin(rotate);
+    float c = cos(rotate);
+    rotateMat[0] = vec3(c, -s, -x*c+y*s+x);
+    rotateMat[1] = vec3(s, c, -x*s-y*c+y);
+    rotateMat[2] = vec3(0., 0., 1.);
+    return rotateMat;
+}
+
+mat3 Translate3(float x, float y){
+    mat3 translateMat;
+    translateMat[0] = vec3(1., 0., x);
+    translateMat[1] = vec3(0., 1., y);
+    translateMat[2] = vec3(0., 0., 1.);
+    return translateMat;
+}
+
+/*
+ * Get the min distance vec4 from vec4(rgb, dist)
+*/
+vec4 minSd(vec4 first, vec4 second) {
+    return first.w < second.w? first : second;
+}
+//-----------------------------------------------------------------------------
+/*
+ * Distance functions -> give us the distanсe to said object type
+ * NEGATIVE return on the inside and POSITIVE on the outside
+ * * vec3 point: origin point - the position you want your object to be at
+ * * Object: obj to find distance to
+ */
+
+/* Get distance to the Box and put it in proper position */
+float sdBox(vec3 point, Box box) {
+    /// By default the scale is inversed
+
+    point = abs(point) - vec3(box.wid, box.hig, box.dep);
+    /// Account for inner position for there not to be distorted black dots
+    return (length(max(point, 0.)) + min(max(point.x, max(point.y, point.z)), 0.));
+}
+
+/* Get distance to the Torus and put it in proper position */
+float getDistTorus(vec3 point, Torus tor) {
+    /// Projected distance to the outside layer of a torus
+    float projDistToOut = length(point.xz) - tor.radBig;
+    return length(vec2(projDistToOut, point.y)) - tor.radSmol;
+}
+
+/* Get distance to the Capsule */
+float sdCapsule(vec3 point, Capsule cap) {
+    vec3 edge = cap.bot - cap.top;
+    vec3 distToCapsule = point - cap.top;
+
+    float distToHit = dot(edge, distToCapsule) / dot(edge, edge);
+    distToHit = clamp(distToHit, 0., 1.);
+
+    vec3 pointHit = cap.top + distToHit*edge;
+    return length(point - pointHit) - cap.rad;
+}
+
+/* Get distance to the Cylinder */
+float sdCylinder(vec3 point, Cylinder cap) {
+    vec3 edge = cap.bot - cap.top;
+    vec3 distToSide = point - cap.top;
+
+    float distToHit = dot(edge, distToSide) / dot(edge, edge);
+    // distToHit = clamp(distToHit, 0., 1.);
+
+    vec3 pointHit = cap.top + distToHit*edge;
+    // X-axis dist to cylinder
+    float xDist = length(point - pointHit) - cap.rad;
+    float yDist = (abs(distToHit - .5) - .5) * length(edge);
+
+    float exteriorDist = length(max(vec2(xDist, yDist), 0.));
+    float interiorDist = min(max(xDist, yDist), 0.);
+    return exteriorDist + interiorDist;
+}
+
+/* Get distance to the Sphere - The fastest! */
+float sdSphere(vec3 point, Sphere sphere) {
+    return length(point) - sphere.rad;
+}
+
+/* Get distance to the Plane */
+float sdPlane(vec3 point, vec3 plane) {
+    return dot(point, normalize(plane));
+}
+
+/*
+ * Get distance to the Piramid - for now used only in player creation
+ * Code "borrowed" from https://www.shadertoy.com/view/Ntd3DX
+ */
+float sdPyramid(vec3 position, float halfWidth, float halfDepth, float halfHeight) {
+    position.xz = abs(position.xz);
+
+    // bottom
+    float s1 = abs(position.y) - halfHeight;
+    vec3 base = vec3(max(position.x - halfWidth, 0.0), abs(position.y + halfHeight), max(position.z - halfDepth, 0.0));
+    float d1 = dot(base, base);
+
+    vec3 q = position - vec3(halfWidth, -halfHeight, halfDepth);
+    vec3 end = vec3(-halfWidth, 2.0 * halfHeight, -halfDepth);
+    vec3 segment = q - end * clamp(dot(q, end) / dot(end, end), 0.0, 1.0);
+    float d = dot(segment, segment);
+
+    // side
+    vec3 normal1 = vec3(end.y, -end.x, 0.0);
+    float s2 = dot(q.xy, normal1.xy);
+    float d2 = d;
+    if (dot(q.xy, -end.xy) < 0.0 && dot(q, cross(normal1, end)) < 0.0) {
+        d2 = s2 * s2 / dot(normal1.xy, normal1.xy);
+    }
+    // front/back
+    vec3 normal2 = vec3(0.0, -end.z, end.y);
+    float s3 = dot(q.yz, normal2.yz);
+    float d3 = d;
+    if (dot(q.yz, -end.yz) < 0.0 && dot(q, cross(normal2, -end)) < 0.0) {
+        d3 = s3 * s3 / dot(normal2.yz, normal2.yz);
+    }
+    return sqrt(min(min(d1, d2), d3)) * sign(max(max(s1, s2), s3));
+}
+
+#endif // RENDER_GLSL
+/* Layers of data in pixels - basically Y coordinates */
+#define ASTEROID_LAYER_ROW 0
+#define PLAYER_LAYER_ROW 1
+#define CAMERA_LAYER_ROW 2
+
+#define P_MOVEMENT_COL 0
+#define P_ROTATION_COL 1
+#define P_CONTROLS_COL 2
+#define P_COLLISION_COL 3
+
+#define C_OPTIONS_COL 0
+#define C_SCREEN_SIZE_COL 1
+
+/* Asteroid properties */
+#define NUM_ASTEROIDS 5.
+#define ASTEROID_SPEED 0.007
+#define ASTEROID_RADIUS 1.
+
+/* Player Properties */
+#define PLAYER_HEIGHT 1.5
+
+#ifndef CAMERA_GLSL
+#define CAMERA_GLSL
+
+#ifndef RENDER_GLSL
+#define RENDER_GLSL
+
+#ifndef OBJECT_GLSL
+#define OBJECT_GLSL
+
+/* A Capsule has position of the top and bottom spheres and their radius */
+struct Capsule {
+    vec3 top;
+    vec3 bot;
+    float rad;
+};
+
+/* A Cylinder is the same as Capsule but the algorithms are different */
+struct Cylinder {
+    vec3 top;
+    vec3 bot;
+    float rad;
+};
+
+/* A Torus has a main radius and the thickness of the tube and position */
+struct Torus {
+    float radBig;
+    float radSmol;
+    vec3 pos;
+};
+
+/*
+* A box has width height and depth(all calculated from center to sides)
+* and position
+*/
+struct Box {
+    // width, height, depth can be put in a vec3
+    float wid;
+    float hig;
+    float dep;
+    vec3 pos;
+};
+
+/*
+ * A fucking sphere, idk
+*/
+struct Sphere {
+    vec3 pos;
+	float rad;
+};
+
+
+struct Piramid {
+    vec3 pos;
+    float height;
+};
+
+#endif // OBJECT_GLSL
+
+#define MAX_STEPS 16
+#define MAX_DIST 100.
+#define SURF_DIST .01
+
+#define PI 3.14159
+
+const vec3 PLAYER_COLOR = vec3(0.7411, 0.5764, 0.9764);
+const vec3 ASTEROID_COLOR = vec3(0.7, 0.7, 0.75);
+
+/*
+* Rotate object in one plane:
+* use obj.xy *= Rotate(val);
+* to rotate the object by some value on the xy plane
+*/
+mat2 Rotate(float val) {
+    float s = sin(val);
+    float c = cos(val );
+    return mat2(c, -s, s, c);
+}
+
+mat3 RotateOffset(float rotate, float x, float y){
+    mat3 rotateMat;
+    float s = sin(rotate);
+    float c = cos(rotate);
+    rotateMat[0] = vec3(c, -s, -x*c+y*s+x);
+    rotateMat[1] = vec3(s, c, -x*s-y*c+y);
+    rotateMat[2] = vec3(0., 0., 1.);
+    return rotateMat;
+}
+
+mat3 Translate3(float x, float y){
+    mat3 translateMat;
+    translateMat[0] = vec3(1., 0., x);
+    translateMat[1] = vec3(0., 1., y);
+    translateMat[2] = vec3(0., 0., 1.);
+    return translateMat;
+}
+
+/*
+ * Get the min distance vec4 from vec4(rgb, dist)
+*/
+vec4 minSd(vec4 first, vec4 second) {
+    return first.w < second.w? first : second;
+}
+//-----------------------------------------------------------------------------
+/*
+ * Distance functions -> give us the distanсe to said object type
+ * NEGATIVE return on the inside and POSITIVE on the outside
+ * * vec3 point: origin point - the position you want your object to be at
+ * * Object: obj to find distance to
+ */
+
+/* Get distance to the Box and put it in proper position */
+float sdBox(vec3 point, Box box) {
+    /// By default the scale is inversed
+
+    point = abs(point) - vec3(box.wid, box.hig, box.dep);
+    /// Account for inner position for there not to be distorted black dots
+    return (length(max(point, 0.)) + min(max(point.x, max(point.y, point.z)), 0.));
+}
+
+/* Get distance to the Torus and put it in proper position */
+float getDistTorus(vec3 point, Torus tor) {
+    /// Projected distance to the outside layer of a torus
+    float projDistToOut = length(point.xz) - tor.radBig;
+    return length(vec2(projDistToOut, point.y)) - tor.radSmol;
+}
+
+/* Get distance to the Capsule */
+float sdCapsule(vec3 point, Capsule cap) {
+    vec3 edge = cap.bot - cap.top;
+    vec3 distToCapsule = point - cap.top;
+
+    float distToHit = dot(edge, distToCapsule) / dot(edge, edge);
+    distToHit = clamp(distToHit, 0., 1.);
+
+    vec3 pointHit = cap.top + distToHit*edge;
+    return length(point - pointHit) - cap.rad;
+}
+
+/* Get distance to the Cylinder */
+float sdCylinder(vec3 point, Cylinder cap) {
+    vec3 edge = cap.bot - cap.top;
+    vec3 distToSide = point - cap.top;
+
+    float distToHit = dot(edge, distToSide) / dot(edge, edge);
+    // distToHit = clamp(distToHit, 0., 1.);
+
+    vec3 pointHit = cap.top + distToHit*edge;
+    // X-axis dist to cylinder
+    float xDist = length(point - pointHit) - cap.rad;
+    float yDist = (abs(distToHit - .5) - .5) * length(edge);
+
+    float exteriorDist = length(max(vec2(xDist, yDist), 0.));
+    float interiorDist = min(max(xDist, yDist), 0.);
+    return exteriorDist + interiorDist;
+}
+
+/* Get distance to the Sphere - The fastest! */
+float sdSphere(vec3 point, Sphere sphere) {
+    return length(point) - sphere.rad;
+}
+
+/* Get distance to the Plane */
+float sdPlane(vec3 point, vec3 plane) {
+    return dot(point, normalize(plane));
+}
+
+/*
+ * Get distance to the Piramid - for now used only in player creation
+ * Code "borrowed" from https://www.shadertoy.com/view/Ntd3DX
+ */
+float sdPyramid(vec3 position, float halfWidth, float halfDepth, float halfHeight) {
+    position.xz = abs(position.xz);
+
+    // bottom
+    float s1 = abs(position.y) - halfHeight;
+    vec3 base = vec3(max(position.x - halfWidth, 0.0), abs(position.y + halfHeight), max(position.z - halfDepth, 0.0));
+    float d1 = dot(base, base);
+
+    vec3 q = position - vec3(halfWidth, -halfHeight, halfDepth);
+    vec3 end = vec3(-halfWidth, 2.0 * halfHeight, -halfDepth);
+    vec3 segment = q - end * clamp(dot(q, end) / dot(end, end), 0.0, 1.0);
+    float d = dot(segment, segment);
+
+    // side
+    vec3 normal1 = vec3(end.y, -end.x, 0.0);
+    float s2 = dot(q.xy, normal1.xy);
+    float d2 = d;
+    if (dot(q.xy, -end.xy) < 0.0 && dot(q, cross(normal1, end)) < 0.0) {
+        d2 = s2 * s2 / dot(normal1.xy, normal1.xy);
+    }
+    // front/back
+    vec3 normal2 = vec3(0.0, -end.z, end.y);
+    float s3 = dot(q.yz, normal2.yz);
+    float d3 = d;
+    if (dot(q.yz, -end.yz) < 0.0 && dot(q, cross(normal2, -end)) < 0.0) {
+        d3 = s3 * s3 / dot(normal2.yz, normal2.yz);
+    }
+    return sqrt(min(min(d1, d2), d3)) * sign(max(max(s1, s2), s3));
+}
+
+#endif // RENDER_GLSL
+
+vec3 getRo(vec4 camera_props) {
+    vec3 ro = vec3(-camera_props.x, camera_props.y, camera_props.z);
+    ro.xz *= Rotate(PI);
+    return ro;
+}
+
+// lookat - central point of the camera
+// zoom - zoom  ==  distance from camera to the screen
+// c - center point on the screen = ro + forward * zoom factor z
+// ro = ray origin
+// right - if we look straight from the camera on screen, it is x offset
+// up - if we look straight from the camera on screen, it is y offset
+// intersection - the point on the screen where ray passes through it
+vec3 getRd(vec2 uv, vec3 ro, vec4 camera_props) {
+    // variables to control camera if we need it
+    vec3 lookat = vec3(camera_props.xy, 0.);
+    float zoom = camera_props.w;
+
+    vec3 forward = normalize(lookat - ro),
+        right = normalize(cross(vec3(0, 1, 0), forward)),
+        up = cross(forward, right),
+        c = ro + forward * zoom,
+        intersection = c + uv.x * right + uv.y * up,
+        d = normalize(intersection - ro);
+    return d;
+}
+
+#endif // CAMERA_GLSL
+
+
+
+/*
+ * Create the player object(Piramid) and handle input transformation and rotation
+*/
+float createPlayer(vec3 point, vec3 originPos, vec3 offset) {
+
+    /// Get Rotation radians and matrix
+    float rotationRad = texelFetch(iChannel0, ivec2(P_ROTATION_COL, PLAYER_LAYER_ROW), 0).x;
+    mat2 rotationMat = Rotate(rotationRad);
+
+    /// Player body
+    Piramid body = Piramid(originPos, PLAYER_HEIGHT);
+    float playerHeight = body.height / 2.;
+
+    /// Handle body rotation and body movement
+    vec3 bodyPos = point - body.pos;
+    bodyPos -= offset;
+
+    // Triangle from the ass
+    vec3 trianglePos = point - body.pos;
+    trianglePos -= offset;
+
+    mat2 rotate180 = Rotate(PI);
+    mat3 rotationMat2 = RotateOffset(rotationRad, 0., -PLAYER_HEIGHT);
+    mat3 translationMat = Translate3(0., -PLAYER_HEIGHT);
+    float prevZ = trianglePos.z;
+    trianglePos.z = 1.;
+    trianglePos.xy *= rotate180;
+    trianglePos *= translationMat;
+    trianglePos *= rotationMat2;
+    trianglePos.z = prevZ;
+
+
+    bodyPos.xy *= rotationMat;
+
+    /// Flatten the piramid
+    bodyPos *= vec3(1., 1., 2.);
+    trianglePos *= vec3(1., 1., 2.);
+
+    vec2 controls = texelFetch(iChannel0, ivec2(P_CONTROLS_COL, PLAYER_LAYER_ROW), 0).xy;
+
+    if(controls.y != 1.){
+        return sdPyramid(bodyPos, playerHeight, body.height / 10., body.height / 1.5) / 2.;
+    }
+    else{
+        return min(sdPyramid(trianglePos, playerHeight/2.5, body.height / 25., body.height / 3.75) / 2., 
+                   sdPyramid(bodyPos, playerHeight, body.height / 10., body.height / 1.5) / 2.);
+    }
+}
+
+
+/*
+ * Calculate offset for the ship including rotation
+ * Calculate and apply acceleration and deceleration to the ship
+*/
+vec2 calcOffset(vec2 offset, inout vec2 inertia, float rotationRad) {
+    // get controls
+    vec2 controls = texelFetch(iChannel0, ivec2(P_CONTROLS_COL, PLAYER_LAYER_ROW), 0).xy;
+
+    /// Control values
+    float turnSpeed = 0.1 / 100.;
+    float velocity = 20. / 100.;
+    /// Inertia values
+    float speed = 5.;
+    float maxSpeed = .1;
+    float acceleration = 0.005;
+
+    bool isThrottle = controls.y > 0.;      /* Get if throttling */
+
+    controls.x *= turnSpeed;
+    controls.y *= velocity;
+
+    mat2 rotationMat = Rotate(rotationRad);
+    controls *= rotationMat;
+    controls.x *= -1.;
+
+    /// Acceleration/deceleration
+    if (isThrottle && length(inertia) < maxSpeed) {
+        inertia.x = mix(inertia.x, controls.x, acceleration);
+        inertia.y = mix(inertia.y, controls.y, acceleration);
+    } else {
+        inertia.x = mix(inertia.x, 0., acceleration);
+        inertia.y = mix(inertia.y, 0., acceleration);
+    }
+
+    vec2 screenSize = texelFetch(iChannel0, ivec2(C_SCREEN_SIZE_COL, CAMERA_LAYER_ROW), 0).xy;
+    screenSize -= 1.0;
+    offset += inertia * speed;
+
+    if(offset.x > screenSize.x){
+        offset.x -= screenSize.x * 2.;
+    }
+    else if(offset.x < -1. * screenSize.x){
+        offset.x += screenSize.x * 2.;
+    }
+    if(offset.y > screenSize.y){
+        offset.y -= screenSize.y * 2.;
+    }
+    else if(offset.y < -1. * screenSize.y){
+        offset.y += screenSize.y * 2.;
+    }
+
+    return offset;
+}
+
+/*
+ * Player movement wrapper for the data channel
+ * Handles ofsset and inetria
+ * outFrag ///< [in/out]
+ * .xy - offset
+ * .zw - inertia
+*/
+void handleMovement(inout vec4 outFrag) {
+    outFrag = texelFetch(iChannel0, ivec2(P_MOVEMENT_COL, PLAYER_LAYER_ROW), 0);
+    float rotationTexel = texelFetch(iChannel0, ivec2(P_ROTATION_COL, PLAYER_LAYER_ROW), 0).x;
+
+    /// Handle offset
+    outFrag.xy = calcOffset(outFrag.xy, outFrag.zw, rotationTexel);
+}
+
+/*
+ * Player rotation wrapper for the data channel
+ * outFrag ///< [in/out]
+ * .x - rotation
+*/
+void handleRotation(inout vec4 outFrag) {
+    vec2 controls = texelFetch(iChannel0, ivec2(P_CONTROLS_COL, PLAYER_LAYER_ROW), 0).xy;
+    outFrag = texelFetch(iChannel0, ivec2(P_ROTATION_COL, PLAYER_LAYER_ROW), 0);
+    outFrag.x += controls.x * .1;
+}
+
+#endif  // PLAYER_GLSL
+
+/*
+ * Capture keyboard input
+*/
+vec2 handleKeyboard() {
+    vec2 direction = vec2(0., 0.);
+
+    if (isKeyDown(Key_W)) {
+        direction += vec2(0., 1.);
+    }
+
+    if (isKeyDown(Key_S)) {
+        direction += vec2(0., -1.);
+    }
+
+    if (isKeyDown(Key_A)) {
+        direction += vec2(-1., 0.);
+    }
+
+    if (isKeyDown(Key_D)) {
+        direction += vec2(1., 0.);
+    }
+
+    return direction;
+}
+
+uint hash(uint x) {
+    x += x << 10u;
+    x ^= x >>  6u;
+    x += x <<  3u;
+    x ^= x >> 11u;
+    x += x << 15u;
+    return x;
+}
+// taken from https://stackoverflow.com/a/17479300/16471208
+float random(vec3 v) {
+    uvec3 uiv = floatBitsToUint(v);
+    uint m = hash(uiv.x ^ hash(uiv.y) ^ hash(uiv.z));
+    m &= 0x007FFFFFu; // keep mantissa
+    m |= 0x3F800000u; // add 1.0
+    return uintBitsToFloat(m) - 1.0;
+}
+
+void mainImage( out vec4 fragColor, in vec2 fragCoord )
+{
+    vec4 outFrag = vec4(0., 0., 0., 0.);
+
+    vec2 die = texelFetch(iChannel0, ivec2(P_COLLISION_COL, PLAYER_LAYER_ROW), 0).xy;
+
+    /*
+    * Pseudorandom generator for asteroid coordinate
+    */
+    if (int(fragCoord.y) == ASTEROID_LAYER_ROW && fragCoord.x < NUM_ASTEROIDS && int(die.x) != 1) {
+        outFrag = texelFetch(iChannel0, ivec2(fragCoord.x, ASTEROID_LAYER_ROW), 0);
+        if (outFrag.x > 1. || outFrag.y > 1. || outFrag.x <= 0. || outFrag.y <= 0.) {
+            float d = random(vec3(fragCoord, iTime));
+            outFrag.zw = vec2(
+                random(vec3(fragCoord, iTime+1.)),
+                random(vec3(fragCoord, iTime+2.))
+            );
+            outFrag.zw = outFrag.zw * 2. - 1.;
+            if (d < 0.25) {
+                outFrag.x = 0.001;
+                outFrag.y = random(vec3(fragCoord, iTime+3.));
+                if (outFrag.z < 0.) { outFrag.z = -outFrag.z; }
+            } else if (d < 0.50) {
+                outFrag.x = random(vec3(fragCoord, iTime+3.));
+                outFrag.y = 0.001;
+                if (outFrag.w < 0.) { outFrag.w = -outFrag.w; }
+            } else if (d < 0.75) {
+                outFrag.x = 0.999;
+                outFrag.y = random(vec3(fragCoord, iTime+3.));
+                if (outFrag.z > 0.) { outFrag.z = -outFrag.z; }
+            } else {
+                outFrag.x = random(vec3(fragCoord, iTime+3.));
+                outFrag.y = 0.999;
+                if (outFrag.w > 0.) { outFrag.w = -outFrag.w; }
+            }
+        } else {
+            outFrag.xy += outFrag.zw * ASTEROID_SPEED;
+        }
+    }
+    /*
+     * Player shenanigans
+    */
+    else if (int(fragCoord.y) == PLAYER_LAYER_ROW) {
+        if (int(die.x) == 1) {
+            if (int(fragCoord.y) == PLAYER_LAYER_ROW && int(fragCoord.x) == P_COLLISION_COL) {
+                if (iTime - die.y > 2.) {
+                    fragColor = vec4(0.);
+                } else {
+                    fragColor = vec4(die, 0., 0.);
+                }
+            } else {
+                fragColor = vec4(0.);
+            }
+            return;
+        }
+        /// Handle Player movement
+        if (int(fragCoord.x) == P_MOVEMENT_COL) {
+            handleMovement(outFrag);
+        }
+        else if(int(fragCoord.x) == P_CONTROLS_COL){
+            vec2 controls = handleKeyboard();
+            outFrag.xy = controls;
+        }
+        /// Handle player rotation
+        else if (int(fragCoord.x) == P_ROTATION_COL) {
+            handleRotation(outFrag);
+        }
+        else if (int(fragCoord.x) == P_COLLISION_COL) {
+            
+            vec2 screenSize = texelFetch(iChannel0, ivec2(C_SCREEN_SIZE_COL, CAMERA_LAYER_ROW), 0).xy;
+            vec2 offset = texelFetch(iChannel0, ivec2(P_MOVEMENT_COL, PLAYER_LAYER_ROW), 0).xy;
+
+            /// Collision detection with asteroids
+            for (int i = 0; i < int(NUM_ASTEROIDS); ++i) {
+                vec2 asteroidCoords = (texelFetch(iChannel0, ivec2(i, int(ASTEROID_LAYER_ROW)), 0).xy * 2. - 1.) * screenSize;
+                if (distance(offset.xy, asteroidCoords) < PLAYER_HEIGHT / 2. + ASTEROID_RADIUS &&
+                    (length(offset.xy) != 0. && length(asteroidCoords) != 0.)) {
+                    outFrag.x = 1.;
+                    outFrag.y = iTime;
+                }
+            }
+        } else {
+            discard;
+        }
+    }
+    /*
+     * Camera properties(constant)
+    */
+    else if (int(fragCoord.y) == CAMERA_LAYER_ROW) {
+        if (int(fragCoord.x) == C_OPTIONS_COL) {
+            // camera position is constant for now
+            outFrag.xy = vec2(0., 0.);
+            // height is constant for now
+            outFrag.z = 20.;
+            // zoom is constant for now
+            outFrag.w = 0.5;
+            // vec2 mos = iMouse.xy/iResolution.xy;
+        } else if (int(fragCoord.x) == C_SCREEN_SIZE_COL) {
+            /// Screen size calculation -> this is scary
+            vec2 upRightUV = .5 * iResolution.xy / iResolution.y;
+            vec4 camera_props = texelFetch(iChannel0, ivec2(0., CAMERA_LAYER_ROW), 0);
+            vec3 ro = getRo(camera_props);
+            vec3 upRightRD = getRd(upRightUV, ro, camera_props);
+            float cosAngle = dot(-1. * ro, upRightRD) / length(ro);
+            float dist = length(ro) / cosAngle;
+            vec2 screenSize = (ro + upRightRD * dist).xy;
+            screenSize += 1.;
+
+            outFrag.xy = screenSize;
+        } else {
+            discard;
+        }
+    }
+    /*
+     * Discard all other pixels
+    */
+    else {
+        discard;
+    }
+
+    fragColor = outFrag;
+}
+
+#endif // DATA_CHANNEL_GLSL
+void main() {
+    vec2 fragCoord = gl_FragCoord.xy;
+    mainImage(gl_FragColor, fragCoord);
+}
+</script><script id='/Users/michael/uni/UCU/OS/BaseTeroid/utility/precompute.glsl' type='x-shader/x-fragment'>
+uniform vec3        iResolution;
+uniform float       iTime;
+uniform float       iTimeDelta;
+uniform int         iFrame;
+uniform vec4        iDate;
+uniform vec3        iChannelResolution[10];
+uniform vec4        iMouse;
+uniform vec4        iMouseButton;
+uniform sampler2D   iChannel0;
+uniform sampler2D   iChannel1;
+uniform sampler2D   iChannel2;
+uniform sampler2D   iChannel3;
+uniform sampler2D   iChannel4;
+uniform sampler2D   iChannel5;
+uniform sampler2D   iChannel6;
+uniform sampler2D   iChannel7;
+uniform sampler2D   iChannel8;
+uniform sampler2D   iChannel9;
+uniform sampler2D   iKeyboard;
+uniform float       iSampleRate;
+
+#define iGlobalTime iTime
+#define iGlobalFrame iFrame
+
+#define SHADER_TOY
+
+const int Key_Backspace = 8, Key_Tab = 9, Key_Enter = 13, Key_Shift = 16, Key_Ctrl = 17, Key_Alt = 18, Key_Pause = 19, Key_Caps = 20, Key_Escape = 27, Key_PageUp = 33, Key_PageDown = 34, Key_End = 35,
+    Key_Home = 36, Key_LeftArrow = 37, Key_UpArrow = 38, Key_RightArrow = 39, Key_DownArrow = 40, Key_Insert = 45, Key_Delete = 46, Key_0 = 48, Key_1 = 49, Key_2 = 50, Key_3 = 51, Key_4 = 52,
+    Key_5 = 53, Key_6 = 54, Key_7 = 55, Key_8 = 56, Key_9 = 57, Key_A = 65, Key_B = 66, Key_C = 67, Key_D = 68, Key_E = 69, Key_F = 70, Key_G = 71, Key_H = 72,
+    Key_I = 73, Key_J = 74, Key_K = 75, Key_L = 76, Key_M = 77, Key_N = 78, Key_O = 79, Key_P = 80, Key_Q = 81, Key_R = 82, Key_S = 83, Key_T = 84, Key_U = 85,
+    Key_V = 86, Key_W = 87, Key_X = 88, Key_Y = 89, Key_Z = 90, Key_LeftWindow = 91, Key_RightWindows = 92, Key_Select = 93, Key_Numpad0 = 96, Key_Numpad1 = 97, Key_Numpad2 = 98, Key_Numpad3 = 99,
+    Key_Numpad4 = 100, Key_Numpad5 = 101, Key_Numpad6 = 102, Key_Numpad7 = 103, Key_Numpad8 = 104, Key_Numpad9 = 105, Key_NumpadMultiply = 106, Key_NumpadAdd = 107, Key_NumpadSubtract = 109, Key_NumpadPeriod = 110, Key_NumpadDivide = 111, Key_F1 = 112, Key_F2 = 113, Key_F3 = 114, Key_F4 = 115, Key_F5 = 116, Key_F6 = 117, Key_F7 = 118, Key_F8 = 119, Key_F9 = 120, Key_F10 = 121, Key_F11 = 122, Key_F12 = 123, Key_NumLock = 144, Key_ScrollLock = 145,
+    Key_SemiColon = 186, Key_Equal = 187, Key_Comma = 188, Key_Dash = 189, Key_Period = 190, Key_ForwardSlash = 191, Key_GraveAccent = 192, Key_OpenBracket = 219, Key_BackSlash = 220, Key_CloseBraket = 221, Key_SingleQuote = 222;
+
+bool isKeyDown(int key) {
+    vec2 uv = vec2(float(key) / 255.0, 0.125);
+    return texture2D(iKeyboard, uv).r > 0.0;
+}
+bool isKeyPressed(int key) {
+    vec2 uv = vec2(float(key) / 255.0, 0.375);
+    return texture2D(iKeyboard, uv).r > 0.0;
+}
+bool isKeyToggled(int key) {
+    vec2 uv = vec2(float(key) / 255.0, 0.625);
+    return texture2D(iKeyboard, uv).r > 0.0;
+}
+bool isKeyReleased(int key) {
+    vec2 uv = vec2(float(key) / 255.0, 0.875);
+    return texture2D(iKeyboard, uv).r > 0.0;
+}
+#ifndef CAMERA_GLSL
+#define CAMERA_GLSL
+
+#ifndef RENDER_GLSL
+#define RENDER_GLSL
+
+#ifndef OBJECT_GLSL
+#define OBJECT_GLSL
+
+/* A Capsule has position of the top and bottom spheres and their radius */
+struct Capsule {
+    vec3 top;
+    vec3 bot;
+    float rad;
+};
+
+/* A Cylinder is the same as Capsule but the algorithms are different */
+struct Cylinder {
+    vec3 top;
+    vec3 bot;
+    float rad;
+};
+
+/* A Torus has a main radius and the thickness of the tube and position */
+struct Torus {
+    float radBig;
+    float radSmol;
+    vec3 pos;
+};
+
+/*
+* A box has width height and depth(all calculated from center to sides)
+* and position
+*/
+struct Box {
+    // width, height, depth can be put in a vec3
+    float wid;
+    float hig;
+    float dep;
+    vec3 pos;
+};
+
+/*
+ * A fucking sphere, idk
+*/
+struct Sphere {
+    vec3 pos;
+	float rad;
+};
+
+
+struct Piramid {
+    vec3 pos;
+    float height;
+};
+
+#endif // OBJECT_GLSL
+
+#define MAX_STEPS 16
+#define MAX_DIST 100.
+#define SURF_DIST .01
+
+#define PI 3.14159
+
+const vec3 PLAYER_COLOR = vec3(0.7411, 0.5764, 0.9764);
+const vec3 ASTEROID_COLOR = vec3(0.7, 0.7, 0.75);
+
+/*
+* Rotate object in one plane:
+* use obj.xy *= Rotate(val);
+* to rotate the object by some value on the xy plane
+*/
+mat2 Rotate(float val) {
+    float s = sin(val);
+    float c = cos(val );
+    return mat2(c, -s, s, c);
+}
+
+mat3 RotateOffset(float rotate, float x, float y){
+    mat3 rotateMat;
+    float s = sin(rotate);
+    float c = cos(rotate);
+    rotateMat[0] = vec3(c, -s, -x*c+y*s+x);
+    rotateMat[1] = vec3(s, c, -x*s-y*c+y);
+    rotateMat[2] = vec3(0., 0., 1.);
+    return rotateMat;
+}
+
+mat3 Translate3(float x, float y){
+    mat3 translateMat;
+    translateMat[0] = vec3(1., 0., x);
+    translateMat[1] = vec3(0., 1., y);
+    translateMat[2] = vec3(0., 0., 1.);
+    return translateMat;
+}
+
+/*
+ * Get the min distance vec4 from vec4(rgb, dist)
+*/
+vec4 minSd(vec4 first, vec4 second) {
+    return first.w < second.w? first : second;
+}
+//-----------------------------------------------------------------------------
+/*
+ * Distance functions -> give us the distanсe to said object type
+ * NEGATIVE return on the inside and POSITIVE on the outside
+ * * vec3 point: origin point - the position you want your object to be at
+ * * Object: obj to find distance to
+ */
+
+/* Get distance to the Box and put it in proper position */
+float sdBox(vec3 point, Box box) {
+    /// By default the scale is inversed
+
+    point = abs(point) - vec3(box.wid, box.hig, box.dep);
+    /// Account for inner position for there not to be distorted black dots
+    return (length(max(point, 0.)) + min(max(point.x, max(point.y, point.z)), 0.));
+}
+
+/* Get distance to the Torus and put it in proper position */
+float getDistTorus(vec3 point, Torus tor) {
+    /// Projected distance to the outside layer of a torus
+    float projDistToOut = length(point.xz) - tor.radBig;
+    return length(vec2(projDistToOut, point.y)) - tor.radSmol;
+}
+
+/* Get distance to the Capsule */
+float sdCapsule(vec3 point, Capsule cap) {
+    vec3 edge = cap.bot - cap.top;
+    vec3 distToCapsule = point - cap.top;
+
+    float distToHit = dot(edge, distToCapsule) / dot(edge, edge);
+    distToHit = clamp(distToHit, 0., 1.);
+
+    vec3 pointHit = cap.top + distToHit*edge;
+    return length(point - pointHit) - cap.rad;
+}
+
+/* Get distance to the Cylinder */
+float sdCylinder(vec3 point, Cylinder cap) {
+    vec3 edge = cap.bot - cap.top;
+    vec3 distToSide = point - cap.top;
+
+    float distToHit = dot(edge, distToSide) / dot(edge, edge);
+    // distToHit = clamp(distToHit, 0., 1.);
+
+    vec3 pointHit = cap.top + distToHit*edge;
+    // X-axis dist to cylinder
+    float xDist = length(point - pointHit) - cap.rad;
+    float yDist = (abs(distToHit - .5) - .5) * length(edge);
+
+    float exteriorDist = length(max(vec2(xDist, yDist), 0.));
+    float interiorDist = min(max(xDist, yDist), 0.);
+    return exteriorDist + interiorDist;
+}
+
+/* Get distance to the Sphere - The fastest! */
+float sdSphere(vec3 point, Sphere sphere) {
+    return length(point) - sphere.rad;
+}
+
+/* Get distance to the Plane */
+float sdPlane(vec3 point, vec3 plane) {
+    return dot(point, normalize(plane));
+}
+
+/*
+ * Get distance to the Piramid - for now used only in player creation
+ * Code "borrowed" from https://www.shadertoy.com/view/Ntd3DX
+ */
+float sdPyramid(vec3 position, float halfWidth, float halfDepth, float halfHeight) {
+    position.xz = abs(position.xz);
+
+    // bottom
+    float s1 = abs(position.y) - halfHeight;
+    vec3 base = vec3(max(position.x - halfWidth, 0.0), abs(position.y + halfHeight), max(position.z - halfDepth, 0.0));
+    float d1 = dot(base, base);
+
+    vec3 q = position - vec3(halfWidth, -halfHeight, halfDepth);
+    vec3 end = vec3(-halfWidth, 2.0 * halfHeight, -halfDepth);
+    vec3 segment = q - end * clamp(dot(q, end) / dot(end, end), 0.0, 1.0);
+    float d = dot(segment, segment);
+
+    // side
+    vec3 normal1 = vec3(end.y, -end.x, 0.0);
+    float s2 = dot(q.xy, normal1.xy);
+    float d2 = d;
+    if (dot(q.xy, -end.xy) < 0.0 && dot(q, cross(normal1, end)) < 0.0) {
+        d2 = s2 * s2 / dot(normal1.xy, normal1.xy);
+    }
+    // front/back
+    vec3 normal2 = vec3(0.0, -end.z, end.y);
+    float s3 = dot(q.yz, normal2.yz);
+    float d3 = d;
+    if (dot(q.yz, -end.yz) < 0.0 && dot(q, cross(normal2, -end)) < 0.0) {
+        d3 = s3 * s3 / dot(normal2.yz, normal2.yz);
+    }
+    return sqrt(min(min(d1, d2), d3)) * sign(max(max(s1, s2), s3));
+}
+
+#endif // RENDER_GLSL
+
+vec3 getRo(vec4 camera_props) {
+    vec3 ro = vec3(-camera_props.x, camera_props.y, camera_props.z);
+    ro.xz *= Rotate(PI);
+    return ro;
+}
+
+// lookat - central point of the camera
+// zoom - zoom  ==  distance from camera to the screen
+// c - center point on the screen = ro + forward * zoom factor z
+// ro = ray origin
+// right - if we look straight from the camera on screen, it is x offset
+// up - if we look straight from the camera on screen, it is y offset
+// intersection - the point on the screen where ray passes through it
+vec3 getRd(vec2 uv, vec3 ro, vec4 camera_props) {
+    // variables to control camera if we need it
+    vec3 lookat = vec3(camera_props.xy, 0.);
+    float zoom = camera_props.w;
+
+    vec3 forward = normalize(lookat - ro),
+        right = normalize(cross(vec3(0, 1, 0), forward)),
+        up = cross(forward, right),
+        c = ro + forward * zoom,
+        intersection = c + uv.x * right + uv.y * up,
+        d = normalize(intersection - ro);
+    return d;
+}
+
+#endif // CAMERA_GLSL
+#ifndef BLACK_HOLE_GLSL
+#define BLACK_HOLE_GLSL
+
+/* Layers of data in pixels - basically Y coordinates */
+#define ASTEROID_LAYER_ROW 0
+#define PLAYER_LAYER_ROW 1
+#define CAMERA_LAYER_ROW 2
+
+#define P_MOVEMENT_COL 0
+#define P_ROTATION_COL 1
+#define P_CONTROLS_COL 2
+#define P_COLLISION_COL 3
+
+#define C_OPTIONS_COL 0
+#define C_SCREEN_SIZE_COL 1
+
+/* Asteroid properties */
+#define NUM_ASTEROIDS 5.
+#define ASTEROID_SPEED 0.007
+#define ASTEROID_RADIUS 1.
+
+/* Player Properties */
+#define PLAYER_HEIGHT 1.5
+
+
+const vec3 BH_pos = vec3(-.5, 1.5, -16.);  // BH position
+const float BH_R = 0.5;                  // event horizon radius
+/// how much acceleration a black hole exerts on a light particle
+vec3 blackHoleNullParticleAccl(vec3 p) {
+    vec3 r = (p - BH_pos);
+    return -1.5 * BH_R * r / pow(length(r), 5.0);
+}
+const float dt = 0.15;
+
+#endif  // BLACK_HOLE_GLSL
+
+
+
+
+#define MAX_STEPS_PRECOMPUTE 512
+const float precompute_dt_divisor = 30.;
+vec4 height1precompute(vec3 current_position, vec3 ray_velocity, bool put_velocity) {
+    // 4th coord is whether we reached height 1 or got past event horison
+    vec4 rayLocationOrVelocityAndMode = vec4(0.);
+    float precompute_dt = dt / precompute_dt_divisor;
+    for (int i = 0; i < MAX_STEPS_PRECOMPUTE * int(precompute_dt_divisor); ++i) {
+        float dist = abs(current_position.z+1.);
+
+        ray_velocity += blackHoleNullParticleAccl(current_position) * precompute_dt;
+
+        float dist_to_travel = length(ray_velocity) * precompute_dt;
+        if (dist_to_travel > dist) {
+            ray_velocity *= dist / dist_to_travel;
+        }
+
+        current_position += ray_velocity * precompute_dt;
+
+        // check that we got below event horizon
+        if (distance(BH_pos, current_position) < BH_R) {
+            break;
+        }
+
+        // check that we landed on a point
+        if (abs(dist) < SURF_DIST) {
+            if (put_velocity) {
+                rayLocationOrVelocityAndMode = vec4(normalize(ray_velocity), 1.);
+            } else {
+                rayLocationOrVelocityAndMode = vec4(current_position, 1.);
+            }
+            break;
+        }
+    }
+    return rayLocationOrVelocityAndMode;
+}
+
+void mainImage(out vec4 fragColor, in vec2 fragCoord) {
+    if (iFrame == 0) {
+        vec2 uv = (fragCoord-.5*iResolution.xy) / iResolution.y;
+        // TODO: I couldn't use the data channel for some reason.
+        // texelFetch(iChannel0, ...) works if we #include <player.glsl>, but
+        // then texelFetch(iChannel1, ...) doesn't work. Since camera position
+        // is a constant currently, I just pasted it here for a temporary fix
+        vec4 camera_props = vec4(0., 0., 20., 0.5);// texelFetch(iChannel0, ivec2(C_OPTIONS_COL, CAMERA_LAYER_ROW), 0);
+        vec3 ro = getRo(camera_props);
+        vec3 rd = getRd(uv, ro, camera_props);
+        /// put velocity if fragCoord.x is divisible by 2
+        float flooredfragCoordx = floor(fragCoord.x);  // remove possible .5
+        bool put_velocity = (flooredfragCoordx-2.*floor(flooredfragCoordx/2.)) == 0.;
+        fragColor = height1precompute(ro, rd, put_velocity);
+    } else {
+        fragColor = texelFetch(iChannel1, ivec2(fragCoord), 0);
+    }
+}
+void main() {
+    vec2 fragCoord = gl_FragCoord.xy;
+    mainImage(gl_FragColor, fragCoord);
+}
+</script><script id='/Users/michael/uni/UCU/OS/BaseTeroid/main.glsl' type='x-shader/x-fragment'>
+uniform vec3        iResolution;
+uniform float       iTime;
+uniform float       iTimeDelta;
+uniform int         iFrame;
+uniform vec4        iDate;
+uniform vec3        iChannelResolution[10];
+uniform vec4        iMouse;
+uniform vec4        iMouseButton;
+uniform sampler2D   iChannel0;
+uniform sampler2D   iChannel1;
+uniform sampler2D   iChannel2;
+uniform sampler2D   iChannel3;
+uniform sampler2D   iChannel4;
+uniform sampler2D   iChannel5;
+uniform sampler2D   iChannel6;
+uniform sampler2D   iChannel7;
+uniform sampler2D   iChannel8;
+uniform sampler2D   iChannel9;
+uniform sampler2D   iKeyboard;
+uniform float       iSampleRate;
+
+#define iGlobalTime iTime
+#define iGlobalFrame iFrame
+
+#define SHADER_TOY
+
+const int Key_Backspace = 8, Key_Tab = 9, Key_Enter = 13, Key_Shift = 16, Key_Ctrl = 17, Key_Alt = 18, Key_Pause = 19, Key_Caps = 20, Key_Escape = 27, Key_PageUp = 33, Key_PageDown = 34, Key_End = 35,
+    Key_Home = 36, Key_LeftArrow = 37, Key_UpArrow = 38, Key_RightArrow = 39, Key_DownArrow = 40, Key_Insert = 45, Key_Delete = 46, Key_0 = 48, Key_1 = 49, Key_2 = 50, Key_3 = 51, Key_4 = 52,
+    Key_5 = 53, Key_6 = 54, Key_7 = 55, Key_8 = 56, Key_9 = 57, Key_A = 65, Key_B = 66, Key_C = 67, Key_D = 68, Key_E = 69, Key_F = 70, Key_G = 71, Key_H = 72,
+    Key_I = 73, Key_J = 74, Key_K = 75, Key_L = 76, Key_M = 77, Key_N = 78, Key_O = 79, Key_P = 80, Key_Q = 81, Key_R = 82, Key_S = 83, Key_T = 84, Key_U = 85,
+    Key_V = 86, Key_W = 87, Key_X = 88, Key_Y = 89, Key_Z = 90, Key_LeftWindow = 91, Key_RightWindows = 92, Key_Select = 93, Key_Numpad0 = 96, Key_Numpad1 = 97, Key_Numpad2 = 98, Key_Numpad3 = 99,
+    Key_Numpad4 = 100, Key_Numpad5 = 101, Key_Numpad6 = 102, Key_Numpad7 = 103, Key_Numpad8 = 104, Key_Numpad9 = 105, Key_NumpadMultiply = 106, Key_NumpadAdd = 107, Key_NumpadSubtract = 109, Key_NumpadPeriod = 110, Key_NumpadDivide = 111, Key_F1 = 112, Key_F2 = 113, Key_F3 = 114, Key_F4 = 115, Key_F5 = 116, Key_F6 = 117, Key_F7 = 118, Key_F8 = 119, Key_F9 = 120, Key_F10 = 121, Key_F11 = 122, Key_F12 = 123, Key_NumLock = 144, Key_ScrollLock = 145,
+    Key_SemiColon = 186, Key_Equal = 187, Key_Comma = 188, Key_Dash = 189, Key_Period = 190, Key_ForwardSlash = 191, Key_GraveAccent = 192, Key_OpenBracket = 219, Key_BackSlash = 220, Key_CloseBraket = 221, Key_SingleQuote = 222;
+
+bool isKeyDown(int key) {
+    vec2 uv = vec2(float(key) / 255.0, 0.125);
+    return texture2D(iKeyboard, uv).r > 0.0;
+}
+bool isKeyPressed(int key) {
+    vec2 uv = vec2(float(key) / 255.0, 0.375);
+    return texture2D(iKeyboard, uv).r > 0.0;
+}
+bool isKeyToggled(int key) {
+    vec2 uv = vec2(float(key) / 255.0, 0.625);
+    return texture2D(iKeyboard, uv).r > 0.0;
+}
+bool isKeyReleased(int key) {
+    vec2 uv = vec2(float(key) / 255.0, 0.875);
+    return texture2D(iKeyboard, uv).r > 0.0;
+}
+#ifndef RAY_GLSL
+#define RAY_GLSL
+
+#ifndef RENDER_GLSL
+#define RENDER_GLSL
+
+#ifndef OBJECT_GLSL
+#define OBJECT_GLSL
+
+/* A Capsule has position of the top and bottom spheres and their radius */
+struct Capsule {
+    vec3 top;
+    vec3 bot;
+    float rad;
+};
+
+/* A Cylinder is the same as Capsule but the algorithms are different */
+struct Cylinder {
+    vec3 top;
+    vec3 bot;
+    float rad;
+};
+
+/* A Torus has a main radius and the thickness of the tube and position */
+struct Torus {
+    float radBig;
+    float radSmol;
+    vec3 pos;
+};
+
+/*
+* A box has width height and depth(all calculated from center to sides)
+* and position
+*/
+struct Box {
+    // width, height, depth can be put in a vec3
+    float wid;
+    float hig;
+    float dep;
+    vec3 pos;
+};
+
+/*
+ * A fucking sphere, idk
+*/
+struct Sphere {
+    vec3 pos;
+	float rad;
+};
+
+
+struct Piramid {
+    vec3 pos;
+    float height;
+};
+
+#endif // OBJECT_GLSL
+
+#define MAX_STEPS 16
+#define MAX_DIST 100.
+#define SURF_DIST .01
+
+#define PI 3.14159
+
+const vec3 PLAYER_COLOR = vec3(0.7411, 0.5764, 0.9764);
+const vec3 ASTEROID_COLOR = vec3(0.7, 0.7, 0.75);
+
+/*
+* Rotate object in one plane:
+* use obj.xy *= Rotate(val);
+* to rotate the object by some value on the xy plane
+*/
+mat2 Rotate(float val) {
+    float s = sin(val);
+    float c = cos(val );
+    return mat2(c, -s, s, c);
+}
+
+mat3 RotateOffset(float rotate, float x, float y){
+    mat3 rotateMat;
+    float s = sin(rotate);
+    float c = cos(rotate);
+    rotateMat[0] = vec3(c, -s, -x*c+y*s+x);
+    rotateMat[1] = vec3(s, c, -x*s-y*c+y);
+    rotateMat[2] = vec3(0., 0., 1.);
+    return rotateMat;
+}
+
+mat3 Translate3(float x, float y){
+    mat3 translateMat;
+    translateMat[0] = vec3(1., 0., x);
+    translateMat[1] = vec3(0., 1., y);
+    translateMat[2] = vec3(0., 0., 1.);
+    return translateMat;
+}
+
+/*
+ * Get the min distance vec4 from vec4(rgb, dist)
+*/
+vec4 minSd(vec4 first, vec4 second) {
+    return first.w < second.w? first : second;
+}
+//-----------------------------------------------------------------------------
+/*
+ * Distance functions -> give us the distanсe to said object type
+ * NEGATIVE return on the inside and POSITIVE on the outside
+ * * vec3 point: origin point - the position you want your object to be at
+ * * Object: obj to find distance to
+ */
+
+/* Get distance to the Box and put it in proper position */
+float sdBox(vec3 point, Box box) {
+    /// By default the scale is inversed
+
+    point = abs(point) - vec3(box.wid, box.hig, box.dep);
+    /// Account for inner position for there not to be distorted black dots
+    return (length(max(point, 0.)) + min(max(point.x, max(point.y, point.z)), 0.));
+}
+
+/* Get distance to the Torus and put it in proper position */
+float getDistTorus(vec3 point, Torus tor) {
+    /// Projected distance to the outside layer of a torus
+    float projDistToOut = length(point.xz) - tor.radBig;
+    return length(vec2(projDistToOut, point.y)) - tor.radSmol;
+}
+
+/* Get distance to the Capsule */
+float sdCapsule(vec3 point, Capsule cap) {
+    vec3 edge = cap.bot - cap.top;
+    vec3 distToCapsule = point - cap.top;
+
+    float distToHit = dot(edge, distToCapsule) / dot(edge, edge);
+    distToHit = clamp(distToHit, 0., 1.);
+
+    vec3 pointHit = cap.top + distToHit*edge;
+    return length(point - pointHit) - cap.rad;
+}
+
+/* Get distance to the Cylinder */
+float sdCylinder(vec3 point, Cylinder cap) {
+    vec3 edge = cap.bot - cap.top;
+    vec3 distToSide = point - cap.top;
+
+    float distToHit = dot(edge, distToSide) / dot(edge, edge);
+    // distToHit = clamp(distToHit, 0., 1.);
+
+    vec3 pointHit = cap.top + distToHit*edge;
+    // X-axis dist to cylinder
+    float xDist = length(point - pointHit) - cap.rad;
+    float yDist = (abs(distToHit - .5) - .5) * length(edge);
+
+    float exteriorDist = length(max(vec2(xDist, yDist), 0.));
+    float interiorDist = min(max(xDist, yDist), 0.);
+    return exteriorDist + interiorDist;
+}
+
+/* Get distance to the Sphere - The fastest! */
+float sdSphere(vec3 point, Sphere sphere) {
+    return length(point) - sphere.rad;
+}
+
+/* Get distance to the Plane */
+float sdPlane(vec3 point, vec3 plane) {
+    return dot(point, normalize(plane));
+}
+
+/*
+ * Get distance to the Piramid - for now used only in player creation
+ * Code "borrowed" from https://www.shadertoy.com/view/Ntd3DX
+ */
+float sdPyramid(vec3 position, float halfWidth, float halfDepth, float halfHeight) {
+    position.xz = abs(position.xz);
+
+    // bottom
+    float s1 = abs(position.y) - halfHeight;
+    vec3 base = vec3(max(position.x - halfWidth, 0.0), abs(position.y + halfHeight), max(position.z - halfDepth, 0.0));
+    float d1 = dot(base, base);
+
+    vec3 q = position - vec3(halfWidth, -halfHeight, halfDepth);
+    vec3 end = vec3(-halfWidth, 2.0 * halfHeight, -halfDepth);
+    vec3 segment = q - end * clamp(dot(q, end) / dot(end, end), 0.0, 1.0);
+    float d = dot(segment, segment);
+
+    // side
+    vec3 normal1 = vec3(end.y, -end.x, 0.0);
+    float s2 = dot(q.xy, normal1.xy);
+    float d2 = d;
+    if (dot(q.xy, -end.xy) < 0.0 && dot(q, cross(normal1, end)) < 0.0) {
+        d2 = s2 * s2 / dot(normal1.xy, normal1.xy);
+    }
+    // front/back
+    vec3 normal2 = vec3(0.0, -end.z, end.y);
+    float s3 = dot(q.yz, normal2.yz);
+    float d3 = d;
+    if (dot(q.yz, -end.yz) < 0.0 && dot(q, cross(normal2, -end)) < 0.0) {
+        d3 = s3 * s3 / dot(normal2.yz, normal2.yz);
+    }
+    return sqrt(min(min(d1, d2), d3)) * sign(max(max(s1, s2), s3));
+}
+
+#endif // RENDER_GLSL
+#ifndef PLAYER_GLSL
+#define PLAYER_GLSL
+
+#ifndef RENDER_GLSL
+#define RENDER_GLSL
+
+#ifndef OBJECT_GLSL
+#define OBJECT_GLSL
+
+/* A Capsule has position of the top and bottom spheres and their radius */
+struct Capsule {
+    vec3 top;
+    vec3 bot;
+    float rad;
+};
+
+/* A Cylinder is the same as Capsule but the algorithms are different */
+struct Cylinder {
+    vec3 top;
+    vec3 bot;
+    float rad;
+};
+
+/* A Torus has a main radius and the thickness of the tube and position */
+struct Torus {
+    float radBig;
+    float radSmol;
+    vec3 pos;
+};
+
+/*
+* A box has width height and depth(all calculated from center to sides)
+* and position
+*/
+struct Box {
+    // width, height, depth can be put in a vec3
+    float wid;
+    float hig;
+    float dep;
+    vec3 pos;
+};
+
+/*
+ * A fucking sphere, idk
+*/
+struct Sphere {
+    vec3 pos;
+	float rad;
+};
+
+
+struct Piramid {
+    vec3 pos;
+    float height;
+};
+
+#endif // OBJECT_GLSL
+
+#define MAX_STEPS 16
+#define MAX_DIST 100.
+#define SURF_DIST .01
+
+#define PI 3.14159
+
+const vec3 PLAYER_COLOR = vec3(0.7411, 0.5764, 0.9764);
+const vec3 ASTEROID_COLOR = vec3(0.7, 0.7, 0.75);
+
+/*
+* Rotate object in one plane:
+* use obj.xy *= Rotate(val);
+* to rotate the object by some value on the xy plane
+*/
+mat2 Rotate(float val) {
+    float s = sin(val);
+    float c = cos(val );
+    return mat2(c, -s, s, c);
+}
+
+mat3 RotateOffset(float rotate, float x, float y){
+    mat3 rotateMat;
+    float s = sin(rotate);
+    float c = cos(rotate);
+    rotateMat[0] = vec3(c, -s, -x*c+y*s+x);
+    rotateMat[1] = vec3(s, c, -x*s-y*c+y);
+    rotateMat[2] = vec3(0., 0., 1.);
+    return rotateMat;
+}
+
+mat3 Translate3(float x, float y){
+    mat3 translateMat;
+    translateMat[0] = vec3(1., 0., x);
+    translateMat[1] = vec3(0., 1., y);
+    translateMat[2] = vec3(0., 0., 1.);
+    return translateMat;
+}
+
+/*
+ * Get the min distance vec4 from vec4(rgb, dist)
+*/
+vec4 minSd(vec4 first, vec4 second) {
+    return first.w < second.w? first : second;
+}
+//-----------------------------------------------------------------------------
+/*
+ * Distance functions -> give us the distanсe to said object type
+ * NEGATIVE return on the inside and POSITIVE on the outside
+ * * vec3 point: origin point - the position you want your object to be at
+ * * Object: obj to find distance to
+ */
+
+/* Get distance to the Box and put it in proper position */
+float sdBox(vec3 point, Box box) {
+    /// By default the scale is inversed
+
+    point = abs(point) - vec3(box.wid, box.hig, box.dep);
+    /// Account for inner position for there not to be distorted black dots
+    return (length(max(point, 0.)) + min(max(point.x, max(point.y, point.z)), 0.));
+}
+
+/* Get distance to the Torus and put it in proper position */
+float getDistTorus(vec3 point, Torus tor) {
+    /// Projected distance to the outside layer of a torus
+    float projDistToOut = length(point.xz) - tor.radBig;
+    return length(vec2(projDistToOut, point.y)) - tor.radSmol;
+}
+
+/* Get distance to the Capsule */
+float sdCapsule(vec3 point, Capsule cap) {
+    vec3 edge = cap.bot - cap.top;
+    vec3 distToCapsule = point - cap.top;
+
+    float distToHit = dot(edge, distToCapsule) / dot(edge, edge);
+    distToHit = clamp(distToHit, 0., 1.);
+
+    vec3 pointHit = cap.top + distToHit*edge;
+    return length(point - pointHit) - cap.rad;
+}
+
+/* Get distance to the Cylinder */
+float sdCylinder(vec3 point, Cylinder cap) {
+    vec3 edge = cap.bot - cap.top;
+    vec3 distToSide = point - cap.top;
+
+    float distToHit = dot(edge, distToSide) / dot(edge, edge);
+    // distToHit = clamp(distToHit, 0., 1.);
+
+    vec3 pointHit = cap.top + distToHit*edge;
+    // X-axis dist to cylinder
+    float xDist = length(point - pointHit) - cap.rad;
+    float yDist = (abs(distToHit - .5) - .5) * length(edge);
+
+    float exteriorDist = length(max(vec2(xDist, yDist), 0.));
+    float interiorDist = min(max(xDist, yDist), 0.);
+    return exteriorDist + interiorDist;
+}
+
+/* Get distance to the Sphere - The fastest! */
+float sdSphere(vec3 point, Sphere sphere) {
+    return length(point) - sphere.rad;
+}
+
+/* Get distance to the Plane */
+float sdPlane(vec3 point, vec3 plane) {
+    return dot(point, normalize(plane));
+}
+
+/*
+ * Get distance to the Piramid - for now used only in player creation
+ * Code "borrowed" from https://www.shadertoy.com/view/Ntd3DX
+ */
+float sdPyramid(vec3 position, float halfWidth, float halfDepth, float halfHeight) {
+    position.xz = abs(position.xz);
+
+    // bottom
+    float s1 = abs(position.y) - halfHeight;
+    vec3 base = vec3(max(position.x - halfWidth, 0.0), abs(position.y + halfHeight), max(position.z - halfDepth, 0.0));
+    float d1 = dot(base, base);
+
+    vec3 q = position - vec3(halfWidth, -halfHeight, halfDepth);
+    vec3 end = vec3(-halfWidth, 2.0 * halfHeight, -halfDepth);
+    vec3 segment = q - end * clamp(dot(q, end) / dot(end, end), 0.0, 1.0);
+    float d = dot(segment, segment);
+
+    // side
+    vec3 normal1 = vec3(end.y, -end.x, 0.0);
+    float s2 = dot(q.xy, normal1.xy);
+    float d2 = d;
+    if (dot(q.xy, -end.xy) < 0.0 && dot(q, cross(normal1, end)) < 0.0) {
+        d2 = s2 * s2 / dot(normal1.xy, normal1.xy);
+    }
+    // front/back
+    vec3 normal2 = vec3(0.0, -end.z, end.y);
+    float s3 = dot(q.yz, normal2.yz);
+    float d3 = d;
+    if (dot(q.yz, -end.yz) < 0.0 && dot(q, cross(normal2, -end)) < 0.0) {
+        d3 = s3 * s3 / dot(normal2.yz, normal2.yz);
+    }
+    return sqrt(min(min(d1, d2), d3)) * sign(max(max(s1, s2), s3));
+}
+
+#endif // RENDER_GLSL
+/* Layers of data in pixels - basically Y coordinates */
+#define ASTEROID_LAYER_ROW 0
+#define PLAYER_LAYER_ROW 1
+#define CAMERA_LAYER_ROW 2
+
+#define P_MOVEMENT_COL 0
+#define P_ROTATION_COL 1
+#define P_CONTROLS_COL 2
+#define P_COLLISION_COL 3
+
+#define C_OPTIONS_COL 0
+#define C_SCREEN_SIZE_COL 1
+
+/* Asteroid properties */
+#define NUM_ASTEROIDS 5.
+#define ASTEROID_SPEED 0.007
+#define ASTEROID_RADIUS 1.
+
+/* Player Properties */
+#define PLAYER_HEIGHT 1.5
+
+#ifndef CAMERA_GLSL
+#define CAMERA_GLSL
+
+#ifndef RENDER_GLSL
+#define RENDER_GLSL
+
+#ifndef OBJECT_GLSL
+#define OBJECT_GLSL
+
+/* A Capsule has position of the top and bottom spheres and their radius */
+struct Capsule {
+    vec3 top;
+    vec3 bot;
+    float rad;
+};
+
+/* A Cylinder is the same as Capsule but the algorithms are different */
+struct Cylinder {
+    vec3 top;
+    vec3 bot;
+    float rad;
+};
+
+/* A Torus has a main radius and the thickness of the tube and position */
+struct Torus {
+    float radBig;
+    float radSmol;
+    vec3 pos;
+};
+
+/*
+* A box has width height and depth(all calculated from center to sides)
+* and position
+*/
+struct Box {
+    // width, height, depth can be put in a vec3
+    float wid;
+    float hig;
+    float dep;
+    vec3 pos;
+};
+
+/*
+ * A fucking sphere, idk
+*/
+struct Sphere {
+    vec3 pos;
+	float rad;
+};
+
+
+struct Piramid {
+    vec3 pos;
+    float height;
+};
+
+#endif // OBJECT_GLSL
+
+#define MAX_STEPS 16
+#define MAX_DIST 100.
+#define SURF_DIST .01
+
+#define PI 3.14159
+
+const vec3 PLAYER_COLOR = vec3(0.7411, 0.5764, 0.9764);
+const vec3 ASTEROID_COLOR = vec3(0.7, 0.7, 0.75);
+
+/*
+* Rotate object in one plane:
+* use obj.xy *= Rotate(val);
+* to rotate the object by some value on the xy plane
+*/
+mat2 Rotate(float val) {
+    float s = sin(val);
+    float c = cos(val );
+    return mat2(c, -s, s, c);
+}
+
+mat3 RotateOffset(float rotate, float x, float y){
+    mat3 rotateMat;
+    float s = sin(rotate);
+    float c = cos(rotate);
+    rotateMat[0] = vec3(c, -s, -x*c+y*s+x);
+    rotateMat[1] = vec3(s, c, -x*s-y*c+y);
+    rotateMat[2] = vec3(0., 0., 1.);
+    return rotateMat;
+}
+
+mat3 Translate3(float x, float y){
+    mat3 translateMat;
+    translateMat[0] = vec3(1., 0., x);
+    translateMat[1] = vec3(0., 1., y);
+    translateMat[2] = vec3(0., 0., 1.);
+    return translateMat;
+}
+
+/*
+ * Get the min distance vec4 from vec4(rgb, dist)
+*/
+vec4 minSd(vec4 first, vec4 second) {
+    return first.w < second.w? first : second;
+}
+//-----------------------------------------------------------------------------
+/*
+ * Distance functions -> give us the distanсe to said object type
+ * NEGATIVE return on the inside and POSITIVE on the outside
+ * * vec3 point: origin point - the position you want your object to be at
+ * * Object: obj to find distance to
+ */
+
+/* Get distance to the Box and put it in proper position */
+float sdBox(vec3 point, Box box) {
+    /// By default the scale is inversed
+
+    point = abs(point) - vec3(box.wid, box.hig, box.dep);
+    /// Account for inner position for there not to be distorted black dots
+    return (length(max(point, 0.)) + min(max(point.x, max(point.y, point.z)), 0.));
+}
+
+/* Get distance to the Torus and put it in proper position */
+float getDistTorus(vec3 point, Torus tor) {
+    /// Projected distance to the outside layer of a torus
+    float projDistToOut = length(point.xz) - tor.radBig;
+    return length(vec2(projDistToOut, point.y)) - tor.radSmol;
+}
+
+/* Get distance to the Capsule */
+float sdCapsule(vec3 point, Capsule cap) {
+    vec3 edge = cap.bot - cap.top;
+    vec3 distToCapsule = point - cap.top;
+
+    float distToHit = dot(edge, distToCapsule) / dot(edge, edge);
+    distToHit = clamp(distToHit, 0., 1.);
+
+    vec3 pointHit = cap.top + distToHit*edge;
+    return length(point - pointHit) - cap.rad;
+}
+
+/* Get distance to the Cylinder */
+float sdCylinder(vec3 point, Cylinder cap) {
+    vec3 edge = cap.bot - cap.top;
+    vec3 distToSide = point - cap.top;
+
+    float distToHit = dot(edge, distToSide) / dot(edge, edge);
+    // distToHit = clamp(distToHit, 0., 1.);
+
+    vec3 pointHit = cap.top + distToHit*edge;
+    // X-axis dist to cylinder
+    float xDist = length(point - pointHit) - cap.rad;
+    float yDist = (abs(distToHit - .5) - .5) * length(edge);
+
+    float exteriorDist = length(max(vec2(xDist, yDist), 0.));
+    float interiorDist = min(max(xDist, yDist), 0.);
+    return exteriorDist + interiorDist;
+}
+
+/* Get distance to the Sphere - The fastest! */
+float sdSphere(vec3 point, Sphere sphere) {
+    return length(point) - sphere.rad;
+}
+
+/* Get distance to the Plane */
+float sdPlane(vec3 point, vec3 plane) {
+    return dot(point, normalize(plane));
+}
+
+/*
+ * Get distance to the Piramid - for now used only in player creation
+ * Code "borrowed" from https://www.shadertoy.com/view/Ntd3DX
+ */
+float sdPyramid(vec3 position, float halfWidth, float halfDepth, float halfHeight) {
+    position.xz = abs(position.xz);
+
+    // bottom
+    float s1 = abs(position.y) - halfHeight;
+    vec3 base = vec3(max(position.x - halfWidth, 0.0), abs(position.y + halfHeight), max(position.z - halfDepth, 0.0));
+    float d1 = dot(base, base);
+
+    vec3 q = position - vec3(halfWidth, -halfHeight, halfDepth);
+    vec3 end = vec3(-halfWidth, 2.0 * halfHeight, -halfDepth);
+    vec3 segment = q - end * clamp(dot(q, end) / dot(end, end), 0.0, 1.0);
+    float d = dot(segment, segment);
+
+    // side
+    vec3 normal1 = vec3(end.y, -end.x, 0.0);
+    float s2 = dot(q.xy, normal1.xy);
+    float d2 = d;
+    if (dot(q.xy, -end.xy) < 0.0 && dot(q, cross(normal1, end)) < 0.0) {
+        d2 = s2 * s2 / dot(normal1.xy, normal1.xy);
+    }
+    // front/back
+    vec3 normal2 = vec3(0.0, -end.z, end.y);
+    float s3 = dot(q.yz, normal2.yz);
+    float d3 = d;
+    if (dot(q.yz, -end.yz) < 0.0 && dot(q, cross(normal2, -end)) < 0.0) {
+        d3 = s3 * s3 / dot(normal2.yz, normal2.yz);
+    }
+    return sqrt(min(min(d1, d2), d3)) * sign(max(max(s1, s2), s3));
+}
+
+#endif // RENDER_GLSL
+
+vec3 getRo(vec4 camera_props) {
+    vec3 ro = vec3(-camera_props.x, camera_props.y, camera_props.z);
+    ro.xz *= Rotate(PI);
+    return ro;
+}
+
+// lookat - central point of the camera
+// zoom - zoom  ==  distance from camera to the screen
+// c - center point on the screen = ro + forward * zoom factor z
+// ro = ray origin
+// right - if we look straight from the camera on screen, it is x offset
+// up - if we look straight from the camera on screen, it is y offset
+// intersection - the point on the screen where ray passes through it
+vec3 getRd(vec2 uv, vec3 ro, vec4 camera_props) {
+    // variables to control camera if we need it
+    vec3 lookat = vec3(camera_props.xy, 0.);
+    float zoom = camera_props.w;
+
+    vec3 forward = normalize(lookat - ro),
+        right = normalize(cross(vec3(0, 1, 0), forward)),
+        up = cross(forward, right),
+        c = ro + forward * zoom,
+        intersection = c + uv.x * right + uv.y * up,
+        d = normalize(intersection - ro);
+    return d;
+}
+
+#endif // CAMERA_GLSL
+
+
+
+/*
+ * Create the player object(Piramid) and handle input transformation and rotation
+*/
+float createPlayer(vec3 point, vec3 originPos, vec3 offset) {
+
+    /// Get Rotation radians and matrix
+    float rotationRad = texelFetch(iChannel0, ivec2(P_ROTATION_COL, PLAYER_LAYER_ROW), 0).x;
+    mat2 rotationMat = Rotate(rotationRad);
+
+    /// Player body
+    Piramid body = Piramid(originPos, PLAYER_HEIGHT);
+    float playerHeight = body.height / 2.;
+
+    /// Handle body rotation and body movement
+    vec3 bodyPos = point - body.pos;
+    bodyPos -= offset;
+
+    // Triangle from the ass
+    vec3 trianglePos = point - body.pos;
+    trianglePos -= offset;
+
+    mat2 rotate180 = Rotate(PI);
+    mat3 rotationMat2 = RotateOffset(rotationRad, 0., -PLAYER_HEIGHT);
+    mat3 translationMat = Translate3(0., -PLAYER_HEIGHT);
+    float prevZ = trianglePos.z;
+    trianglePos.z = 1.;
+    trianglePos.xy *= rotate180;
+    trianglePos *= translationMat;
+    trianglePos *= rotationMat2;
+    trianglePos.z = prevZ;
+
+
+    bodyPos.xy *= rotationMat;
+
+    /// Flatten the piramid
+    bodyPos *= vec3(1., 1., 2.);
+    trianglePos *= vec3(1., 1., 2.);
+
+    vec2 controls = texelFetch(iChannel0, ivec2(P_CONTROLS_COL, PLAYER_LAYER_ROW), 0).xy;
+
+    if(controls.y != 1.){
+        return sdPyramid(bodyPos, playerHeight, body.height / 10., body.height / 1.5) / 2.;
+    }
+    else{
+        return min(sdPyramid(trianglePos, playerHeight/2.5, body.height / 25., body.height / 3.75) / 2., 
+                   sdPyramid(bodyPos, playerHeight, body.height / 10., body.height / 1.5) / 2.);
+    }
+}
+
+
+/*
+ * Calculate offset for the ship including rotation
+ * Calculate and apply acceleration and deceleration to the ship
+*/
+vec2 calcOffset(vec2 offset, inout vec2 inertia, float rotationRad) {
+    // get controls
+    vec2 controls = texelFetch(iChannel0, ivec2(P_CONTROLS_COL, PLAYER_LAYER_ROW), 0).xy;
+
+    /// Control values
+    float turnSpeed = 0.1 / 100.;
+    float velocity = 20. / 100.;
+    /// Inertia values
+    float speed = 5.;
+    float maxSpeed = .1;
+    float acceleration = 0.005;
+
+    bool isThrottle = controls.y > 0.;      /* Get if throttling */
+
+    controls.x *= turnSpeed;
+    controls.y *= velocity;
+
+    mat2 rotationMat = Rotate(rotationRad);
+    controls *= rotationMat;
+    controls.x *= -1.;
+
+    /// Acceleration/deceleration
+    if (isThrottle && length(inertia) < maxSpeed) {
+        inertia.x = mix(inertia.x, controls.x, acceleration);
+        inertia.y = mix(inertia.y, controls.y, acceleration);
+    } else {
+        inertia.x = mix(inertia.x, 0., acceleration);
+        inertia.y = mix(inertia.y, 0., acceleration);
+    }
+
+    vec2 screenSize = texelFetch(iChannel0, ivec2(C_SCREEN_SIZE_COL, CAMERA_LAYER_ROW), 0).xy;
+    screenSize -= 1.0;
+    offset += inertia * speed;
+
+    if(offset.x > screenSize.x){
+        offset.x -= screenSize.x * 2.;
+    }
+    else if(offset.x < -1. * screenSize.x){
+        offset.x += screenSize.x * 2.;
+    }
+    if(offset.y > screenSize.y){
+        offset.y -= screenSize.y * 2.;
+    }
+    else if(offset.y < -1. * screenSize.y){
+        offset.y += screenSize.y * 2.;
+    }
+
+    return offset;
+}
+
+/*
+ * Player movement wrapper for the data channel
+ * Handles ofsset and inetria
+ * outFrag ///< [in/out]
+ * .xy - offset
+ * .zw - inertia
+*/
+void handleMovement(inout vec4 outFrag) {
+    outFrag = texelFetch(iChannel0, ivec2(P_MOVEMENT_COL, PLAYER_LAYER_ROW), 0);
+    float rotationTexel = texelFetch(iChannel0, ivec2(P_ROTATION_COL, PLAYER_LAYER_ROW), 0).x;
+
+    /// Handle offset
+    outFrag.xy = calcOffset(outFrag.xy, outFrag.zw, rotationTexel);
+}
+
+/*
+ * Player rotation wrapper for the data channel
+ * outFrag ///< [in/out]
+ * .x - rotation
+*/
+void handleRotation(inout vec4 outFrag) {
+    vec2 controls = texelFetch(iChannel0, ivec2(P_CONTROLS_COL, PLAYER_LAYER_ROW), 0).xy;
+    outFrag = texelFetch(iChannel0, ivec2(P_ROTATION_COL, PLAYER_LAYER_ROW), 0);
+    outFrag.x += controls.x * .1;
+}
+
+#endif  // PLAYER_GLSL
+#ifndef CAMERA_GLSL
+#define CAMERA_GLSL
+
+#ifndef RENDER_GLSL
+#define RENDER_GLSL
+
+#ifndef OBJECT_GLSL
+#define OBJECT_GLSL
+
+/* A Capsule has position of the top and bottom spheres and their radius */
+struct Capsule {
+    vec3 top;
+    vec3 bot;
+    float rad;
+};
+
+/* A Cylinder is the same as Capsule but the algorithms are different */
+struct Cylinder {
+    vec3 top;
+    vec3 bot;
+    float rad;
+};
+
+/* A Torus has a main radius and the thickness of the tube and position */
+struct Torus {
+    float radBig;
+    float radSmol;
+    vec3 pos;
+};
+
+/*
+* A box has width height and depth(all calculated from center to sides)
+* and position
+*/
+struct Box {
+    // width, height, depth can be put in a vec3
+    float wid;
+    float hig;
+    float dep;
+    vec3 pos;
+};
+
+/*
+ * A fucking sphere, idk
+*/
+struct Sphere {
+    vec3 pos;
+	float rad;
+};
+
+
+struct Piramid {
+    vec3 pos;
+    float height;
+};
+
+#endif // OBJECT_GLSL
+
+#define MAX_STEPS 16
+#define MAX_DIST 100.
+#define SURF_DIST .01
+
+#define PI 3.14159
+
+const vec3 PLAYER_COLOR = vec3(0.7411, 0.5764, 0.9764);
+const vec3 ASTEROID_COLOR = vec3(0.7, 0.7, 0.75);
+
+/*
+* Rotate object in one plane:
+* use obj.xy *= Rotate(val);
+* to rotate the object by some value on the xy plane
+*/
+mat2 Rotate(float val) {
+    float s = sin(val);
+    float c = cos(val );
+    return mat2(c, -s, s, c);
+}
+
+mat3 RotateOffset(float rotate, float x, float y){
+    mat3 rotateMat;
+    float s = sin(rotate);
+    float c = cos(rotate);
+    rotateMat[0] = vec3(c, -s, -x*c+y*s+x);
+    rotateMat[1] = vec3(s, c, -x*s-y*c+y);
+    rotateMat[2] = vec3(0., 0., 1.);
+    return rotateMat;
+}
+
+mat3 Translate3(float x, float y){
+    mat3 translateMat;
+    translateMat[0] = vec3(1., 0., x);
+    translateMat[1] = vec3(0., 1., y);
+    translateMat[2] = vec3(0., 0., 1.);
+    return translateMat;
+}
+
+/*
+ * Get the min distance vec4 from vec4(rgb, dist)
+*/
+vec4 minSd(vec4 first, vec4 second) {
+    return first.w < second.w? first : second;
+}
+//-----------------------------------------------------------------------------
+/*
+ * Distance functions -> give us the distanсe to said object type
+ * NEGATIVE return on the inside and POSITIVE on the outside
+ * * vec3 point: origin point - the position you want your object to be at
+ * * Object: obj to find distance to
+ */
+
+/* Get distance to the Box and put it in proper position */
+float sdBox(vec3 point, Box box) {
+    /// By default the scale is inversed
+
+    point = abs(point) - vec3(box.wid, box.hig, box.dep);
+    /// Account for inner position for there not to be distorted black dots
+    return (length(max(point, 0.)) + min(max(point.x, max(point.y, point.z)), 0.));
+}
+
+/* Get distance to the Torus and put it in proper position */
+float getDistTorus(vec3 point, Torus tor) {
+    /// Projected distance to the outside layer of a torus
+    float projDistToOut = length(point.xz) - tor.radBig;
+    return length(vec2(projDistToOut, point.y)) - tor.radSmol;
+}
+
+/* Get distance to the Capsule */
+float sdCapsule(vec3 point, Capsule cap) {
+    vec3 edge = cap.bot - cap.top;
+    vec3 distToCapsule = point - cap.top;
+
+    float distToHit = dot(edge, distToCapsule) / dot(edge, edge);
+    distToHit = clamp(distToHit, 0., 1.);
+
+    vec3 pointHit = cap.top + distToHit*edge;
+    return length(point - pointHit) - cap.rad;
+}
+
+/* Get distance to the Cylinder */
+float sdCylinder(vec3 point, Cylinder cap) {
+    vec3 edge = cap.bot - cap.top;
+    vec3 distToSide = point - cap.top;
+
+    float distToHit = dot(edge, distToSide) / dot(edge, edge);
+    // distToHit = clamp(distToHit, 0., 1.);
+
+    vec3 pointHit = cap.top + distToHit*edge;
+    // X-axis dist to cylinder
+    float xDist = length(point - pointHit) - cap.rad;
+    float yDist = (abs(distToHit - .5) - .5) * length(edge);
+
+    float exteriorDist = length(max(vec2(xDist, yDist), 0.));
+    float interiorDist = min(max(xDist, yDist), 0.);
+    return exteriorDist + interiorDist;
+}
+
+/* Get distance to the Sphere - The fastest! */
+float sdSphere(vec3 point, Sphere sphere) {
+    return length(point) - sphere.rad;
+}
+
+/* Get distance to the Plane */
+float sdPlane(vec3 point, vec3 plane) {
+    return dot(point, normalize(plane));
+}
+
+/*
+ * Get distance to the Piramid - for now used only in player creation
+ * Code "borrowed" from https://www.shadertoy.com/view/Ntd3DX
+ */
+float sdPyramid(vec3 position, float halfWidth, float halfDepth, float halfHeight) {
+    position.xz = abs(position.xz);
+
+    // bottom
+    float s1 = abs(position.y) - halfHeight;
+    vec3 base = vec3(max(position.x - halfWidth, 0.0), abs(position.y + halfHeight), max(position.z - halfDepth, 0.0));
+    float d1 = dot(base, base);
+
+    vec3 q = position - vec3(halfWidth, -halfHeight, halfDepth);
+    vec3 end = vec3(-halfWidth, 2.0 * halfHeight, -halfDepth);
+    vec3 segment = q - end * clamp(dot(q, end) / dot(end, end), 0.0, 1.0);
+    float d = dot(segment, segment);
+
+    // side
+    vec3 normal1 = vec3(end.y, -end.x, 0.0);
+    float s2 = dot(q.xy, normal1.xy);
+    float d2 = d;
+    if (dot(q.xy, -end.xy) < 0.0 && dot(q, cross(normal1, end)) < 0.0) {
+        d2 = s2 * s2 / dot(normal1.xy, normal1.xy);
+    }
+    // front/back
+    vec3 normal2 = vec3(0.0, -end.z, end.y);
+    float s3 = dot(q.yz, normal2.yz);
+    float d3 = d;
+    if (dot(q.yz, -end.yz) < 0.0 && dot(q, cross(normal2, -end)) < 0.0) {
+        d3 = s3 * s3 / dot(normal2.yz, normal2.yz);
+    }
+    return sqrt(min(min(d1, d2), d3)) * sign(max(max(s1, s2), s3));
+}
+
+#endif // RENDER_GLSL
+
+vec3 getRo(vec4 camera_props) {
+    vec3 ro = vec3(-camera_props.x, camera_props.y, camera_props.z);
+    ro.xz *= Rotate(PI);
+    return ro;
+}
+
+// lookat - central point of the camera
+// zoom - zoom  ==  distance from camera to the screen
+// c - center point on the screen = ro + forward * zoom factor z
+// ro = ray origin
+// right - if we look straight from the camera on screen, it is x offset
+// up - if we look straight from the camera on screen, it is y offset
+// intersection - the point on the screen where ray passes through it
+vec3 getRd(vec2 uv, vec3 ro, vec4 camera_props) {
+    // variables to control camera if we need it
+    vec3 lookat = vec3(camera_props.xy, 0.);
+    float zoom = camera_props.w;
+
+    vec3 forward = normalize(lookat - ro),
+        right = normalize(cross(vec3(0, 1, 0), forward)),
+        up = cross(forward, right),
+        c = ro + forward * zoom,
+        intersection = c + uv.x * right + uv.y * up,
+        d = normalize(intersection - ro);
+    return d;
+}
+
+#endif // CAMERA_GLSL
+/* Layers of data in pixels - basically Y coordinates */
+#define ASTEROID_LAYER_ROW 0
+#define PLAYER_LAYER_ROW 1
+#define CAMERA_LAYER_ROW 2
+
+#define P_MOVEMENT_COL 0
+#define P_ROTATION_COL 1
+#define P_CONTROLS_COL 2
+#define P_COLLISION_COL 3
+
+#define C_OPTIONS_COL 0
+#define C_SCREEN_SIZE_COL 1
+
+/* Asteroid properties */
+#define NUM_ASTEROIDS 5.
+#define ASTEROID_SPEED 0.007
+#define ASTEROID_RADIUS 1.
+
+/* Player Properties */
+#define PLAYER_HEIGHT 1.5
+
+#ifndef ASTEROIDS_GLSL
+#define ASTEROIDS_GLSL
+
+#ifndef RENDER_GLSL
+#define RENDER_GLSL
+
+#ifndef OBJECT_GLSL
+#define OBJECT_GLSL
+
+/* A Capsule has position of the top and bottom spheres and their radius */
+struct Capsule {
+    vec3 top;
+    vec3 bot;
+    float rad;
+};
+
+/* A Cylinder is the same as Capsule but the algorithms are different */
+struct Cylinder {
+    vec3 top;
+    vec3 bot;
+    float rad;
+};
+
+/* A Torus has a main radius and the thickness of the tube and position */
+struct Torus {
+    float radBig;
+    float radSmol;
+    vec3 pos;
+};
+
+/*
+* A box has width height and depth(all calculated from center to sides)
+* and position
+*/
+struct Box {
+    // width, height, depth can be put in a vec3
+    float wid;
+    float hig;
+    float dep;
+    vec3 pos;
+};
+
+/*
+ * A fucking sphere, idk
+*/
+struct Sphere {
+    vec3 pos;
+	float rad;
+};
+
+
+struct Piramid {
+    vec3 pos;
+    float height;
+};
+
+#endif // OBJECT_GLSL
+
+#define MAX_STEPS 16
+#define MAX_DIST 100.
+#define SURF_DIST .01
+
+#define PI 3.14159
+
+const vec3 PLAYER_COLOR = vec3(0.7411, 0.5764, 0.9764);
+const vec3 ASTEROID_COLOR = vec3(0.7, 0.7, 0.75);
+
+/*
+* Rotate object in one plane:
+* use obj.xy *= Rotate(val);
+* to rotate the object by some value on the xy plane
+*/
+mat2 Rotate(float val) {
+    float s = sin(val);
+    float c = cos(val );
+    return mat2(c, -s, s, c);
+}
+
+mat3 RotateOffset(float rotate, float x, float y){
+    mat3 rotateMat;
+    float s = sin(rotate);
+    float c = cos(rotate);
+    rotateMat[0] = vec3(c, -s, -x*c+y*s+x);
+    rotateMat[1] = vec3(s, c, -x*s-y*c+y);
+    rotateMat[2] = vec3(0., 0., 1.);
+    return rotateMat;
+}
+
+mat3 Translate3(float x, float y){
+    mat3 translateMat;
+    translateMat[0] = vec3(1., 0., x);
+    translateMat[1] = vec3(0., 1., y);
+    translateMat[2] = vec3(0., 0., 1.);
+    return translateMat;
+}
+
+/*
+ * Get the min distance vec4 from vec4(rgb, dist)
+*/
+vec4 minSd(vec4 first, vec4 second) {
+    return first.w < second.w? first : second;
+}
+//-----------------------------------------------------------------------------
+/*
+ * Distance functions -> give us the distanсe to said object type
+ * NEGATIVE return on the inside and POSITIVE on the outside
+ * * vec3 point: origin point - the position you want your object to be at
+ * * Object: obj to find distance to
+ */
+
+/* Get distance to the Box and put it in proper position */
+float sdBox(vec3 point, Box box) {
+    /// By default the scale is inversed
+
+    point = abs(point) - vec3(box.wid, box.hig, box.dep);
+    /// Account for inner position for there not to be distorted black dots
+    return (length(max(point, 0.)) + min(max(point.x, max(point.y, point.z)), 0.));
+}
+
+/* Get distance to the Torus and put it in proper position */
+float getDistTorus(vec3 point, Torus tor) {
+    /// Projected distance to the outside layer of a torus
+    float projDistToOut = length(point.xz) - tor.radBig;
+    return length(vec2(projDistToOut, point.y)) - tor.radSmol;
+}
+
+/* Get distance to the Capsule */
+float sdCapsule(vec3 point, Capsule cap) {
+    vec3 edge = cap.bot - cap.top;
+    vec3 distToCapsule = point - cap.top;
+
+    float distToHit = dot(edge, distToCapsule) / dot(edge, edge);
+    distToHit = clamp(distToHit, 0., 1.);
+
+    vec3 pointHit = cap.top + distToHit*edge;
+    return length(point - pointHit) - cap.rad;
+}
+
+/* Get distance to the Cylinder */
+float sdCylinder(vec3 point, Cylinder cap) {
+    vec3 edge = cap.bot - cap.top;
+    vec3 distToSide = point - cap.top;
+
+    float distToHit = dot(edge, distToSide) / dot(edge, edge);
+    // distToHit = clamp(distToHit, 0., 1.);
+
+    vec3 pointHit = cap.top + distToHit*edge;
+    // X-axis dist to cylinder
+    float xDist = length(point - pointHit) - cap.rad;
+    float yDist = (abs(distToHit - .5) - .5) * length(edge);
+
+    float exteriorDist = length(max(vec2(xDist, yDist), 0.));
+    float interiorDist = min(max(xDist, yDist), 0.);
+    return exteriorDist + interiorDist;
+}
+
+/* Get distance to the Sphere - The fastest! */
+float sdSphere(vec3 point, Sphere sphere) {
+    return length(point) - sphere.rad;
+}
+
+/* Get distance to the Plane */
+float sdPlane(vec3 point, vec3 plane) {
+    return dot(point, normalize(plane));
+}
+
+/*
+ * Get distance to the Piramid - for now used only in player creation
+ * Code "borrowed" from https://www.shadertoy.com/view/Ntd3DX
+ */
+float sdPyramid(vec3 position, float halfWidth, float halfDepth, float halfHeight) {
+    position.xz = abs(position.xz);
+
+    // bottom
+    float s1 = abs(position.y) - halfHeight;
+    vec3 base = vec3(max(position.x - halfWidth, 0.0), abs(position.y + halfHeight), max(position.z - halfDepth, 0.0));
+    float d1 = dot(base, base);
+
+    vec3 q = position - vec3(halfWidth, -halfHeight, halfDepth);
+    vec3 end = vec3(-halfWidth, 2.0 * halfHeight, -halfDepth);
+    vec3 segment = q - end * clamp(dot(q, end) / dot(end, end), 0.0, 1.0);
+    float d = dot(segment, segment);
+
+    // side
+    vec3 normal1 = vec3(end.y, -end.x, 0.0);
+    float s2 = dot(q.xy, normal1.xy);
+    float d2 = d;
+    if (dot(q.xy, -end.xy) < 0.0 && dot(q, cross(normal1, end)) < 0.0) {
+        d2 = s2 * s2 / dot(normal1.xy, normal1.xy);
+    }
+    // front/back
+    vec3 normal2 = vec3(0.0, -end.z, end.y);
+    float s3 = dot(q.yz, normal2.yz);
+    float d3 = d;
+    if (dot(q.yz, -end.yz) < 0.0 && dot(q, cross(normal2, -end)) < 0.0) {
+        d3 = s3 * s3 / dot(normal2.yz, normal2.yz);
+    }
+    return sqrt(min(min(d1, d2), d3)) * sign(max(max(s1, s2), s3));
+}
+
+#endif // RENDER_GLSL
+/* Layers of data in pixels - basically Y coordinates */
+#define ASTEROID_LAYER_ROW 0
+#define PLAYER_LAYER_ROW 1
+#define CAMERA_LAYER_ROW 2
+
+#define P_MOVEMENT_COL 0
+#define P_ROTATION_COL 1
+#define P_CONTROLS_COL 2
+#define P_COLLISION_COL 3
+
+#define C_OPTIONS_COL 0
+#define C_SCREEN_SIZE_COL 1
+
+/* Asteroid properties */
+#define NUM_ASTEROIDS 5.
+#define ASTEROID_SPEED 0.007
+#define ASTEROID_RADIUS 1.
+
+/* Player Properties */
+#define PLAYER_HEIGHT 1.5
+
+#ifndef CAMERA_GLSL
+#define CAMERA_GLSL
+
+#ifndef RENDER_GLSL
+#define RENDER_GLSL
+
+#ifndef OBJECT_GLSL
+#define OBJECT_GLSL
+
+/* A Capsule has position of the top and bottom spheres and their radius */
+struct Capsule {
+    vec3 top;
+    vec3 bot;
+    float rad;
+};
+
+/* A Cylinder is the same as Capsule but the algorithms are different */
+struct Cylinder {
+    vec3 top;
+    vec3 bot;
+    float rad;
+};
+
+/* A Torus has a main radius and the thickness of the tube and position */
+struct Torus {
+    float radBig;
+    float radSmol;
+    vec3 pos;
+};
+
+/*
+* A box has width height and depth(all calculated from center to sides)
+* and position
+*/
+struct Box {
+    // width, height, depth can be put in a vec3
+    float wid;
+    float hig;
+    float dep;
+    vec3 pos;
+};
+
+/*
+ * A fucking sphere, idk
+*/
+struct Sphere {
+    vec3 pos;
+	float rad;
+};
+
+
+struct Piramid {
+    vec3 pos;
+    float height;
+};
+
+#endif // OBJECT_GLSL
+
+#define MAX_STEPS 16
+#define MAX_DIST 100.
+#define SURF_DIST .01
+
+#define PI 3.14159
+
+const vec3 PLAYER_COLOR = vec3(0.7411, 0.5764, 0.9764);
+const vec3 ASTEROID_COLOR = vec3(0.7, 0.7, 0.75);
+
+/*
+* Rotate object in one plane:
+* use obj.xy *= Rotate(val);
+* to rotate the object by some value on the xy plane
+*/
+mat2 Rotate(float val) {
+    float s = sin(val);
+    float c = cos(val );
+    return mat2(c, -s, s, c);
+}
+
+mat3 RotateOffset(float rotate, float x, float y){
+    mat3 rotateMat;
+    float s = sin(rotate);
+    float c = cos(rotate);
+    rotateMat[0] = vec3(c, -s, -x*c+y*s+x);
+    rotateMat[1] = vec3(s, c, -x*s-y*c+y);
+    rotateMat[2] = vec3(0., 0., 1.);
+    return rotateMat;
+}
+
+mat3 Translate3(float x, float y){
+    mat3 translateMat;
+    translateMat[0] = vec3(1., 0., x);
+    translateMat[1] = vec3(0., 1., y);
+    translateMat[2] = vec3(0., 0., 1.);
+    return translateMat;
+}
+
+/*
+ * Get the min distance vec4 from vec4(rgb, dist)
+*/
+vec4 minSd(vec4 first, vec4 second) {
+    return first.w < second.w? first : second;
+}
+//-----------------------------------------------------------------------------
+/*
+ * Distance functions -> give us the distanсe to said object type
+ * NEGATIVE return on the inside and POSITIVE on the outside
+ * * vec3 point: origin point - the position you want your object to be at
+ * * Object: obj to find distance to
+ */
+
+/* Get distance to the Box and put it in proper position */
+float sdBox(vec3 point, Box box) {
+    /// By default the scale is inversed
+
+    point = abs(point) - vec3(box.wid, box.hig, box.dep);
+    /// Account for inner position for there not to be distorted black dots
+    return (length(max(point, 0.)) + min(max(point.x, max(point.y, point.z)), 0.));
+}
+
+/* Get distance to the Torus and put it in proper position */
+float getDistTorus(vec3 point, Torus tor) {
+    /// Projected distance to the outside layer of a torus
+    float projDistToOut = length(point.xz) - tor.radBig;
+    return length(vec2(projDistToOut, point.y)) - tor.radSmol;
+}
+
+/* Get distance to the Capsule */
+float sdCapsule(vec3 point, Capsule cap) {
+    vec3 edge = cap.bot - cap.top;
+    vec3 distToCapsule = point - cap.top;
+
+    float distToHit = dot(edge, distToCapsule) / dot(edge, edge);
+    distToHit = clamp(distToHit, 0., 1.);
+
+    vec3 pointHit = cap.top + distToHit*edge;
+    return length(point - pointHit) - cap.rad;
+}
+
+/* Get distance to the Cylinder */
+float sdCylinder(vec3 point, Cylinder cap) {
+    vec3 edge = cap.bot - cap.top;
+    vec3 distToSide = point - cap.top;
+
+    float distToHit = dot(edge, distToSide) / dot(edge, edge);
+    // distToHit = clamp(distToHit, 0., 1.);
+
+    vec3 pointHit = cap.top + distToHit*edge;
+    // X-axis dist to cylinder
+    float xDist = length(point - pointHit) - cap.rad;
+    float yDist = (abs(distToHit - .5) - .5) * length(edge);
+
+    float exteriorDist = length(max(vec2(xDist, yDist), 0.));
+    float interiorDist = min(max(xDist, yDist), 0.);
+    return exteriorDist + interiorDist;
+}
+
+/* Get distance to the Sphere - The fastest! */
+float sdSphere(vec3 point, Sphere sphere) {
+    return length(point) - sphere.rad;
+}
+
+/* Get distance to the Plane */
+float sdPlane(vec3 point, vec3 plane) {
+    return dot(point, normalize(plane));
+}
+
+/*
+ * Get distance to the Piramid - for now used only in player creation
+ * Code "borrowed" from https://www.shadertoy.com/view/Ntd3DX
+ */
+float sdPyramid(vec3 position, float halfWidth, float halfDepth, float halfHeight) {
+    position.xz = abs(position.xz);
+
+    // bottom
+    float s1 = abs(position.y) - halfHeight;
+    vec3 base = vec3(max(position.x - halfWidth, 0.0), abs(position.y + halfHeight), max(position.z - halfDepth, 0.0));
+    float d1 = dot(base, base);
+
+    vec3 q = position - vec3(halfWidth, -halfHeight, halfDepth);
+    vec3 end = vec3(-halfWidth, 2.0 * halfHeight, -halfDepth);
+    vec3 segment = q - end * clamp(dot(q, end) / dot(end, end), 0.0, 1.0);
+    float d = dot(segment, segment);
+
+    // side
+    vec3 normal1 = vec3(end.y, -end.x, 0.0);
+    float s2 = dot(q.xy, normal1.xy);
+    float d2 = d;
+    if (dot(q.xy, -end.xy) < 0.0 && dot(q, cross(normal1, end)) < 0.0) {
+        d2 = s2 * s2 / dot(normal1.xy, normal1.xy);
+    }
+    // front/back
+    vec3 normal2 = vec3(0.0, -end.z, end.y);
+    float s3 = dot(q.yz, normal2.yz);
+    float d3 = d;
+    if (dot(q.yz, -end.yz) < 0.0 && dot(q, cross(normal2, -end)) < 0.0) {
+        d3 = s3 * s3 / dot(normal2.yz, normal2.yz);
+    }
+    return sqrt(min(min(d1, d2), d3)) * sign(max(max(s1, s2), s3));
+}
+
+#endif // RENDER_GLSL
+
+vec3 getRo(vec4 camera_props) {
+    vec3 ro = vec3(-camera_props.x, camera_props.y, camera_props.z);
+    ro.xz *= Rotate(PI);
+    return ro;
+}
+
+// lookat - central point of the camera
+// zoom - zoom  ==  distance from camera to the screen
+// c - center point on the screen = ro + forward * zoom factor z
+// ro = ray origin
+// right - if we look straight from the camera on screen, it is x offset
+// up - if we look straight from the camera on screen, it is y offset
+// intersection - the point on the screen where ray passes through it
+vec3 getRd(vec2 uv, vec3 ro, vec4 camera_props) {
+    // variables to control camera if we need it
+    vec3 lookat = vec3(camera_props.xy, 0.);
+    float zoom = camera_props.w;
+
+    vec3 forward = normalize(lookat - ro),
+        right = normalize(cross(vec3(0, 1, 0), forward)),
+        up = cross(forward, right),
+        c = ro + forward * zoom,
+        intersection = c + uv.x * right + uv.y * up,
+        d = normalize(intersection - ro);
+    return d;
+}
+
+#endif // CAMERA_GLSL
+
+
+float createAsteroids(vec3 point) {
+    float distToSphere = 99999.;
+
+    vec2 screenSize = texelFetch(iChannel0, ivec2(C_SCREEN_SIZE_COL, CAMERA_LAYER_ROW), 0).xy;
+
+    int num_asteroids = int(NUM_ASTEROIDS);
+    for (int i = 0; i < num_asteroids; ++i) {
+        Sphere sph = Sphere(vec3((
+            texelFetch(iChannel0, ivec2(i, 0), 0).xy * 2. - 1.
+        ) * screenSize, 0.), 1.);
+        distToSphere = min(distToSphere, sdSphere(point - sph.pos, sph));
+    }
+
+    return distToSphere;
+}
+
+#endif // ASTEROIDS_GLSL
+#ifndef BLACK_HOLE_GLSL
+#define BLACK_HOLE_GLSL
+
+/* Layers of data in pixels - basically Y coordinates */
+#define ASTEROID_LAYER_ROW 0
+#define PLAYER_LAYER_ROW 1
+#define CAMERA_LAYER_ROW 2
+
+#define P_MOVEMENT_COL 0
+#define P_ROTATION_COL 1
+#define P_CONTROLS_COL 2
+#define P_COLLISION_COL 3
+
+#define C_OPTIONS_COL 0
+#define C_SCREEN_SIZE_COL 1
+
+/* Asteroid properties */
+#define NUM_ASTEROIDS 5.
+#define ASTEROID_SPEED 0.007
+#define ASTEROID_RADIUS 1.
+
+/* Player Properties */
+#define PLAYER_HEIGHT 1.5
+
+
+const vec3 BH_pos = vec3(-.5, 1.5, -16.);  // BH position
+const float BH_R = 0.5;                  // event horizon radius
+/// how much acceleration a black hole exerts on a light particle
+vec3 blackHoleNullParticleAccl(vec3 p) {
+    vec3 r = (p - BH_pos);
+    return -1.5 * BH_R * r / pow(length(r), 5.0);
+}
+const float dt = 0.15;
+
+#endif  // BLACK_HOLE_GLSL
+
+
+
+/* Get minimal distance to each object, objects are generated here for now */
+vec4 getColAndDist(vec3 point) {
+    // vec3 bp = vec3(5., 0., 0.);
+    // float distToBox = sdBox(point - bp, Box(1., 1., 1., bp));
+
+    vec2 offset = texelFetch(iChannel0, ivec2(0, 1), 0).xy;
+    float distPiramid = createPlayer(point, vec3(0.), vec3(offset, 0.));
+
+    float distAsteroids = createAsteroids(point);
+
+    /// Use respective colors for respective objects
+    vec4 colDist = minSd(vec4(PLAYER_COLOR, distPiramid), vec4(ASTEROID_COLOR, distAsteroids));
+
+    /// render event horizon
+    colDist = minSd(vec4(BH_pos, length(point - BH_pos) - BH_R), colDist);
+
+    return colDist;
+}
+
+/* Function for getting a normal to the plane */
+vec3 getNormal(vec3 point) {
+    float dist = getColAndDist(point).w;
+    vec2 offset = vec2(.01, 0);
+
+    vec3 normal = dist - vec3(
+        getColAndDist(point - offset.xyy).w,
+        getColAndDist(point - offset.yxy).w,
+        getColAndDist(point - offset.yyx).w
+    );
+
+    return normalize(normal);
 }
 
 /*
@@ -4542,15 +6671,116 @@ vec3 getLighting(vec3 point, vec3 lightPos, vec3 color) {
     return color * lightIntencity;
 }
 
-void mainImage( out vec4 fragColor, in vec2 fragCoord )
-{
+/// current_position is the ray origin
+/// ray_velocity should be normalized
+/// color is the resulting color
+vec4 blackHoleRender(vec3 current_position, vec3 ray_velocity, inout vec3 color) {
+    // 4th coord is whether we found a point or diverged
+    vec4 currentLocationAndMode = vec4(0.);
+    for (int i = 0; i < MAX_STEPS * 5; ++i) {
+        vec4 colAndDist = getColAndDist(current_position);
+
+        ray_velocity += blackHoleNullParticleAccl(current_position) * dt;
+
+        float dist_to_travel = length(ray_velocity) * dt;
+        if (dist_to_travel > colAndDist.w) {
+            ray_velocity *= colAndDist.w / dist_to_travel;
+        }
+
+        current_position += ray_velocity * dt;
+
+        // check that we got below event horizon
+        if (distance(BH_pos, current_position) < BH_R) {
+            color = vec3(0.);
+            currentLocationAndMode.xyzw = vec4(current_position, 1.);
+            break;
+        }
+
+        // check that we landed on a point
+        if (abs(colAndDist.w) < SURF_DIST) {
+            color = colAndDist.rgb;
+            currentLocationAndMode = vec4(current_position, 1.);
+            break;
+        }
+    }
+    return currentLocationAndMode;
+}
+
+/// color is the resulting color
+vec4 blackHoleRenderPrecomputed(vec2 fragCoord, inout vec3 color) {
+    /// interpolate position and velocity
+    vec2 flooredfragCoord = floor(fragCoord);  // remove possible .5
+    vec4 currentPositionAndMode = vec4(0.);
+    vec4 rayVelocityAndMode = vec4(0.);
+    if (
+        flooredfragCoord.x <= 1. || flooredfragCoord.y <= 0. ||
+        flooredfragCoord.x >= (iResolution.x-1.) || flooredfragCoord.y >= (iResolution.y-1.)
+    ) {
+        color = vec3(0.);
+        return vec4(vec3(0.), 1.);  /// we are at border, so inteprpolation is not possible
+    } else {
+        bool is_velocity = (flooredfragCoord.x-2.*floor(flooredfragCoord.x/2.)) == 0.;
+        if (is_velocity) {
+            rayVelocityAndMode = texelFetch(iChannel2, ivec2(flooredfragCoord), 0);
+            currentPositionAndMode = (
+                texelFetch(iChannel2, ivec2(flooredfragCoord-vec2(1., 0.)), 0) * .5 +
+                texelFetch(iChannel2, ivec2(flooredfragCoord+vec2(1., 0.)), 0) * .5
+            );
+        } else {
+            currentPositionAndMode = texelFetch(iChannel2, ivec2(flooredfragCoord), 0);
+            rayVelocityAndMode = (
+                texelFetch(iChannel2, ivec2(flooredfragCoord-vec2(1., 0.)), 0) * .5 +
+                texelFetch(iChannel2, ivec2(flooredfragCoord+vec2(1., 0.)), 0) * .5
+            );
+        }
+        /// if we reached black hole in any of them, return 0
+        if ((rayVelocityAndMode.w + currentPositionAndMode.w) < 2.) {
+            color = vec3(0.);
+            return vec4(vec3(0.), 1.);
+        }
+    }
+
+    // 4th coord is whether we found a point or diverged
+    vec3 currentPosition = currentPositionAndMode.xyz;
+    vec3 rayVelocity = rayVelocityAndMode.xyz;
+    vec4 currentLocationAndMode = vec4(0.);
+    for (int i = 0; i < MAX_STEPS; ++i) {
+        vec4 colAndDist = getColAndDist(currentPosition);
+
+        rayVelocity += blackHoleNullParticleAccl(currentPosition) * dt;
+
+        float dist_to_travel = length(rayVelocity) * dt;
+        if (dist_to_travel > colAndDist.w) {
+            rayVelocity *= colAndDist.w / dist_to_travel;
+        }
+
+        currentPosition += rayVelocity * dt;
+
+        // check that we got below event horizon
+        if (distance(BH_pos, currentPosition) < BH_R) {
+            color = vec3(0.);
+            currentLocationAndMode.xyzw = vec4(currentPosition, 1.);
+            break;
+        }
+
+        // check that we landed on a point
+        if (abs(colAndDist.w) < SURF_DIST) {
+            color = colAndDist.rgb;
+            currentLocationAndMode = vec4(currentPosition, 1.);
+            break;
+        }
+    }
+    return currentLocationAndMode;
+}
+
+#endif  // RAY_GLSL
+
+
+
+
+void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     // Normalized pixel coordinates (from 0 to 1)
     vec2 uv = (fragCoord-.5*iResolution.xy) / iResolution.y;
-
-    // get ray origin & direction
-    vec4 camera_props = texelFetch(iChannel0, ivec2(0., CAMERA_LAYER_ROW), 0);
-    vec3 ro = getRo(camera_props);
-    vec3 rd = getRd(uv, ro, camera_props);
 
     vec3 outCol = vec3(0.2666, 0.2784, 0.3529);
 
@@ -4560,14 +6790,12 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
         return;
     }
 
+    // get ray origin & direction
     vec3 objColor = vec3(0.);
-    vec4 renderEndPointAndMode = blackHoleRender(ro, rd, objColor);
+    vec4 renderEndPointAndMode = blackHoleRenderPrecomputed(fragCoord, objColor);
 
     if (renderEndPointAndMode.w == 1.) {
         vec3 diffusedLighting = 1.354 * getLighting(renderEndPointAndMode.xyz, vec3(10, 10, -5), objColor);
-        //diffusedLighting += 0.25 * getLighting(renderEndPointAndMode.xyz, vec3(-10, -10, -5), objColor);
-        // diffusedLighting += 0.25 * getLighting(renderEndPointAndMode.xyz, vec3(10, -10, -5), objColor);
-        //diffusedLighting += 0.25 * getLighting(renderEndPointAndMode.xyz, vec3(-10, 10, -5), objColor);
 
         outCol = diffusedLighting;
     }
@@ -4729,9 +6957,9 @@ void main() {
 
     let renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, context: gl, preserveDrawingBuffer: true });
     let resolution = new THREE.Vector3();
-    let mouse = new THREE.Vector4(290, 447, -290, -447);
+    let mouse = new THREE.Vector4(134, 482, -134, -482);
     let mouseButton = new THREE.Vector4(0, 0, 0, 0);
-    let normalizedMouse = new THREE.Vector2(0.19655667144906744, 1);
+    let normalizedMouse = new THREE.Vector2(0.20229555236728838, 1);
     let frameCounter = 0;
 
     // Audio Init
@@ -4745,12 +6973,12 @@ void main() {
     buffers.push({
         Name: '/Users/michael/uni/UCU/OS/BaseTeroid/utility/data_channel.glsl',
         File: '/Users/michael/uni/UCU/OS/BaseTeroid/utility/data_channel.glsl',
-        LineOffset: 955,
+        LineOffset: 959,
         Target: new THREE.WebGLRenderTarget(resolution.x, resolution.y, { type: framebufferType }),
         ChannelResolution: Array(10).fill(new THREE.Vector3(0,0,0)),
         PingPongTarget: new THREE.WebGLRenderTarget(resolution.x, resolution.y, { type: framebufferType }),
         PingPongChannel: 0,
-        Dependents: [{"Index":1,"Channel":0},{"Index":1,"Channel":0},{"Index":1,"Channel":0}],
+        Dependents: [{"Index":1,"Channel":0},{"Index":2,"Channel":0},{"Index":2,"Channel":0},{"Index":2,"Channel":0}],
         Shader: new THREE.ShaderMaterial({
             fragmentShader: document.getElementById('/Users/michael/uni/UCU/OS/BaseTeroid/utility/data_channel.glsl').textContent,
             depthWrite: false,
@@ -4785,9 +7013,51 @@ void main() {
             }
         })
     });buffers.push({
+        Name: '/Users/michael/uni/UCU/OS/BaseTeroid/utility/precompute.glsl',
+        File: '/Users/michael/uni/UCU/OS/BaseTeroid/utility/precompute.glsl',
+        LineOffset: 396,
+        Target: new THREE.WebGLRenderTarget(resolution.x, resolution.y, { type: framebufferType }),
+        ChannelResolution: Array(10).fill(new THREE.Vector3(0,0,0)),
+        PingPongTarget: new THREE.WebGLRenderTarget(resolution.x, resolution.y, { type: framebufferType }),
+        PingPongChannel: 1,
+        Dependents: [{"Index":2,"Channel":2}],
+        Shader: new THREE.ShaderMaterial({
+            fragmentShader: document.getElementById('/Users/michael/uni/UCU/OS/BaseTeroid/utility/precompute.glsl').textContent,
+            depthWrite: false,
+            depthTest: false,
+            uniforms: {
+                iResolution: { type: 'v3', value: resolution },
+                iTime: { type: 'f', value: 0.0 },
+                iTimeDelta: { type: 'f', value: 0.0 },
+                iFrame: { type: 'i', value: 0 },
+                iMouse: { type: 'v4', value: mouse },
+                iMouseButton: { type: 'v2', value: mouseButton },
+    
+                iChannelResolution: { type: 'v3v', value: Array(10).fill(new THREE.Vector3(0,0,0)) },
+    
+                iDate: { type: 'v4', value: date },
+                iSampleRate: { type: 'f', value: audioContext.sampleRate },
+    
+                iChannel0: { type: 't' },
+                iChannel1: { type: 't' },
+                iChannel2: { type: 't' },
+                iChannel3: { type: 't' },
+                iChannel4: { type: 't' },
+                iChannel5: { type: 't' },
+                iChannel6: { type: 't' },
+                iChannel7: { type: 't' },
+                iChannel8: { type: 't' },
+                iChannel9: { type: 't' },
+    
+                resolution: { type: 'v2', value: resolution },
+                time: { type: 'f', value: 0.0 },
+                mouse: { type: 'v2', value: normalizedMouse },
+            }
+        })
+    });buffers.push({
         Name: '/Users/michael/uni/UCU/OS/BaseTeroid/main.glsl',
         File: '/Users/michael/uni/UCU/OS/BaseTeroid/main.glsl',
-        LineOffset: 1630,
+        LineOffset: 1832,
         Target: null,
         ChannelResolution: Array(10).fill(new THREE.Vector3(0,0,0)),
         PingPongTarget: null,
@@ -4847,6 +7117,12 @@ void main() {
     });commonIncludes.push({
         Name: '/Users/michael/uni/UCU/OS/BaseTeroid/utility/asteroids.glsl',
         File: '/Users/michael/uni/UCU/OS/BaseTeroid/utility/asteroids.glsl'
+    });commonIncludes.push({
+        Name: '/Users/michael/uni/UCU/OS/BaseTeroid/utility/black_hole.glsl',
+        File: '/Users/michael/uni/UCU/OS/BaseTeroid/utility/black_hole.glsl'
+    });commonIncludes.push({
+        Name: '/Users/michael/uni/UCU/OS/BaseTeroid/utility/ray.glsl',
+        File: '/Users/michael/uni/UCU/OS/BaseTeroid/utility/ray.glsl'
     });
 
     // WebGL2 inserts more lines into the shader
@@ -4865,7 +7141,7 @@ void main() {
     keyBoardTexture.needsUpdate = true;
     let pressedKeys = [];
     let releasedKeys = [];
-    let toggledKeys = [68,65];
+    let toggledKeys = [83,16,65,87];
     for (let key of toggledKeys) {
         keyBoardData[key + 512] = 255; // Toggled
     }
@@ -4897,27 +7173,56 @@ void main() {
         texture.wrapS = THREE.RepeatWrapping;
         texture.wrapT = THREE.RepeatWrapping;
         return texture;
-    })() };buffers[1].ChannelResolution[0] = new THREE.Vector3(buffers[0].Target.width, buffers[0].Target.height, 1);
+    })() };buffers[1].ChannelResolution[1] = new THREE.Vector3(buffers[1].Target.width, buffers[1].Target.height, 1);
     buffers[1].Shader.uniforms.iChannelResolution.value = buffers[1].ChannelResolution;
-    buffers[1].Shader.uniforms.iChannel0 = { type: 't', value: (() => {
+    buffers[1].Shader.uniforms.iChannel1 = { type: 't', value: (() => {
+        let texture = buffers[1].Target.texture;
+        texture.magFilter = THREE.LinearFilter;
+        texture.minFilter = THREE.LinearFilter;
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        return texture;
+    })() };
+    buffers[1].Shader.uniforms.iChannel1 = { type: 't', value: buffers[1].PingPongTarget.texture };
+    buffers[2].ChannelResolution[0] = new THREE.Vector3(buffers[0].Target.width, buffers[0].Target.height, 1);
+    buffers[2].Shader.uniforms.iChannelResolution.value = buffers[2].ChannelResolution;
+    buffers[2].Shader.uniforms.iChannel0 = { type: 't', value: (() => {
         let texture = buffers[0].Target.texture;
         texture.magFilter = THREE.LinearFilter;
         texture.minFilter = THREE.LinearFilter;
         texture.wrapS = THREE.RepeatWrapping;
         texture.wrapT = THREE.RepeatWrapping;
         return texture;
-    })() };buffers[1].ChannelResolution[0] = new THREE.Vector3(buffers[0].Target.width, buffers[0].Target.height, 1);
-    buffers[1].Shader.uniforms.iChannelResolution.value = buffers[1].ChannelResolution;
-    buffers[1].Shader.uniforms.iChannel0 = { type: 't', value: (() => {
+    })() };buffers[2].ChannelResolution[0] = new THREE.Vector3(buffers[0].Target.width, buffers[0].Target.height, 1);
+    buffers[2].Shader.uniforms.iChannelResolution.value = buffers[2].ChannelResolution;
+    buffers[2].Shader.uniforms.iChannel0 = { type: 't', value: (() => {
         let texture = buffers[0].Target.texture;
         texture.magFilter = THREE.LinearFilter;
         texture.minFilter = THREE.LinearFilter;
         texture.wrapS = THREE.RepeatWrapping;
         texture.wrapT = THREE.RepeatWrapping;
         return texture;
-    })() };buffers[1].ChannelResolution[1] = null;
-    buffers[1].Shader.uniforms.iChannelResolution.value = buffers[1].ChannelResolution;
-    buffers[1].Shader.uniforms.iChannel1 = { type: 't', value: texLoader.load('/Users/michael/uni/UCU/OS/BaseTeroid/img/game_over.png', function(texture) {
+    })() };buffers[2].ChannelResolution[2] = new THREE.Vector3(buffers[1].Target.width, buffers[1].Target.height, 1);
+    buffers[2].Shader.uniforms.iChannelResolution.value = buffers[2].ChannelResolution;
+    buffers[2].Shader.uniforms.iChannel2 = { type: 't', value: (() => {
+        let texture = buffers[1].Target.texture;
+        texture.magFilter = THREE.LinearFilter;
+        texture.minFilter = THREE.LinearFilter;
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        return texture;
+    })() };buffers[2].ChannelResolution[0] = new THREE.Vector3(buffers[0].Target.width, buffers[0].Target.height, 1);
+    buffers[2].Shader.uniforms.iChannelResolution.value = buffers[2].ChannelResolution;
+    buffers[2].Shader.uniforms.iChannel0 = { type: 't', value: (() => {
+        let texture = buffers[0].Target.texture;
+        texture.magFilter = THREE.LinearFilter;
+        texture.minFilter = THREE.LinearFilter;
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        return texture;
+    })() };buffers[2].ChannelResolution[1] = null;
+    buffers[2].Shader.uniforms.iChannelResolution.value = buffers[2].ChannelResolution;
+    buffers[2].Shader.uniforms.iChannel1 = { type: 't', value: texLoader.load('/Users/michael/uni/UCU/OS/BaseTeroid/img/game_over.png', function(texture) {
         function isPowerOfTwo(n) {
         return n && (n & (n - 1)) === 0;
     };
@@ -4938,8 +7243,8 @@ void main() {
             });
         }
     };
-    buffers[1].ChannelResolution[1] = new THREE.Vector3(texture.image.width, texture.image.height, 1);
-    buffers[1].Shader.uniforms.iChannelResolution.value = buffers[1].ChannelResolution;
+    buffers[2].ChannelResolution[1] = new THREE.Vector3(texture.image.width, texture.image.height, 1);
+    buffers[2].Shader.uniforms.iChannelResolution.value = buffers[2].ChannelResolution;
     
         texture.magFilter = THREE.LinearFilter;
         texture.minFilter = THREE.LinearFilter;

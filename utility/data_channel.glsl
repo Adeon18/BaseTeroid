@@ -56,24 +56,11 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
     vec4 outFrag = vec4(0., 0., 0., 0.);
 
     vec2 die = texelFetch(iChannel0, ivec2(P_COLLISION_COL, PLAYER_LAYER_ROW), 0).xy;
-    if (int(die.x) == 1) {
-        if (int(fragCoord.y) == PLAYER_LAYER_ROW && int(fragCoord.x) == P_COLLISION_COL) {
-            if (iTime - die.y > 2.) {
-                fragColor = vec4(0.);
-                return;
-            }
-            fragColor = vec4(die, 0., 0.);
-            return;
-        } else {
-            fragColor = vec4(0.);
-            return;
-        }
-    }
 
     /*
     * Pseudorandom generator for asteroid coordinate
     */
-    if (int(fragCoord.y) == ASTEROID_LAYER_ROW && fragCoord.x < NUM_ASTEROIDS) {
+    if (int(fragCoord.y) == ASTEROID_LAYER_ROW && fragCoord.x < NUM_ASTEROIDS && int(die.x) != 1) {
         outFrag = texelFetch(iChannel0, ivec2(fragCoord.x, ASTEROID_LAYER_ROW), 0);
         if (outFrag.x > 1. || outFrag.y > 1. || outFrag.x <= 0. || outFrag.y <= 0.) {
             float d = random(vec3(fragCoord, iTime));
@@ -107,6 +94,18 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
      * Player shenanigans
     */
     else if (int(fragCoord.y) == PLAYER_LAYER_ROW) {
+        if (int(die.x) == 1) {
+            if (int(fragCoord.y) == PLAYER_LAYER_ROW && int(fragCoord.x) == P_COLLISION_COL) {
+                if (iTime - die.y > 2.) {
+                    fragColor = vec4(0.);
+                } else {
+                    fragColor = vec4(die, 0., 0.);
+                }
+            } else {
+                fragColor = vec4(0.);
+            }
+            return;
+        }
         /// Handle Player movement
         if (int(fragCoord.x) == P_MOVEMENT_COL) {
             handleMovement(outFrag);
@@ -133,8 +132,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
                     outFrag.y = iTime;
                 }
             }
-        }
-         else {
+        } else {
             discard;
         }
     }

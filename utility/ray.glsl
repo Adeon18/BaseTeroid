@@ -6,14 +6,9 @@
 #include "utility/camera.glsl"
 #include "utility/common.glsl"
 #include "utility/asteroids.glsl"
+#include "utility/black_hole.glsl"
 
-const vec3 BH_pos = vec3(0., 0., -10.);  // BH position
-const float BH_R = 0.5;  // event horizon radius
-/// how much acceleration a black hole exerts on a light particle
-vec3 blackHoleNullParticleAccl(vec3 p) {
-    vec3 r = (p - BH_pos);
-    return -1.5 * BH_R * r / pow(length(r), 5.0);
-}
+#iChannel2 "file://utility/precompute.glsl"
 
 /* Get minimal distance to each object, objects are generated here for now */
 vec4 getColAndDist(vec3 point) {
@@ -29,7 +24,7 @@ vec4 getColAndDist(vec3 point) {
     vec4 colDist = minSd(vec4(PLAYER_COLOR, distPiramid), vec4(ASTEROID_COLOR, distAsteroids));
 
     /// render event horizon
-    colDist = minSd(vec4(BH_pos, length(point) - BH_R), colDist);
+    colDist = minSd(vec4(BH_pos, length(point - BH_pos) - BH_R), colDist);
 
     return colDist;
 }
@@ -48,30 +43,26 @@ vec3 getNormal(vec3 point) {
     return normalize(normal);
 }
 
-/* Main ray marching function */
-// float rayMarch(vec3 ro, vec3 rd, inout vec3 color) {
-//     float distToOrigin = 0.;
-
-//     for (int i = 0; i < MAX_STEPS; ++i) {
-//         vec3 currentLocation = ro + distToOrigin * rd;
-//         /// rgb + w as length
-//         vec4 distToScene = getColAndDist(currentLocation);
-
-//         distToOrigin += distToScene.w;
-
-//         if (distToOrigin > MAX_DIST || abs(distToScene.w) < SURF_DIST) {
-//             color = distToScene.rgb;
-//             break;
-//         }
-//     }
-
-//     return distToOrigin;
-// }
+/*
+ * Handle lighting and shadows
+ * Takes current light level, new light position and a point
+ * Takes color
+ */
+vec3 getLighting(vec3 point, vec3 lightPos, vec3 color) {
+    vec3 lightDir = normalize(lightPos - point);
+    vec3 normal = getNormal(point);
+    float lightIntencity = clamp(dot(normal, lightDir)*.5+.5, 0., 1.);
+    // Get shadows
+    // Use a point a bit off so the loop does not immediately end
+    // vec3 stopColor = vec3(0.);
+    // vec3 lightStopPoint = blackHoleRender(point + normal * SURF_DIST * 2., lightDir, stopColor).xyz;
+    // if (length(point - lightStopPoint) > SURF_DIST) { lightIntencity *= .3; }
+    return color * lightIntencity;
+}
 
 /// current_position is the ray origin
 /// ray_velocity should be normalized
 /// color is the resulting color
-const float dt = 0.15;
 vec4 blackHoleRender(vec3 current_position, vec3 ray_velocity, inout vec3 color) {
     // 4th coord is whether we found a point or diverged
     vec4 currentLocationAndMode = vec4(0.);
@@ -101,49 +92,74 @@ vec4 blackHoleRender(vec3 current_position, vec3 ray_velocity, inout vec3 color)
             break;
         }
     }
-    // if (currentLocationAndMode.w == 0.) {
-    //     ray_velocity = normalize(ray_velocity);
-    //     float distToOrigin = 0.;
-    //     for (int i = 0; i < MAX_STEPS; ++i) {
-    //         vec3 currentLocation = current_position + distToOrigin * ray_velocity;
-    //         /// rgb + w as length
-    //         vec4 colAndDist = getColAndDist(currentLocation);
-
-    //         distToOrigin += colAndDist.w;
-
-    //         // check that we got below event horizon
-    //         if (distance(BH_pos, currentLocation) < BH_R) {
-    //             color = vec3(0.);
-    //             currentLocationAndMode.xyzw = vec4(current_position, 1.);
-    //             break;
-    //         }
-
-    //         if (distToOrigin > MAX_DIST) break;
-    //         if (abs(colAndDist.w) < SURF_DIST) {
-    //             color = colAndDist.rgb;
-    //             currentLocationAndMode = vec4(currentLocation, 1.);
-    //             break;
-    //         }
-    //     }
-    // }
     return currentLocationAndMode;
 }
 
-/*
- * Handle lighting and shadows
- * Takes current light level, new light position and a point
- * Takes color
- */
-vec3 getLighting(vec3 point, vec3 lightPos, vec3 color) {
-    vec3 lightDir = normalize(lightPos - point);
-    vec3 normal = getNormal(point);
-    float lightIntencity = clamp(dot(normal, lightDir)*.5+.5, 0., 1.);
-    // Get shadows
-    // Use a point a bit off so the loop does not immediately end
-    // vec3 stopColor = vec3(0.);
-    // vec3 lightStopPoint = blackHoleRender(point + normal * SURF_DIST * 2., lightDir, stopColor).xyz;
-    // if (length(point - lightStopPoint) > SURF_DIST) { lightIntencity *= .3; }
-    return color * lightIntencity;
+/// color is the resulting color
+vec4 blackHoleRenderPrecomputed(vec2 fragCoord, inout vec3 color) {
+    /// interpolate position and velocity
+    vec2 flooredfragCoord = floor(fragCoord);  // remove possible .5
+    vec4 currentPositionAndMode = vec4(0.);
+    vec4 rayVelocityAndMode = vec4(0.);
+    if (
+        flooredfragCoord.x <= 1. || flooredfragCoord.y <= 0. ||
+        flooredfragCoord.x >= (iResolution.x-1.) || flooredfragCoord.y >= (iResolution.y-1.)
+    ) {
+        color = vec3(0.);
+        return vec4(vec3(0.), 1.);  /// we are at border, so inteprpolation is not possible
+    } else {
+        bool is_velocity = (flooredfragCoord.x-2.*floor(flooredfragCoord.x/2.)) == 0.;
+        if (is_velocity) {
+            rayVelocityAndMode = texelFetch(iChannel2, ivec2(flooredfragCoord), 0);
+            currentPositionAndMode = (
+                texelFetch(iChannel2, ivec2(flooredfragCoord-vec2(1., 0.)), 0) * .5 +
+                texelFetch(iChannel2, ivec2(flooredfragCoord+vec2(1., 0.)), 0) * .5
+            );
+        } else {
+            currentPositionAndMode = texelFetch(iChannel2, ivec2(flooredfragCoord), 0);
+            rayVelocityAndMode = (
+                texelFetch(iChannel2, ivec2(flooredfragCoord-vec2(1., 0.)), 0) * .5 +
+                texelFetch(iChannel2, ivec2(flooredfragCoord+vec2(1., 0.)), 0) * .5
+            );
+        }
+        /// if we reached black hole in any of them, return 0
+        if ((rayVelocityAndMode.w + currentPositionAndMode.w) < 2.) {
+            color = vec3(0.);
+            return vec4(vec3(0.), 1.);
+        }
+    }
+
+    // 4th coord is whether we found a point or diverged
+    vec3 currentPosition = currentPositionAndMode.xyz;
+    vec3 rayVelocity = rayVelocityAndMode.xyz;
+    vec4 currentLocationAndMode = vec4(0.);
+    for (int i = 0; i < MAX_STEPS; ++i) {
+        vec4 colAndDist = getColAndDist(currentPosition);
+
+        rayVelocity += blackHoleNullParticleAccl(currentPosition) * dt;
+
+        float dist_to_travel = length(rayVelocity) * dt;
+        if (dist_to_travel > colAndDist.w) {
+            rayVelocity *= colAndDist.w / dist_to_travel;
+        }
+
+        currentPosition += rayVelocity * dt;
+
+        // check that we got below event horizon
+        if (distance(BH_pos, currentPosition) < BH_R) {
+            color = vec3(0.);
+            currentLocationAndMode.xyzw = vec4(currentPosition, 1.);
+            break;
+        }
+
+        // check that we landed on a point
+        if (abs(colAndDist.w) < SURF_DIST) {
+            color = colAndDist.rgb;
+            currentLocationAndMode = vec4(currentPosition, 1.);
+            break;
+        }
+    }
+    return currentLocationAndMode;
 }
 
 #endif  // RAY_GLSL
