@@ -106,6 +106,53 @@ float sdSphere(vec3 point, Sphere sphere) {
     return length(point) - sphere.rad;
 }
 
+
+float mod289(float x){return x - floor(x * (1.0 / 289.0)) * 289.0;}
+vec4 mod289(vec4 x){return x - floor(x * (1.0 / 289.0)) * 289.0;}
+vec4 perm(vec4 x){return mod289(((x * 19.0) + 125.+0.1) * x);}
+
+float noise(vec3 p){
+    vec3 a = floor(p);
+    vec3 d = p - a;
+    d = d * d * (3.0 - 2.0 * d);
+
+    vec4 b = a.xxyy + vec4(0.0, 1.0, 0.0, 1.0);
+    vec4 k1 = perm(b.xyxy);
+    vec4 k2 = perm(k1.xyxy + b.zzww);
+
+    vec4 c = k2 + a.zzzz;
+    vec4 k3 = perm(c);
+    vec4 k4 = perm(c + 1.0);
+
+    vec4 o1 = fract(k3 * (1.0 / 41.0));
+    vec4 o2 = fract(k4 * (1.0 / 41.0));
+
+    vec4 o3 = o2 * d.z + o1 * (1.0 - d.z);
+    vec2 o4 = o3.yw * d.x + o3.xz * (1.0 - d.x);
+
+    return o4.y * d.y + o4.x * (1.0 - d.y);
+}
+
+float fbm(vec3 x) {
+	float v = 0.0;
+	float a = 0.5;
+	vec3 shift = vec3(100);
+	for (int i = 0; i < 2; ++i) {
+		v += a * noise(x);
+		x = x * 2.0 + shift;
+		a *= 0.5;
+	}
+	return v;
+}
+
+float sdAsteroid(vec3 point, Sphere sphere) {
+    float radius = 2.0 * fbm(point);
+    float asteroid = length(point-vec3(0.0, 1.0, -1.0))-radius;
+
+    return asteroid;
+}
+
+
 /* Get distance to the Plane */
 float sdPlane(vec3 point, vec3 plane) {
     return dot(point, normalize(plane));
@@ -144,5 +191,4 @@ float sdPyramid(vec3 position, float halfWidth, float halfDepth, float halfHeigh
     }
     return sqrt(min(min(d1, d2), d3)) * sign(max(max(s1, s2), s3));
 }
-
 #endif // RENDER_GLSL
