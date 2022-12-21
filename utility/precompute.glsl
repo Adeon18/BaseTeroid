@@ -4,8 +4,8 @@
 #iChannel0 "file://utility/data_channel.glsl"
 #iChannel1 "self"
 
-#define MAX_STEPS_PRECOMPUTE 512
-const float precompute_dt_divisor = 30.;
+#define MAX_STEPS_PRECOMPUTE 256
+const float precompute_dt_divisor = 2.;
 vec4 height1precompute(vec3 current_position, vec3 ray_velocity, bool put_velocity) {
     // 4th coord is whether we reached height 1 or got past event horison
     vec4 rayLocationOrVelocityAndMode = vec4(0.);
