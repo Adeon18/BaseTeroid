@@ -16,7 +16,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     }
 
     // get ray origin & direction
-    vec3 outCol = vec3(0.1, 0.1, 0.1);
+    vec3 outCol = vec3(0.);
     vec4 renderEndPointAndMode = blackHoleRenderPrecomputed(fragCoord, outCol);
 
     if (renderEndPointAndMode.w == 1.) {

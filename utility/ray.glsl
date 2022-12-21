@@ -94,7 +94,7 @@ vec4 blackHoleRender(vec2 fragCoord, vec3 currentPosition, vec3 rayVelocity, ino
                 break;
             }
             if (mode == 2.) {  // diverged
-                color = 0.2 * normalize(rayVelocity);  // vec3(0.6, 0.3, 0.3);  //
+                currentLocationAndMode = vec4(currentPosition, 2.);
                 break;
             }
         }
@@ -113,6 +113,9 @@ vec4 blackHoleRender(vec2 fragCoord, vec3 currentPosition, vec3 rayVelocity, ino
             break;
         }
     }
+    if (currentLocationAndMode.w != 1.) {
+        color = 0.2 * normalize(rayVelocity);
+    }
     return currentLocationAndMode;
 }
 
@@ -126,8 +129,8 @@ vec4 blackHoleRenderPrecomputed(vec2 fragCoord, inout vec3 color) {
         return vec4(vec3(0.), 1.);
     }
     if (mode == 2.) {  // diverged
-        color = 0.2 * normalize(velocity);  // vec3(0.3, 0.3, 0.6);  //
-        return vec4(0.);
+        color = 0.2 * normalize(velocity);
+        return vec4(vec3(0.), 2.);
     }
     return blackHoleRender(fragCoord, position, velocity, color);
 }
