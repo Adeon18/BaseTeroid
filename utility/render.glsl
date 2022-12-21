@@ -5,7 +5,7 @@
 
 #define MAX_STEPS 16
 #define MAX_DIST 100.
-#define SURF_DIST .01
+#define SURF_DIST .1
 
 #define PI 3.14159
 
@@ -102,8 +102,19 @@ float sdCylinder(vec3 point, Cylinder cap) {
 }
 
 /* Get distance to the Sphere - The fastest! */
-float sdSphere(vec3 point, Sphere sphere) {
-    return length(point) - sphere.rad;
+float sdSphere(vec3 point, Sphere sphere, vec3 offset) {
+    return distance(point, offset) - sphere.rad;
+}
+
+float sdAsteroid(vec3 point, Sphere sphere) {
+
+    return min(distance(point, vec3(0.0)) - sphere.rad,
+           min(distance(point, vec3(0.5, 0.0, 0.0)) - sphere.rad / 1.,
+           min(distance(point, vec3(-0.5, 0.0, 0.0)) - sphere.rad / 1.4,
+           min(distance(point, vec3(0.0, 0.5, 0.0)) - sphere.rad / 1.,
+           min(distance(point, vec3(0.5, -0.5, 0.0)) - sphere.rad / 1.3,
+           distance(point, vec3(0.0, 0.0, 0.5)) - sphere.rad / 1.2
+    )))));
 }
 
 /* Get distance to the Plane */
