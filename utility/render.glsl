@@ -5,7 +5,7 @@
 
 #define MAX_STEPS 16
 #define MAX_DIST 100.
-#define SURF_DIST .01
+#define SURF_DIST .1
 
 #define PI 3.14159
 
@@ -107,49 +107,39 @@ float sdSphere(vec3 point, Sphere sphere) {
 }
 
 
-float mod289(float x){return x - floor(x * (1.0 / 289.0)) * 289.0;}
-vec4 mod289(vec4 x){return x - floor(x * (1.0 / 289.0)) * 289.0;}
-vec4 perm(vec4 x){return mod289(((x * 1.0) + 125.+0.1) * x);}
-
-float noise(vec3 p){
-    vec3 a = floor(p);
-    vec3 d = p - a;
-    d = d * d * (3.0 - 2.0 * d);
-
-    vec4 b = a.xxyy + vec4(0.0, 1.0, 0.0, 1.0);
-    vec4 k1 = perm(b.xyxy);
-    vec4 k2 = perm(k1.xyxy + b.zzww);
-
-    vec4 c = k2 + a.zzzz;
-    vec4 k3 = perm(c);
-    vec4 k4 = perm(c + 1.0);
-
-    vec4 o1 = fract(k3 * (1.0 / 41.0));
-    vec4 o2 = fract(k4 * (1.0 / 41.0));
-
-    vec4 o3 = o2 * d.z + o1 * (1.0 - d.z);
-    vec2 o4 = o3.yw * d.x + o3.xz * (1.0 - d.x);
-
-    return o4.y * d.y + o4.x * (1.0 - d.y);
+float hash(
+	in float n
+){
+	return fract(sin(n)*753.5453123);
 }
 
-float fbm(vec3 x) {
-	float v = 0.0;
-	float a = 0.5;
-	vec3 shift = vec3(100);
-	for (int i = 0; i < 1; ++i) {
-		v += a * noise(x);
-		x = x * 2.0 + shift;
-		a *= 0.5;
-	}
-	return v;
+float noise(
+	in vec3 x
+){
+	vec3 p = floor(x);
+	vec3 f = fract(x);
+	f = f*f*(3.0 - 2.0*f);
+    float n = p.x + p.y*157.0 + 113.0*p.z;
+    return mix(mix(mix( hash(n+  0.0), hash(n+  1.0),f.x),
+                   mix( hash(n+157.0), hash(n+158.0),f.x),f.y),
+               mix(mix( hash(n+113.0), hash(n+114.0),f.x),
+                   mix( hash(n+270.0), hash(n+271.0),f.x),f.y),f.z);
+}
+float fbm (in vec3 p)
+{
+    float f = 0.0;
+    float freq = 1.0;
+    for (int i = 0; i < 3; i++)
+    {
+        float n = noise(p * freq) / freq;
+        f += n;
+        freq *= 2.0;
+    }
+    return f;
 }
 
 float sdAsteroid(vec3 point, Sphere sphere) {
-    float radius = 10.0 * fbm(point);
-    float asteroid = length(point-vec3(0.0, 1.0, -1.0))-radius;
-
-    return asteroid;
+    return length(point) - ((sphere.rad / 2.) + fbm(point * 0.5));
 }
 
 
