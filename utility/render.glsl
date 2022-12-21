@@ -109,7 +109,7 @@ float sdSphere(vec3 point, Sphere sphere) {
 
 float mod289(float x){return x - floor(x * (1.0 / 289.0)) * 289.0;}
 vec4 mod289(vec4 x){return x - floor(x * (1.0 / 289.0)) * 289.0;}
-vec4 perm(vec4 x){return mod289(((x * 19.0) + 125.+0.1) * x);}
+vec4 perm(vec4 x){return mod289(((x * 1.0) + 125.+0.1) * x);}
 
 float noise(vec3 p){
     vec3 a = floor(p);
@@ -137,7 +137,7 @@ float fbm(vec3 x) {
 	float v = 0.0;
 	float a = 0.5;
 	vec3 shift = vec3(100);
-	for (int i = 0; i < 2; ++i) {
+	for (int i = 0; i < 1; ++i) {
 		v += a * noise(x);
 		x = x * 2.0 + shift;
 		a *= 0.5;
@@ -146,7 +146,7 @@ float fbm(vec3 x) {
 }
 
 float sdAsteroid(vec3 point, Sphere sphere) {
-    float radius = 2.0 * fbm(point);
+    float radius = 10.0 * fbm(point);
     float asteroid = length(point-vec3(0.0, 1.0, -1.0))-radius;
 
     return asteroid;
