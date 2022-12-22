@@ -12,23 +12,27 @@
 /*
  * Capture keyboard input
 */
-vec2 handleKeyboard() {
-    vec2 direction = vec2(0., 0.);
+vec3 handleKeyboard() {
+    vec3 direction = vec3(0.);
 
     if (isKeyDown(Key_W)) {
-        direction += vec2(0., 1.);
+        direction.xy += vec2(0., 1.);
     }
 
     if (isKeyDown(Key_S)) {
-        direction += vec2(0., -1.);
+        direction.xy += vec2(0., -1.);
     }
 
     if (isKeyDown(Key_A)) {
-        direction += vec2(-1., 0.);
+        direction.xy += vec2(-1., 0.);
     }
 
     if (isKeyDown(Key_D)) {
-        direction += vec2(1., 0.);
+        direction.xy += vec2(1., 0.);
+    }
+
+    if (isKeyDown(Key_Shift)) {
+        direction.z = 1.;
     }
 
     return direction;
@@ -111,8 +115,8 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
             handleMovement(outFrag);
         }
         else if(int(fragCoord.x) == P_CONTROLS_COL){
-            vec2 controls = handleKeyboard();
-            outFrag.xy = controls;
+            vec3 controls = handleKeyboard().xyz;
+            outFrag.xyz = controls;
         }
         /// Handle player rotation
         else if (int(fragCoord.x) == P_ROTATION_COL) {
@@ -164,6 +168,11 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
             discard;
         }
     }
+    // else if (int(fragCoord.y) == PROJECTILE_LAYER_ROW && fragCoord.x < NUM_PROJECTILES && int(die.x) != 1) {
+    //     outFrag = texelFetch(iChannel0, ivec2(fragCoord.x, PROJECTILE_LAYER_ROW), 0);
+
+    //     outFrag.xy += outFrag.zw * ASTEROID_SPEED;
+    // }
     /*
      * Discard all other pixels
     */

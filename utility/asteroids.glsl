@@ -22,4 +22,22 @@ float createAsteroids(vec3 point) {
     return distToSphere;
 }
 
+// #define NUM_PROJECTILES 100
+
+// float createProjectiles(vec3 point) {
+//     float distToProjectiles = 99999.;
+
+//     // vec2 screenSize = texelFetch(iChannel0, ivec2(C_SCREEN_SIZE_COL, CAMERA_LAYER_ROW), 0).xy;
+
+//     int num_projectiles = int(NUM_PROJECTILES);
+//     for (int i = 0; i < num_projectiles; ++i) {
+//         // Sphere sph = Sphere(vec3((
+//         //     texelFetch(iChannel0, ivec2(i, PROJECTILE_LAYER_ROW), 0).xy * 2. - 1.
+//         // ) * screenSize, 0.), 3.);
+//         // distToProjectiles = min(distToProjectiles, sdSphere(point - sph.pos, sph));
+//     }
+
+//     return distToProjectiles;
+// }
+
 #endif // ASTEROIDS_GLSL
