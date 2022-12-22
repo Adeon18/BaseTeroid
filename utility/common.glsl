@@ -17,5 +17,9 @@
 #define ASTEROID_SPEED 0.007
 #define ASTEROID_RADIUS 1.
 
+/* Projectiles properties */
+#define NUM_PROJECTILES 4.
+#define PROJECTILE_SPEED .01
+
 /* Player Properties */
 #define PLAYER_HEIGHT 1.5

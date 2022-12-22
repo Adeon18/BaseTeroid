@@ -11,6 +11,7 @@
 
 const vec3 PLAYER_COLOR = vec3(0.7411, 0.5764, 0.9764);
 const vec3 ASTEROID_COLOR = vec3(0.7, 0.7, 0.75);
+const vec3 PROJECTILE_COLOR = vec3(1., 0., 0.);
 
 /*
 * Rotate object in one plane:

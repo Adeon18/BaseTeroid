@@ -31,7 +31,7 @@ vec3 handleKeyboard() {
         direction.xy += vec2(1., 0.);
     }
 
-    if (isKeyDown(Key_Shift)) {
+    if (isKeyPressed(Key_E)) {
         direction.z = 1.;
     }
 
@@ -168,11 +168,24 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
             discard;
         }
     }
-    // else if (int(fragCoord.y) == PROJECTILE_LAYER_ROW && fragCoord.x < NUM_PROJECTILES && int(die.x) != 1) {
-    //     outFrag = texelFetch(iChannel0, ivec2(fragCoord.x, PROJECTILE_LAYER_ROW), 0);
+    /*
+     * Projectile chicanery
+    */
+    else if (int(fragCoord.y) == PROJECTILE_LAYER_ROW && fragCoord.x < NUM_PROJECTILES && int(die.x) != 1) {
+        vec2 screenSize = texelFetch(iChannel0, ivec2(C_SCREEN_SIZE_COL, CAMERA_LAYER_ROW), 0).xy;
+        vec2 position = texelFetch(iChannel0, ivec2(P_MOVEMENT_COL, PLAYER_LAYER_ROW), 0).xy;
+        float rotationRad = texelFetch(iChannel0, ivec2(P_ROTATION_COL, PLAYER_LAYER_ROW), 0).x;
+        vec2 direction = vec2(sin(rotationRad), cos(rotationRad));
 
-    //     outFrag.xy += outFrag.zw * ASTEROID_SPEED;
-    // }
+        vec4 controls = texelFetch(iChannel0, ivec2(P_CONTROLS_COL, PLAYER_LAYER_ROW), 0);
+        vec4 currentProjectile = texelFetch(iChannel0, ivec2(fragCoord.x, fragCoord.y), 0);
+        if (controls.z != 0.) {
+            currentProjectile.xy = (position / screenSize + 1.) / 2.;
+            currentProjectile.zw = direction;
+        }
+        currentProjectile.xy += currentProjectile.zw * PROJECTILE_SPEED;
+        outFrag = currentProjectile;
+    }
     /*
      * Discard all other pixels
     */

@@ -19,9 +19,11 @@ vec4 getColAndDist(vec3 point) {
     float distPiramid = createPlayer(point, vec3(0.), vec3(offset, 0.));
 
     float distAsteroids = createAsteroids(point);
+    float distProjectiles = createProjectiles(point);
 
     /// Use respective colors for respective objects
     vec4 colDist = minSd(vec4(PLAYER_COLOR, distPiramid), vec4(ASTEROID_COLOR, distAsteroids));
+    colDist = minSd(vec4(PROJECTILE_COLOR, distProjectiles), colDist);
 
     /// render event horizon
     colDist = minSd(vec4(vec3(0.), length(point - BH_pos) - BH_R), colDist);
