@@ -168,22 +168,67 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
             discard;
         }
     }
+    else if (int(fragCoord.y) == PROJECTILE_CREATION_ROW && fragCoord.x < NUM_PROJECTILES && int(die.x) != 1) {
+        vec4 controls = texelFetch(iChannel0, ivec2(P_CONTROLS_COL, PLAYER_LAYER_ROW), 0);
+        vec4 currentProjectile = texelFetch(iChannel0, ivec2(fragCoord.x, fragCoord.y), 0);
+        float lastShootTime = texelFetch(iChannel0, ivec2(NUM_PROJECTILES, PROJECTILE_CREATION_ROW), 0).x;
+        outFrag = currentProjectile;
+
+        if (int(currentProjectile.x) == 1) {
+            outFrag.x = 2.;
+        }
+
+        bool wasAlreadyCreated = false;
+        for (int i = 0; i < int(NUM_PROJECTILES); ++i) {
+            float projectileStatus = texelFetch(iChannel0, ivec2(i, PROJECTILE_CREATION_ROW), 0).x;
+            if (projectileStatus > 0. && projectileStatus < 2.) {
+                wasAlreadyCreated = true;
+                break;
+            }
+        }
+
+        if (!wasAlreadyCreated && (iTime - lastShootTime) >= 2. && controls.z > 0. && currentProjectile.x < 1.) {
+            outFrag.x = 1.;
+        }
+
+        vec4 projectilePos = texelFetch(iChannel0, ivec2(fragCoord.x, PROJECTILE_LAYER_ROW), 0);    
+        vec2 screenSize = texelFetch(iChannel0, ivec2(C_SCREEN_SIZE_COL, CAMERA_LAYER_ROW), 0).xy;
+        if (projectilePos.x > 1. || projectilePos.x < 0. || projectilePos.y > 1. || projectilePos.y < 0.) {
+            outFrag.x = 0.;
+        }
+    }
+    else if (int(fragCoord.y) == PROJECTILE_CREATION_ROW && fragCoord.x == NUM_PROJECTILES && int(die.x) != 1) {
+        for (int i = 0; i < int(NUM_PROJECTILES); ++i) {
+            if (int(texelFetch(iChannel0, ivec2(i, PROJECTILE_CREATION_ROW), 0).x) == 1) {
+                outFrag.x = iTime;
+                break;
+            }
+        }
+    }
     /*
      * Projectile chicanery
     */
     else if (int(fragCoord.y) == PROJECTILE_LAYER_ROW && fragCoord.x < NUM_PROJECTILES && int(die.x) != 1) {
-        vec2 screenSize = texelFetch(iChannel0, ivec2(C_SCREEN_SIZE_COL, CAMERA_LAYER_ROW), 0).xy;
-        vec2 position = texelFetch(iChannel0, ivec2(P_MOVEMENT_COL, PLAYER_LAYER_ROW), 0).xy;
-        float rotationRad = texelFetch(iChannel0, ivec2(P_ROTATION_COL, PLAYER_LAYER_ROW), 0).x;
-        vec2 direction = vec2(sin(rotationRad), cos(rotationRad));
-
-        vec4 controls = texelFetch(iChannel0, ivec2(P_CONTROLS_COL, PLAYER_LAYER_ROW), 0);
+        float creationValue = texelFetch(iChannel0, ivec2(fragCoord.x, PROJECTILE_CREATION_ROW), 0).x;
+        bool isJustCreated = creationValue > 0. && creationValue < 2.;
+        bool isCreated = creationValue > 1.;
         vec4 currentProjectile = texelFetch(iChannel0, ivec2(fragCoord.x, fragCoord.y), 0);
-        if (controls.z != 0.) {
+        if (isJustCreated) {
+            vec2 screenSize = texelFetch(iChannel0, ivec2(C_SCREEN_SIZE_COL, CAMERA_LAYER_ROW), 0).xy;
+            vec2 position = texelFetch(iChannel0, ivec2(P_MOVEMENT_COL, PLAYER_LAYER_ROW), 0).xy;
+            float rotationRad = texelFetch(iChannel0, ivec2(P_ROTATION_COL, PLAYER_LAYER_ROW), 0).x;
+            vec2 direction = vec2(sin(rotationRad), cos(rotationRad));
+
             currentProjectile.xy = (position / screenSize + 1.) / 2.;
             currentProjectile.zw = direction;
+        } else if (!isCreated) {
+            currentProjectile = vec4(0.);
         }
-        currentProjectile.xy += currentProjectile.zw * PROJECTILE_SPEED;
+
+        if (isCreated) {
+            currentProjectile.xy += currentProjectile.zw * PROJECTILE_SPEED;
+        }
+
         outFrag = currentProjectile;
     }
     /*

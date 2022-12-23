@@ -2,7 +2,8 @@
 #define ASTEROID_LAYER_ROW 0
 #define PLAYER_LAYER_ROW 1
 #define CAMERA_LAYER_ROW 2
-#define PROJECTILE_LAYER_ROW 3
+#define PROJECTILE_CREATION_ROW 3
+#define PROJECTILE_LAYER_ROW 4
 
 #define P_MOVEMENT_COL 0
 #define P_ROTATION_COL 1
@@ -18,7 +19,7 @@
 #define ASTEROID_RADIUS 1.
 
 /* Projectiles properties */
-#define NUM_PROJECTILES 4.
+#define NUM_PROJECTILES 1.
 #define PROJECTILE_SPEED .01
 
 /* Player Properties */
