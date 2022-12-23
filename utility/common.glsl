@@ -4,6 +4,7 @@
 #define CAMERA_LAYER_ROW 2
 #define PROJECTILE_CREATION_ROW 3
 #define PROJECTILE_LAYER_ROW 4
+#define PROJECTILE_COLLISION_ROW 5
 
 #define P_MOVEMENT_COL 0
 #define P_ROTATION_COL 1
@@ -21,6 +22,7 @@
 /* Projectiles properties */
 #define NUM_PROJECTILES 1.
 #define PROJECTILE_SPEED .01
+#define PROJECTILE_RADIUS 1.
 
 /* Player Properties */
 #define PLAYER_HEIGHT 1.5

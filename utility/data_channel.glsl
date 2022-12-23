@@ -93,6 +93,12 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
         } else {
             outFrag.xy += outFrag.zw * ASTEROID_SPEED;
         }
+
+        // Destroy asteroid if there is a collision with a projectile
+        vec4 projectileCollision = texelFetch(iChannel0, ivec2(fragCoord.x, PROJECTILE_COLLISION_ROW), 0);
+        if (projectileCollision.x > 0.) {
+            outFrag = vec4(0.);
+        }
     }
     /*
      * Player shenanigans
@@ -168,6 +174,9 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
             discard;
         }
     }
+    /*
+     * Projectile creation
+    */
     else if (int(fragCoord.y) == PROJECTILE_CREATION_ROW && fragCoord.x < NUM_PROJECTILES && int(die.x) != 1) {
         vec4 controls = texelFetch(iChannel0, ivec2(P_CONTROLS_COL, PLAYER_LAYER_ROW), 0);
         vec4 currentProjectile = texelFetch(iChannel0, ivec2(fragCoord.x, fragCoord.y), 0);
@@ -187,7 +196,7 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
             }
         }
 
-        if (!wasAlreadyCreated && (iTime - lastShootTime) >= 2. && controls.z > 0. && currentProjectile.x < 1.) {
+        if (!wasAlreadyCreated && controls.z > 0. && currentProjectile.x < 1.) {
             outFrag.x = 1.;
         }
 
@@ -196,17 +205,16 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
         if (projectilePos.x > 1. || projectilePos.x < 0. || projectilePos.y > 1. || projectilePos.y < 0.) {
             outFrag.x = 0.;
         }
-    }
-    else if (int(fragCoord.y) == PROJECTILE_CREATION_ROW && fragCoord.x == NUM_PROJECTILES && int(die.x) != 1) {
-        for (int i = 0; i < int(NUM_PROJECTILES); ++i) {
-            if (int(texelFetch(iChannel0, ivec2(i, PROJECTILE_CREATION_ROW), 0).x) == 1) {
-                outFrag.x = iTime;
-                break;
+
+        for (int i = 0; i < int(NUM_ASTEROIDS); ++i) {
+            vec2 projectileCollision = texelFetch(iChannel0, ivec2(i, PROJECTILE_COLLISION_ROW), 0).xy;
+            if (projectileCollision.x > 0.) {
+                outFrag.x = 0.;
             }
         }
     }
     /*
-     * Projectile chicanery
+     * Projectile position calculation
     */
     else if (int(fragCoord.y) == PROJECTILE_LAYER_ROW && fragCoord.x < NUM_PROJECTILES && int(die.x) != 1) {
         float creationValue = texelFetch(iChannel0, ivec2(fragCoord.x, PROJECTILE_CREATION_ROW), 0).x;
@@ -230,6 +238,26 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
         }
 
         outFrag = currentProjectile;
+    }
+    /*
+     * Projectile collision with asteroids
+    */
+    else if (int(fragCoord.y) == PROJECTILE_COLLISION_ROW && fragCoord.x < NUM_ASTEROIDS) {
+        outFrag = vec4(0.);
+        vec2 screenSize = texelFetch(iChannel0, ivec2(C_SCREEN_SIZE_COL, CAMERA_LAYER_ROW), 0).xy;
+        vec2 asteroidCoords = (texelFetch(iChannel0, ivec2(fragCoord.x, int(ASTEROID_LAYER_ROW)), 0).xy * 2. - 1.) * screenSize;
+        for (int i = 0; i < int(NUM_PROJECTILES); ++i) {
+            bool isCreated = texelFetch(iChannel0, ivec2(i, PROJECTILE_CREATION_ROW), 0).x > 0.;
+            if (isCreated) {
+                vec2 projectilePos = (texelFetch(iChannel0, ivec2(i, PROJECTILE_LAYER_ROW), 0).xy * 2. - 1.) * screenSize;
+
+                if (distance(projectilePos.xy, asteroidCoords) < PROJECTILE_RADIUS / 2. + ASTEROID_RADIUS
+                    && (length(projectilePos.xy) != 0. && length(asteroidCoords) != 0.)) {
+
+                    outFrag.x = 1.;
+                }
+            }
+        }
     }
     /*
      * Discard all other pixels
