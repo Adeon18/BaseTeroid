@@ -10,7 +10,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     vec3 outCol = vec3(0.2666, 0.2784, 0.3529);
 
     float die = texelFetch(iChannel0, ivec2(P_COLLISION_COL, PLAYER_LAYER_ROW), 0).x;
-    if (int(die) == 1) {
+    if (die > 0.2) {
         fragColor = texture(iChannel1, fragCoord/iResolution.xy);
         return;
     }

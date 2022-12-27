@@ -58,6 +58,7 @@ float random(vec3 v) {
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
     vec4 outFrag = vec4(0., 0., 0., 0.);
+    // if (iTime == 0.) {fragColor = outFrag; return;}
 
     vec2 die = texelFetch(iChannel0, ivec2(P_COLLISION_COL, PLAYER_LAYER_ROW), 0).xy;
 
@@ -104,8 +105,8 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
      * Player shenanigans
     */
     else if (int(fragCoord.y) == PLAYER_LAYER_ROW) {
-        if (int(die.x) == 1) {
-            if (int(fragCoord.y) == PLAYER_LAYER_ROW && int(fragCoord.x) == P_COLLISION_COL) {
+        if (die.x > 0.2) {
+            if (int(fragCoord.x) == P_COLLISION_COL) {
                 if (iTime - die.y > 2.) {
                     fragColor = vec4(0.);
                 } else {
@@ -130,19 +131,29 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
         }
         else if (int(fragCoord.x) == P_COLLISION_COL) {
             
+            if (die.x > 0. && iTime - die.y < 1.) {
+                fragColor = vec4(die.x, die.y, 0., 0.);
+                return;
+            }
+
             vec2 screenSize = texelFetch(iChannel0, ivec2(C_SCREEN_SIZE_COL, CAMERA_LAYER_ROW), 0).xy;
             vec2 offset = texelFetch(iChannel0, ivec2(P_MOVEMENT_COL, PLAYER_LAYER_ROW), 0).xy;
-
+            bool collided = false;
             /// Collision detection with asteroids
             for (int i = 0; i < int(NUM_ASTEROIDS); ++i) {
                 vec2 asteroidCoords = (texelFetch(iChannel0, ivec2(i, int(ASTEROID_LAYER_ROW)), 0).xy * 2. - 1.) * screenSize;
                 if (distance(offset.xy, asteroidCoords) < PLAYER_HEIGHT / 2. + ASTEROID_RADIUS &&
                     (length(offset.xy) != 0. && length(asteroidCoords) != 0.)) {
-                    outFrag.x = 1.;
+                    outFrag.x = 0.1 + die.x;
                     outFrag.y = iTime;
+                    collided = true;
                 }
             }
-        } else {
+            if(!collided){
+                outFrag.xy = die;
+            }
+        }
+        else {
             discard;
         }
     }

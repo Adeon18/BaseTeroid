@@ -22,7 +22,13 @@ vec4 getColAndDist(vec3 point) {
     float distProjectiles = createProjectiles(point);
 
     /// Use respective colors for respective objects
-    vec4 colDist = minSd(vec4(PLAYER_COLOR, distPiramid), vec4(ASTEROID_COLOR, distAsteroids));
+    float hp = 0.3 - texelFetch(iChannel0, ivec2(P_COLLISION_COL, PLAYER_LAYER_ROW), 0).x;
+    vec3 color = vec3(0.);
+    if(hp == 0.3) {color = PLAYER_COLOR_3;}
+    if(abs(hp - 0.2) < 0.01) {color = PLAYER_COLOR_2;}
+    if(abs(hp - 0.1) < 0.01) {color = PLAYER_COLOR_1;}
+
+    vec4 colDist = minSd(vec4(color, distPiramid), vec4(ASTEROID_COLOR, distAsteroids));
     colDist = minSd(vec4(PROJECTILE_COLOR, distProjectiles), colDist);
 
     /// render event horizon
