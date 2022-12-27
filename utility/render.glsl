@@ -3,7 +3,7 @@
 
 #include "object.glsl"
 
-#define MAX_STEPS 16
+#define MAX_STEPS 64
 #define MAX_DIST 100.
 #define SURF_DIST .01
 

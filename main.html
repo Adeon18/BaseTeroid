@@ -1870,7 +1870,7 @@ uniform float       iSampleRate;
 #define PLAYER_HEIGHT 1.5
 
 
-const vec3 BH_pos = vec3(-.5, 1.5, -14.);  // BH position
+const vec3 BH_pos = vec3(-.5, 1.5, -14.);  // -14. // BH position
 const float BH_R = 1.;                     // event horizon radius
 /// how much acceleration a black hole exerts on a light particle
 vec3 blackHoleNullParticleAccl(vec3 p) {
@@ -1880,6 +1880,75 @@ vec3 blackHoleNullParticleAccl(vec3 p) {
 const float dt = 0.15;
 
 #endif  // BLACK_HOLE_GLSL
+    void main() {}
+</script><script id='/Users/michael/uni/UCU/OS/BaseTeroid/utility/precompute_fetch.glsl' type='x-shader/x-fragment'>#version 300 es
+    precision highp float;
+    uniform vec3        iResolution;
+uniform float       iTime;
+uniform float       iTimeDelta;
+uniform int         iFrame;
+uniform vec4        iDate;
+uniform vec3        iChannelResolution[10];
+uniform vec4        iMouse;
+uniform vec4        iMouseButton;
+uniform sampler2D   iChannel0;
+uniform sampler2D   iChannel1;
+uniform sampler2D   iChannel2;
+uniform sampler2D   iChannel3;
+uniform sampler2D   iChannel4;
+uniform sampler2D   iChannel5;
+uniform sampler2D   iChannel6;
+uniform sampler2D   iChannel7;
+uniform sampler2D   iChannel8;
+uniform sampler2D   iChannel9;
+uniform sampler2D   iKeyboard;
+uniform float       iSampleRate;
+
+#define iGlobalTime iTime
+#define iGlobalFrame iFrame
+
+#define SHADER_TOY
+
+    #ifndef PRECOMPUTE_FETCH_GLSL
+#define PRECOMPUTE_FETCH_GLSL
+
+/// returns 0 when fetch is at border of black hole reached
+float fetchPrecomputed(vec2 fragCoord, inout vec3 position, inout vec3 velocity) {
+    /// interpolate position and velocity
+    vec2 flooredfragCoord = floor(fragCoord);  // remove possible .5
+    vec4 currentPositionAndMode = vec4(0.);
+    vec4 rayVelocityAndMode = vec4(0.);
+    if (
+        flooredfragCoord.x <= 1. || flooredfragCoord.y <= 0. ||
+        flooredfragCoord.x >= (iResolution.x-1.) || flooredfragCoord.y >= (iResolution.y-1.)
+    ) {
+        return 0.;  /// we are at border, so inteprpolation is not possible
+    } else {
+        bool is_velocity = (flooredfragCoord.x-2.*floor(flooredfragCoord.x/2.)) == 0.;
+        if (is_velocity) {
+            rayVelocityAndMode = texelFetch(iChannel2, ivec2(flooredfragCoord), 0);
+            currentPositionAndMode = (
+                texelFetch(iChannel2, ivec2(flooredfragCoord-vec2(1., 0.)), 0) * .5 +
+                texelFetch(iChannel2, ivec2(flooredfragCoord+vec2(1., 0.)), 0) * .5
+            );
+        } else {
+            currentPositionAndMode = texelFetch(iChannel2, ivec2(flooredfragCoord), 0);
+            rayVelocityAndMode = (
+                texelFetch(iChannel2, ivec2(flooredfragCoord-vec2(1., 0.)), 0) * .5 +
+                texelFetch(iChannel2, ivec2(flooredfragCoord+vec2(1., 0.)), 0) * .5
+            );
+        }
+        /// if we reached black hole in any of them, return 0
+        if ((rayVelocityAndMode.w + currentPositionAndMode.w) < 2.) {
+            return 0.;
+        }
+    }
+    position = currentPositionAndMode.xyz;
+    velocity = rayVelocityAndMode.xyz;
+    return 1.;
+}
+
+#endif  // PRECOMPUTE_FETCH_GLSL
     void main() {}
 </script><script id='/Users/michael/uni/UCU/OS/BaseTeroid/utility/ray.glsl' type='x-shader/x-fragment'>#version 300 es
     precision highp float;
@@ -3443,7 +3512,7 @@ float createAsteroids(vec3 point) {
 #define PLAYER_HEIGHT 1.5
 
 
-const vec3 BH_pos = vec3(-.5, 1.5, -14.);  // BH position
+const vec3 BH_pos = vec3(-.5, 1.5, -14.);  // -14. // BH position
 const float BH_R = 1.;                     // event horizon radius
 /// how much acceleration a black hole exerts on a light particle
 vec3 blackHoleNullParticleAccl(vec3 p) {
@@ -3453,6 +3522,46 @@ vec3 blackHoleNullParticleAccl(vec3 p) {
 const float dt = 0.15;
 
 #endif  // BLACK_HOLE_GLSL
+#ifndef PRECOMPUTE_FETCH_GLSL
+#define PRECOMPUTE_FETCH_GLSL
+
+/// returns 0 when fetch is at border of black hole reached
+float fetchPrecomputed(vec2 fragCoord, inout vec3 position, inout vec3 velocity) {
+    /// interpolate position and velocity
+    vec2 flooredfragCoord = floor(fragCoord);  // remove possible .5
+    vec4 currentPositionAndMode = vec4(0.);
+    vec4 rayVelocityAndMode = vec4(0.);
+    if (
+        flooredfragCoord.x <= 1. || flooredfragCoord.y <= 0. ||
+        flooredfragCoord.x >= (iResolution.x-1.) || flooredfragCoord.y >= (iResolution.y-1.)
+    ) {
+        return 0.;  /// we are at border, so inteprpolation is not possible
+    } else {
+        bool is_velocity = (flooredfragCoord.x-2.*floor(flooredfragCoord.x/2.)) == 0.;
+        if (is_velocity) {
+            rayVelocityAndMode = texelFetch(iChannel2, ivec2(flooredfragCoord), 0);
+            currentPositionAndMode = (
+                texelFetch(iChannel2, ivec2(flooredfragCoord-vec2(1., 0.)), 0) * .5 +
+                texelFetch(iChannel2, ivec2(flooredfragCoord+vec2(1., 0.)), 0) * .5
+            );
+        } else {
+            currentPositionAndMode = texelFetch(iChannel2, ivec2(flooredfragCoord), 0);
+            rayVelocityAndMode = (
+                texelFetch(iChannel2, ivec2(flooredfragCoord-vec2(1., 0.)), 0) * .5 +
+                texelFetch(iChannel2, ivec2(flooredfragCoord+vec2(1., 0.)), 0) * .5
+            );
+        }
+        /// if we reached black hole in any of them, return 0
+        if ((rayVelocityAndMode.w + currentPositionAndMode.w) < 2.) {
+            return 0.;
+        }
+    }
+    position = currentPositionAndMode.xyz;
+    velocity = rayVelocityAndMode.xyz;
+    return 1.;
+}
+
+#endif  // PRECOMPUTE_FETCH_GLSL
 
 
 
@@ -3509,75 +3618,8 @@ vec3 getLighting(vec3 point, vec3 lightPos, vec3 color) {
 /// current_position is the ray origin
 /// ray_velocity should be normalized
 /// color is the resulting color
-vec4 blackHoleRender(vec3 current_position, vec3 ray_velocity, inout vec3 color) {
+vec4 blackHoleRender(vec3 currentPosition, vec3 rayVelocity, inout vec3 color) {
     // 4th coord is whether we found a point or diverged
-    vec4 currentLocationAndMode = vec4(0.);
-    for (int i = 0; i < MAX_STEPS * 5; ++i) {
-        vec4 colAndDist = getColAndDist(current_position);
-
-        ray_velocity += blackHoleNullParticleAccl(current_position) * dt;
-
-        float dist_to_travel = length(ray_velocity) * dt;
-        if (dist_to_travel > colAndDist.w) {
-            ray_velocity *= colAndDist.w / dist_to_travel;
-        }
-
-        current_position += ray_velocity * dt;
-
-        // check that we got below event horizon
-        if (distance(BH_pos, current_position) < BH_R) {
-            color = vec3(0.);
-            currentLocationAndMode.xyzw = vec4(current_position, 1.);
-            break;
-        }
-
-        // check that we landed on a point
-        if (abs(colAndDist.w) < SURF_DIST) {
-            color = colAndDist.rgb;
-            currentLocationAndMode = vec4(current_position, 1.);
-            break;
-        }
-    }
-    return currentLocationAndMode;
-}
-
-/// color is the resulting color
-vec4 blackHoleRenderPrecomputed(vec2 fragCoord, inout vec3 color) {
-    /// interpolate position and velocity
-    vec2 flooredfragCoord = floor(fragCoord);  // remove possible .5
-    vec4 currentPositionAndMode = vec4(0.);
-    vec4 rayVelocityAndMode = vec4(0.);
-    if (
-        flooredfragCoord.x <= 1. || flooredfragCoord.y <= 0. ||
-        flooredfragCoord.x >= (iResolution.x-1.) || flooredfragCoord.y >= (iResolution.y-1.)
-    ) {
-        color = vec3(0.);
-        return vec4(vec3(0.), 1.);  /// we are at border, so inteprpolation is not possible
-    } else {
-        bool is_velocity = (flooredfragCoord.x-2.*floor(flooredfragCoord.x/2.)) == 0.;
-        if (is_velocity) {
-            rayVelocityAndMode = texelFetch(iChannel2, ivec2(flooredfragCoord), 0);
-            currentPositionAndMode = (
-                texelFetch(iChannel2, ivec2(flooredfragCoord-vec2(1., 0.)), 0) * .5 +
-                texelFetch(iChannel2, ivec2(flooredfragCoord+vec2(1., 0.)), 0) * .5
-            );
-        } else {
-            currentPositionAndMode = texelFetch(iChannel2, ivec2(flooredfragCoord), 0);
-            rayVelocityAndMode = (
-                texelFetch(iChannel2, ivec2(flooredfragCoord-vec2(1., 0.)), 0) * .5 +
-                texelFetch(iChannel2, ivec2(flooredfragCoord+vec2(1., 0.)), 0) * .5
-            );
-        }
-        /// if we reached black hole in any of them, return 0
-        if ((rayVelocityAndMode.w + currentPositionAndMode.w) < 2.) {
-            color = vec3(0.);
-            return vec4(vec3(0.), 1.);
-        }
-    }
-
-    // 4th coord is whether we found a point or diverged
-    vec3 currentPosition = currentPositionAndMode.xyz;
-    vec3 rayVelocity = rayVelocityAndMode.xyz;
     vec4 currentLocationAndMode = vec4(0.);
     for (int i = 0; i < MAX_STEPS; ++i) {
         vec4 colAndDist = getColAndDist(currentPosition);
@@ -3608,7 +3650,352 @@ vec4 blackHoleRenderPrecomputed(vec2 fragCoord, inout vec3 color) {
     return currentLocationAndMode;
 }
 
+/// color is the resulting color
+vec4 blackHoleRenderPrecomputed(vec2 fragCoord, inout vec3 color) {
+    vec3 position = vec3(0.);
+    vec3 velocity = vec3(0.);
+    float mode = fetchPrecomputed(fragCoord, position, velocity);
+    if (mode == 0.) {
+        color = vec3(0.);
+        return vec4(vec3(0.), 1.);
+    }
+    return blackHoleRender(position, velocity, color);
+}
+
 #endif  // RAY_GLSL
+    void main() {}
+</script><script id='/Users/michael/uni/UCU/OS/BaseTeroid/utility/precompute_base.glsl' type='x-shader/x-fragment'>#version 300 es
+    precision highp float;
+    uniform vec3        iResolution;
+uniform float       iTime;
+uniform float       iTimeDelta;
+uniform int         iFrame;
+uniform vec4        iDate;
+uniform vec3        iChannelResolution[10];
+uniform vec4        iMouse;
+uniform vec4        iMouseButton;
+uniform sampler2D   iChannel0;
+uniform sampler2D   iChannel1;
+uniform sampler2D   iChannel2;
+uniform sampler2D   iChannel3;
+uniform sampler2D   iChannel4;
+uniform sampler2D   iChannel5;
+uniform sampler2D   iChannel6;
+uniform sampler2D   iChannel7;
+uniform sampler2D   iChannel8;
+uniform sampler2D   iChannel9;
+uniform sampler2D   iKeyboard;
+uniform float       iSampleRate;
+
+#define iGlobalTime iTime
+#define iGlobalFrame iFrame
+
+#define SHADER_TOY
+
+    #ifndef PRECOMPUTE_BASE_GLSL
+#define PRECOMPUTE_BASE_GLSL
+
+#ifndef CAMERA_GLSL
+#define CAMERA_GLSL
+
+#ifndef RENDER_GLSL
+#define RENDER_GLSL
+
+#ifndef OBJECT_GLSL
+#define OBJECT_GLSL
+
+/* A Capsule has position of the top and bottom spheres and their radius */
+struct Capsule {
+    vec3 top;
+    vec3 bot;
+    float rad;
+};
+
+/* A Cylinder is the same as Capsule but the algorithms are different */
+struct Cylinder {
+    vec3 top;
+    vec3 bot;
+    float rad;
+};
+
+/* A Torus has a main radius and the thickness of the tube and position */
+struct Torus {
+    float radBig;
+    float radSmol;
+    vec3 pos;
+};
+
+/*
+* A box has width height and depth(all calculated from center to sides)
+* and position
+*/
+struct Box {
+    // width, height, depth can be put in a vec3
+    float wid;
+    float hig;
+    float dep;
+    vec3 pos;
+};
+
+/*
+ * A fucking sphere, idk
+*/
+struct Sphere {
+    vec3 pos;
+	float rad;
+};
+
+
+struct Piramid {
+    vec3 pos;
+    float height;
+};
+
+#endif // OBJECT_GLSL
+
+#define MAX_STEPS 16
+#define MAX_DIST 100.
+#define SURF_DIST .01
+
+#define PI 3.14159
+
+const vec3 PLAYER_COLOR = vec3(0.7411, 0.5764, 0.9764);
+const vec3 ASTEROID_COLOR = vec3(0.7, 0.7, 0.75);
+
+/*
+* Rotate object in one plane:
+* use obj.xy *= Rotate(val);
+* to rotate the object by some value on the xy plane
+*/
+mat2 Rotate(float val) {
+    float s = sin(val);
+    float c = cos(val );
+    return mat2(c, -s, s, c);
+}
+
+mat3 RotateOffset(float rotate, float x, float y){
+    mat3 rotateMat;
+    float s = sin(rotate);
+    float c = cos(rotate);
+    rotateMat[0] = vec3(c, -s, -x*c+y*s+x);
+    rotateMat[1] = vec3(s, c, -x*s-y*c+y);
+    rotateMat[2] = vec3(0., 0., 1.);
+    return rotateMat;
+}
+
+mat3 Translate3(float x, float y){
+    mat3 translateMat;
+    translateMat[0] = vec3(1., 0., x);
+    translateMat[1] = vec3(0., 1., y);
+    translateMat[2] = vec3(0., 0., 1.);
+    return translateMat;
+}
+
+/*
+ * Get the min distance vec4 from vec4(rgb, dist)
+*/
+vec4 minSd(vec4 first, vec4 second) {
+    return first.w < second.w? first : second;
+}
+//-----------------------------------------------------------------------------
+/*
+ * Distance functions -> give us the distanсe to said object type
+ * NEGATIVE return on the inside and POSITIVE on the outside
+ * * vec3 point: origin point - the position you want your object to be at
+ * * Object: obj to find distance to
+ */
+
+/* Get distance to the Box and put it in proper position */
+float sdBox(vec3 point, Box box) {
+    /// By default the scale is inversed
+
+    point = abs(point) - vec3(box.wid, box.hig, box.dep);
+    /// Account for inner position for there not to be distorted black dots
+    return (length(max(point, 0.)) + min(max(point.x, max(point.y, point.z)), 0.));
+}
+
+/* Get distance to the Torus and put it in proper position */
+float getDistTorus(vec3 point, Torus tor) {
+    /// Projected distance to the outside layer of a torus
+    float projDistToOut = length(point.xz) - tor.radBig;
+    return length(vec2(projDistToOut, point.y)) - tor.radSmol;
+}
+
+/* Get distance to the Capsule */
+float sdCapsule(vec3 point, Capsule cap) {
+    vec3 edge = cap.bot - cap.top;
+    vec3 distToCapsule = point - cap.top;
+
+    float distToHit = dot(edge, distToCapsule) / dot(edge, edge);
+    distToHit = clamp(distToHit, 0., 1.);
+
+    vec3 pointHit = cap.top + distToHit*edge;
+    return length(point - pointHit) - cap.rad;
+}
+
+/* Get distance to the Cylinder */
+float sdCylinder(vec3 point, Cylinder cap) {
+    vec3 edge = cap.bot - cap.top;
+    vec3 distToSide = point - cap.top;
+
+    float distToHit = dot(edge, distToSide) / dot(edge, edge);
+    // distToHit = clamp(distToHit, 0., 1.);
+
+    vec3 pointHit = cap.top + distToHit*edge;
+    // X-axis dist to cylinder
+    float xDist = length(point - pointHit) - cap.rad;
+    float yDist = (abs(distToHit - .5) - .5) * length(edge);
+
+    float exteriorDist = length(max(vec2(xDist, yDist), 0.));
+    float interiorDist = min(max(xDist, yDist), 0.);
+    return exteriorDist + interiorDist;
+}
+
+/* Get distance to the Sphere - The fastest! */
+float sdSphere(vec3 point, Sphere sphere) {
+    return length(point) - sphere.rad;
+}
+
+/* Get distance to the Plane */
+float sdPlane(vec3 point, vec3 plane) {
+    return dot(point, normalize(plane));
+}
+
+/*
+ * Get distance to the Piramid - for now used only in player creation
+ * Code "borrowed" from https://www.shadertoy.com/view/Ntd3DX
+ */
+float sdPyramid(vec3 position, float halfWidth, float halfDepth, float halfHeight) {
+    position.xz = abs(position.xz);
+
+    // bottom
+    float s1 = abs(position.y) - halfHeight;
+    vec3 base = vec3(max(position.x - halfWidth, 0.0), abs(position.y + halfHeight), max(position.z - halfDepth, 0.0));
+    float d1 = dot(base, base);
+
+    vec3 q = position - vec3(halfWidth, -halfHeight, halfDepth);
+    vec3 end = vec3(-halfWidth, 2.0 * halfHeight, -halfDepth);
+    vec3 segment = q - end * clamp(dot(q, end) / dot(end, end), 0.0, 1.0);
+    float d = dot(segment, segment);
+
+    // side
+    vec3 normal1 = vec3(end.y, -end.x, 0.0);
+    float s2 = dot(q.xy, normal1.xy);
+    float d2 = d;
+    if (dot(q.xy, -end.xy) < 0.0 && dot(q, cross(normal1, end)) < 0.0) {
+        d2 = s2 * s2 / dot(normal1.xy, normal1.xy);
+    }
+    // front/back
+    vec3 normal2 = vec3(0.0, -end.z, end.y);
+    float s3 = dot(q.yz, normal2.yz);
+    float d3 = d;
+    if (dot(q.yz, -end.yz) < 0.0 && dot(q, cross(normal2, -end)) < 0.0) {
+        d3 = s3 * s3 / dot(normal2.yz, normal2.yz);
+    }
+    return sqrt(min(min(d1, d2), d3)) * sign(max(max(s1, s2), s3));
+}
+
+#endif // RENDER_GLSL
+
+vec3 getRo(vec4 camera_props) {
+    vec3 ro = vec3(-camera_props.x, camera_props.y, camera_props.z);
+    ro.xz *= Rotate(PI);
+    return ro;
+}
+
+// lookat - central point of the camera
+// zoom - zoom  ==  distance from camera to the screen
+// c - center point on the screen = ro + forward * zoom factor z
+// ro = ray origin
+// right - if we look straight from the camera on screen, it is x offset
+// up - if we look straight from the camera on screen, it is y offset
+// intersection - the point on the screen where ray passes through it
+vec3 getRd(vec2 uv, vec3 ro, vec4 camera_props) {
+    // variables to control camera if we need it
+    vec3 lookat = vec3(camera_props.xy, 0.);
+    float zoom = camera_props.w;
+
+    vec3 forward = normalize(lookat - ro),
+        right = normalize(cross(vec3(0, 1, 0), forward)),
+        up = cross(forward, right),
+        c = ro + forward * zoom,
+        intersection = c + uv.x * right + uv.y * up,
+        d = normalize(intersection - ro);
+    return d;
+}
+
+#endif // CAMERA_GLSL
+#ifndef BLACK_HOLE_GLSL
+#define BLACK_HOLE_GLSL
+
+/* Layers of data in pixels - basically Y coordinates */
+#define ASTEROID_LAYER_ROW 0
+#define PLAYER_LAYER_ROW 1
+#define CAMERA_LAYER_ROW 2
+
+#define P_MOVEMENT_COL 0
+#define P_ROTATION_COL 1
+#define P_CONTROLS_COL 2
+#define P_COLLISION_COL 3
+
+#define C_OPTIONS_COL 0
+#define C_SCREEN_SIZE_COL 1
+
+/* Asteroid properties */
+#define NUM_ASTEROIDS 5.
+#define ASTEROID_SPEED 0.007
+#define ASTEROID_RADIUS 1.
+
+/* Player Properties */
+#define PLAYER_HEIGHT 1.5
+
+
+const vec3 BH_pos = vec3(-.5, 1.5, -14.);  // -14. // BH position
+const float BH_R = 1.;                     // event horizon radius
+/// how much acceleration a black hole exerts on a light particle
+vec3 blackHoleNullParticleAccl(vec3 p) {
+    vec3 r = (p - BH_pos);
+    return -1.5 * BH_R * r / pow(length(r), 5.0);
+}
+const float dt = 0.15;
+
+#endif  // BLACK_HOLE_GLSL
+
+#define MAX_STEPS_PRECOMPUTE 512
+const float precompute_dt_divisor = 30.;
+float heightprecompute(inout vec3 current_position, inout vec3 ray_velocity, float aim_height) {
+    // 4th coord is whether we reached height 1 or got past event horison
+    // vec4 rayLocationOrVelocityAndMode = vec4(0.);
+    float mode = 0.;
+    float precompute_dt = dt / precompute_dt_divisor;
+    for (int i = 0; i < MAX_STEPS_PRECOMPUTE * int(precompute_dt_divisor); ++i) {
+        float dist = abs(current_position.z+aim_height);
+
+        ray_velocity += blackHoleNullParticleAccl(current_position) * precompute_dt;
+
+        float dist_to_travel = length(ray_velocity) * precompute_dt;
+        if (dist_to_travel > dist) {
+            ray_velocity *= dist / dist_to_travel;
+        }
+
+        current_position += ray_velocity * precompute_dt;
+
+        // check that we got below event horizon
+        if (distance(BH_pos, current_position) < BH_R) {
+            break;
+        }
+
+        // check that we landed on a point
+        if (abs(dist) < SURF_DIST) {
+            ray_velocity = normalize(ray_velocity);
+            mode = 1.;
+            break;
+        }
+    }
+    return mode;
+}
+
+#endif  // PRECOMPUTE_BASE_GLSL
     void main() {}
 </script>
 <script id='/Users/michael/uni/UCU/OS/BaseTeroid/utility/data_channel.glsl' type='x-shader/x-fragment'>
@@ -4926,6 +5313,239 @@ vec3 getRd(vec2 uv, vec3 ro, vec4 camera_props) {
 }
 
 #endif // CAMERA_GLSL
+#ifndef PRECOMPUTE_BASE_GLSL
+#define PRECOMPUTE_BASE_GLSL
+
+#ifndef CAMERA_GLSL
+#define CAMERA_GLSL
+
+#ifndef RENDER_GLSL
+#define RENDER_GLSL
+
+#ifndef OBJECT_GLSL
+#define OBJECT_GLSL
+
+/* A Capsule has position of the top and bottom spheres and their radius */
+struct Capsule {
+    vec3 top;
+    vec3 bot;
+    float rad;
+};
+
+/* A Cylinder is the same as Capsule but the algorithms are different */
+struct Cylinder {
+    vec3 top;
+    vec3 bot;
+    float rad;
+};
+
+/* A Torus has a main radius and the thickness of the tube and position */
+struct Torus {
+    float radBig;
+    float radSmol;
+    vec3 pos;
+};
+
+/*
+* A box has width height and depth(all calculated from center to sides)
+* and position
+*/
+struct Box {
+    // width, height, depth can be put in a vec3
+    float wid;
+    float hig;
+    float dep;
+    vec3 pos;
+};
+
+/*
+ * A fucking sphere, idk
+*/
+struct Sphere {
+    vec3 pos;
+	float rad;
+};
+
+
+struct Piramid {
+    vec3 pos;
+    float height;
+};
+
+#endif // OBJECT_GLSL
+
+#define MAX_STEPS 16
+#define MAX_DIST 100.
+#define SURF_DIST .01
+
+#define PI 3.14159
+
+const vec3 PLAYER_COLOR = vec3(0.7411, 0.5764, 0.9764);
+const vec3 ASTEROID_COLOR = vec3(0.7, 0.7, 0.75);
+
+/*
+* Rotate object in one plane:
+* use obj.xy *= Rotate(val);
+* to rotate the object by some value on the xy plane
+*/
+mat2 Rotate(float val) {
+    float s = sin(val);
+    float c = cos(val );
+    return mat2(c, -s, s, c);
+}
+
+mat3 RotateOffset(float rotate, float x, float y){
+    mat3 rotateMat;
+    float s = sin(rotate);
+    float c = cos(rotate);
+    rotateMat[0] = vec3(c, -s, -x*c+y*s+x);
+    rotateMat[1] = vec3(s, c, -x*s-y*c+y);
+    rotateMat[2] = vec3(0., 0., 1.);
+    return rotateMat;
+}
+
+mat3 Translate3(float x, float y){
+    mat3 translateMat;
+    translateMat[0] = vec3(1., 0., x);
+    translateMat[1] = vec3(0., 1., y);
+    translateMat[2] = vec3(0., 0., 1.);
+    return translateMat;
+}
+
+/*
+ * Get the min distance vec4 from vec4(rgb, dist)
+*/
+vec4 minSd(vec4 first, vec4 second) {
+    return first.w < second.w? first : second;
+}
+//-----------------------------------------------------------------------------
+/*
+ * Distance functions -> give us the distanсe to said object type
+ * NEGATIVE return on the inside and POSITIVE on the outside
+ * * vec3 point: origin point - the position you want your object to be at
+ * * Object: obj to find distance to
+ */
+
+/* Get distance to the Box and put it in proper position */
+float sdBox(vec3 point, Box box) {
+    /// By default the scale is inversed
+
+    point = abs(point) - vec3(box.wid, box.hig, box.dep);
+    /// Account for inner position for there not to be distorted black dots
+    return (length(max(point, 0.)) + min(max(point.x, max(point.y, point.z)), 0.));
+}
+
+/* Get distance to the Torus and put it in proper position */
+float getDistTorus(vec3 point, Torus tor) {
+    /// Projected distance to the outside layer of a torus
+    float projDistToOut = length(point.xz) - tor.radBig;
+    return length(vec2(projDistToOut, point.y)) - tor.radSmol;
+}
+
+/* Get distance to the Capsule */
+float sdCapsule(vec3 point, Capsule cap) {
+    vec3 edge = cap.bot - cap.top;
+    vec3 distToCapsule = point - cap.top;
+
+    float distToHit = dot(edge, distToCapsule) / dot(edge, edge);
+    distToHit = clamp(distToHit, 0., 1.);
+
+    vec3 pointHit = cap.top + distToHit*edge;
+    return length(point - pointHit) - cap.rad;
+}
+
+/* Get distance to the Cylinder */
+float sdCylinder(vec3 point, Cylinder cap) {
+    vec3 edge = cap.bot - cap.top;
+    vec3 distToSide = point - cap.top;
+
+    float distToHit = dot(edge, distToSide) / dot(edge, edge);
+    // distToHit = clamp(distToHit, 0., 1.);
+
+    vec3 pointHit = cap.top + distToHit*edge;
+    // X-axis dist to cylinder
+    float xDist = length(point - pointHit) - cap.rad;
+    float yDist = (abs(distToHit - .5) - .5) * length(edge);
+
+    float exteriorDist = length(max(vec2(xDist, yDist), 0.));
+    float interiorDist = min(max(xDist, yDist), 0.);
+    return exteriorDist + interiorDist;
+}
+
+/* Get distance to the Sphere - The fastest! */
+float sdSphere(vec3 point, Sphere sphere) {
+    return length(point) - sphere.rad;
+}
+
+/* Get distance to the Plane */
+float sdPlane(vec3 point, vec3 plane) {
+    return dot(point, normalize(plane));
+}
+
+/*
+ * Get distance to the Piramid - for now used only in player creation
+ * Code "borrowed" from https://www.shadertoy.com/view/Ntd3DX
+ */
+float sdPyramid(vec3 position, float halfWidth, float halfDepth, float halfHeight) {
+    position.xz = abs(position.xz);
+
+    // bottom
+    float s1 = abs(position.y) - halfHeight;
+    vec3 base = vec3(max(position.x - halfWidth, 0.0), abs(position.y + halfHeight), max(position.z - halfDepth, 0.0));
+    float d1 = dot(base, base);
+
+    vec3 q = position - vec3(halfWidth, -halfHeight, halfDepth);
+    vec3 end = vec3(-halfWidth, 2.0 * halfHeight, -halfDepth);
+    vec3 segment = q - end * clamp(dot(q, end) / dot(end, end), 0.0, 1.0);
+    float d = dot(segment, segment);
+
+    // side
+    vec3 normal1 = vec3(end.y, -end.x, 0.0);
+    float s2 = dot(q.xy, normal1.xy);
+    float d2 = d;
+    if (dot(q.xy, -end.xy) < 0.0 && dot(q, cross(normal1, end)) < 0.0) {
+        d2 = s2 * s2 / dot(normal1.xy, normal1.xy);
+    }
+    // front/back
+    vec3 normal2 = vec3(0.0, -end.z, end.y);
+    float s3 = dot(q.yz, normal2.yz);
+    float d3 = d;
+    if (dot(q.yz, -end.yz) < 0.0 && dot(q, cross(normal2, -end)) < 0.0) {
+        d3 = s3 * s3 / dot(normal2.yz, normal2.yz);
+    }
+    return sqrt(min(min(d1, d2), d3)) * sign(max(max(s1, s2), s3));
+}
+
+#endif // RENDER_GLSL
+
+vec3 getRo(vec4 camera_props) {
+    vec3 ro = vec3(-camera_props.x, camera_props.y, camera_props.z);
+    ro.xz *= Rotate(PI);
+    return ro;
+}
+
+// lookat - central point of the camera
+// zoom - zoom  ==  distance from camera to the screen
+// c - center point on the screen = ro + forward * zoom factor z
+// ro = ray origin
+// right - if we look straight from the camera on screen, it is x offset
+// up - if we look straight from the camera on screen, it is y offset
+// intersection - the point on the screen where ray passes through it
+vec3 getRd(vec2 uv, vec3 ro, vec4 camera_props) {
+    // variables to control camera if we need it
+    vec3 lookat = vec3(camera_props.xy, 0.);
+    float zoom = camera_props.w;
+
+    vec3 forward = normalize(lookat - ro),
+        right = normalize(cross(vec3(0, 1, 0), forward)),
+        up = cross(forward, right),
+        c = ro + forward * zoom,
+        intersection = c + uv.x * right + uv.y * up,
+        d = normalize(intersection - ro);
+    return d;
+}
+
+#endif // CAMERA_GLSL
 #ifndef BLACK_HOLE_GLSL
 #define BLACK_HOLE_GLSL
 
@@ -4951,7 +5571,7 @@ vec3 getRd(vec2 uv, vec3 ro, vec4 camera_props) {
 #define PLAYER_HEIGHT 1.5
 
 
-const vec3 BH_pos = vec3(-.5, 1.5, -14.);  // BH position
+const vec3 BH_pos = vec3(-.5, 1.5, -14.);  // -14. // BH position
 const float BH_R = 1.;                     // event horizon radius
 /// how much acceleration a black hole exerts on a light particle
 vec3 blackHoleNullParticleAccl(vec3 p) {
@@ -4962,17 +5582,15 @@ const float dt = 0.15;
 
 #endif  // BLACK_HOLE_GLSL
 
-
-
-
 #define MAX_STEPS_PRECOMPUTE 512
 const float precompute_dt_divisor = 30.;
-vec4 height1precompute(vec3 current_position, vec3 ray_velocity, bool put_velocity) {
+float heightprecompute(inout vec3 current_position, inout vec3 ray_velocity, float aim_height) {
     // 4th coord is whether we reached height 1 or got past event horison
-    vec4 rayLocationOrVelocityAndMode = vec4(0.);
+    // vec4 rayLocationOrVelocityAndMode = vec4(0.);
+    float mode = 0.;
     float precompute_dt = dt / precompute_dt_divisor;
     for (int i = 0; i < MAX_STEPS_PRECOMPUTE * int(precompute_dt_divisor); ++i) {
-        float dist = abs(current_position.z+1.);
+        float dist = abs(current_position.z+aim_height);
 
         ray_velocity += blackHoleNullParticleAccl(current_position) * precompute_dt;
 
@@ -4990,16 +5608,18 @@ vec4 height1precompute(vec3 current_position, vec3 ray_velocity, bool put_veloci
 
         // check that we landed on a point
         if (abs(dist) < SURF_DIST) {
-            if (put_velocity) {
-                rayLocationOrVelocityAndMode = vec4(normalize(ray_velocity), 1.);
-            } else {
-                rayLocationOrVelocityAndMode = vec4(current_position, 1.);
-            }
+            ray_velocity = normalize(ray_velocity);
+            mode = 1.;
             break;
         }
     }
-    return rayLocationOrVelocityAndMode;
+    return mode;
 }
+
+#endif  // PRECOMPUTE_BASE_GLSL
+
+
+
 
 void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     if (iFrame == 0) {
@@ -5009,12 +5629,16 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
         // then texelFetch(iChannel1, ...) doesn't work. Since camera position
         // is a constant currently, I just pasted it here for a temporary fix
         vec4 camera_props = vec4(0., 0., 20., 0.5);// texelFetch(iChannel0, ivec2(C_OPTIONS_COL, CAMERA_LAYER_ROW), 0);
-        vec3 ro = getRo(camera_props);
-        vec3 rd = getRd(uv, ro, camera_props);
+        vec3 position = getRo(camera_props);
+        vec3 velocity = getRd(uv, position, camera_props);
+        float mode = heightprecompute(position, velocity, 1.);
         /// put velocity if fragCoord.x is divisible by 2
         float flooredfragCoordx = floor(fragCoord.x);  // remove possible .5
-        bool put_velocity = (flooredfragCoordx-2.*floor(flooredfragCoordx/2.)) == 0.;
-        fragColor = height1precompute(ro, rd, put_velocity);
+        if ((flooredfragCoordx-2.*floor(flooredfragCoordx/2.)) == 0.) {
+            fragColor = vec4(velocity, mode);
+        } else {
+            fragColor = vec4(position, mode);
+        }
     } else {
         fragColor = texelFetch(iChannel1, ivec2(fragCoord), 0);
     }
@@ -6608,7 +7232,7 @@ float createAsteroids(vec3 point) {
 #define PLAYER_HEIGHT 1.5
 
 
-const vec3 BH_pos = vec3(-.5, 1.5, -14.);  // BH position
+const vec3 BH_pos = vec3(-.5, 1.5, -14.);  // -14. // BH position
 const float BH_R = 1.;                     // event horizon radius
 /// how much acceleration a black hole exerts on a light particle
 vec3 blackHoleNullParticleAccl(vec3 p) {
@@ -6618,6 +7242,46 @@ vec3 blackHoleNullParticleAccl(vec3 p) {
 const float dt = 0.15;
 
 #endif  // BLACK_HOLE_GLSL
+#ifndef PRECOMPUTE_FETCH_GLSL
+#define PRECOMPUTE_FETCH_GLSL
+
+/// returns 0 when fetch is at border of black hole reached
+float fetchPrecomputed(vec2 fragCoord, inout vec3 position, inout vec3 velocity) {
+    /// interpolate position and velocity
+    vec2 flooredfragCoord = floor(fragCoord);  // remove possible .5
+    vec4 currentPositionAndMode = vec4(0.);
+    vec4 rayVelocityAndMode = vec4(0.);
+    if (
+        flooredfragCoord.x <= 1. || flooredfragCoord.y <= 0. ||
+        flooredfragCoord.x >= (iResolution.x-1.) || flooredfragCoord.y >= (iResolution.y-1.)
+    ) {
+        return 0.;  /// we are at border, so inteprpolation is not possible
+    } else {
+        bool is_velocity = (flooredfragCoord.x-2.*floor(flooredfragCoord.x/2.)) == 0.;
+        if (is_velocity) {
+            rayVelocityAndMode = texelFetch(iChannel2, ivec2(flooredfragCoord), 0);
+            currentPositionAndMode = (
+                texelFetch(iChannel2, ivec2(flooredfragCoord-vec2(1., 0.)), 0) * .5 +
+                texelFetch(iChannel2, ivec2(flooredfragCoord+vec2(1., 0.)), 0) * .5
+            );
+        } else {
+            currentPositionAndMode = texelFetch(iChannel2, ivec2(flooredfragCoord), 0);
+            rayVelocityAndMode = (
+                texelFetch(iChannel2, ivec2(flooredfragCoord-vec2(1., 0.)), 0) * .5 +
+                texelFetch(iChannel2, ivec2(flooredfragCoord+vec2(1., 0.)), 0) * .5
+            );
+        }
+        /// if we reached black hole in any of them, return 0
+        if ((rayVelocityAndMode.w + currentPositionAndMode.w) < 2.) {
+            return 0.;
+        }
+    }
+    position = currentPositionAndMode.xyz;
+    velocity = rayVelocityAndMode.xyz;
+    return 1.;
+}
+
+#endif  // PRECOMPUTE_FETCH_GLSL
 
 
 
@@ -6674,75 +7338,8 @@ vec3 getLighting(vec3 point, vec3 lightPos, vec3 color) {
 /// current_position is the ray origin
 /// ray_velocity should be normalized
 /// color is the resulting color
-vec4 blackHoleRender(vec3 current_position, vec3 ray_velocity, inout vec3 color) {
+vec4 blackHoleRender(vec3 currentPosition, vec3 rayVelocity, inout vec3 color) {
     // 4th coord is whether we found a point or diverged
-    vec4 currentLocationAndMode = vec4(0.);
-    for (int i = 0; i < MAX_STEPS * 5; ++i) {
-        vec4 colAndDist = getColAndDist(current_position);
-
-        ray_velocity += blackHoleNullParticleAccl(current_position) * dt;
-
-        float dist_to_travel = length(ray_velocity) * dt;
-        if (dist_to_travel > colAndDist.w) {
-            ray_velocity *= colAndDist.w / dist_to_travel;
-        }
-
-        current_position += ray_velocity * dt;
-
-        // check that we got below event horizon
-        if (distance(BH_pos, current_position) < BH_R) {
-            color = vec3(0.);
-            currentLocationAndMode.xyzw = vec4(current_position, 1.);
-            break;
-        }
-
-        // check that we landed on a point
-        if (abs(colAndDist.w) < SURF_DIST) {
-            color = colAndDist.rgb;
-            currentLocationAndMode = vec4(current_position, 1.);
-            break;
-        }
-    }
-    return currentLocationAndMode;
-}
-
-/// color is the resulting color
-vec4 blackHoleRenderPrecomputed(vec2 fragCoord, inout vec3 color) {
-    /// interpolate position and velocity
-    vec2 flooredfragCoord = floor(fragCoord);  // remove possible .5
-    vec4 currentPositionAndMode = vec4(0.);
-    vec4 rayVelocityAndMode = vec4(0.);
-    if (
-        flooredfragCoord.x <= 1. || flooredfragCoord.y <= 0. ||
-        flooredfragCoord.x >= (iResolution.x-1.) || flooredfragCoord.y >= (iResolution.y-1.)
-    ) {
-        color = vec3(0.);
-        return vec4(vec3(0.), 1.);  /// we are at border, so inteprpolation is not possible
-    } else {
-        bool is_velocity = (flooredfragCoord.x-2.*floor(flooredfragCoord.x/2.)) == 0.;
-        if (is_velocity) {
-            rayVelocityAndMode = texelFetch(iChannel2, ivec2(flooredfragCoord), 0);
-            currentPositionAndMode = (
-                texelFetch(iChannel2, ivec2(flooredfragCoord-vec2(1., 0.)), 0) * .5 +
-                texelFetch(iChannel2, ivec2(flooredfragCoord+vec2(1., 0.)), 0) * .5
-            );
-        } else {
-            currentPositionAndMode = texelFetch(iChannel2, ivec2(flooredfragCoord), 0);
-            rayVelocityAndMode = (
-                texelFetch(iChannel2, ivec2(flooredfragCoord-vec2(1., 0.)), 0) * .5 +
-                texelFetch(iChannel2, ivec2(flooredfragCoord+vec2(1., 0.)), 0) * .5
-            );
-        }
-        /// if we reached black hole in any of them, return 0
-        if ((rayVelocityAndMode.w + currentPositionAndMode.w) < 2.) {
-            color = vec3(0.);
-            return vec4(vec3(0.), 1.);
-        }
-    }
-
-    // 4th coord is whether we found a point or diverged
-    vec3 currentPosition = currentPositionAndMode.xyz;
-    vec3 rayVelocity = rayVelocityAndMode.xyz;
     vec4 currentLocationAndMode = vec4(0.);
     for (int i = 0; i < MAX_STEPS; ++i) {
         vec4 colAndDist = getColAndDist(currentPosition);
@@ -6771,6 +7368,18 @@ vec4 blackHoleRenderPrecomputed(vec2 fragCoord, inout vec3 color) {
         }
     }
     return currentLocationAndMode;
+}
+
+/// color is the resulting color
+vec4 blackHoleRenderPrecomputed(vec2 fragCoord, inout vec3 color) {
+    vec3 position = vec3(0.);
+    vec3 velocity = vec3(0.);
+    float mode = fetchPrecomputed(fragCoord, position, velocity);
+    if (mode == 0.) {
+        color = vec3(0.);
+        return vec4(vec3(0.), 1.);
+    }
+    return blackHoleRender(position, velocity, color);
 }
 
 #endif  // RAY_GLSL
@@ -6957,9 +7566,9 @@ void main() {
 
     let renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, context: gl, preserveDrawingBuffer: true });
     let resolution = new THREE.Vector3();
-    let mouse = new THREE.Vector4(230, 506, -230, -506);
+    let mouse = new THREE.Vector4(264, 602, -264, -602);
     let mouseButton = new THREE.Vector4(0, 0, 0, 0);
-    let normalizedMouse = new THREE.Vector2(0.18938307030129126, 1);
+    let normalizedMouse = new THREE.Vector2(0.1994261119081779, 1);
     let frameCounter = 0;
 
     // Audio Init
@@ -7015,7 +7624,7 @@ void main() {
     });buffers.push({
         Name: '/Users/michael/uni/UCU/OS/BaseTeroid/utility/precompute.glsl',
         File: '/Users/michael/uni/UCU/OS/BaseTeroid/utility/precompute.glsl',
-        LineOffset: 396,
+        LineOffset: 665,
         Target: new THREE.WebGLRenderTarget(resolution.x, resolution.y, { type: framebufferType }),
         ChannelResolution: Array(10).fill(new THREE.Vector3(0,0,0)),
         PingPongTarget: new THREE.WebGLRenderTarget(resolution.x, resolution.y, { type: framebufferType }),
@@ -7057,7 +7666,7 @@ void main() {
     });buffers.push({
         Name: '/Users/michael/uni/UCU/OS/BaseTeroid/main.glsl',
         File: '/Users/michael/uni/UCU/OS/BaseTeroid/main.glsl',
-        LineOffset: 1832,
+        LineOffset: 1817,
         Target: null,
         ChannelResolution: Array(10).fill(new THREE.Vector3(0,0,0)),
         PingPongTarget: null,
@@ -7121,8 +7730,14 @@ void main() {
         Name: '/Users/michael/uni/UCU/OS/BaseTeroid/utility/black_hole.glsl',
         File: '/Users/michael/uni/UCU/OS/BaseTeroid/utility/black_hole.glsl'
     });commonIncludes.push({
+        Name: '/Users/michael/uni/UCU/OS/BaseTeroid/utility/precompute_fetch.glsl',
+        File: '/Users/michael/uni/UCU/OS/BaseTeroid/utility/precompute_fetch.glsl'
+    });commonIncludes.push({
         Name: '/Users/michael/uni/UCU/OS/BaseTeroid/utility/ray.glsl',
         File: '/Users/michael/uni/UCU/OS/BaseTeroid/utility/ray.glsl'
+    });commonIncludes.push({
+        Name: '/Users/michael/uni/UCU/OS/BaseTeroid/utility/precompute_base.glsl',
+        File: '/Users/michael/uni/UCU/OS/BaseTeroid/utility/precompute_base.glsl'
     });
 
     // WebGL2 inserts more lines into the shader
@@ -7141,7 +7756,7 @@ void main() {
     keyBoardTexture.needsUpdate = true;
     let pressedKeys = [];
     let releasedKeys = [];
-    let toggledKeys = [16,68,65];
+    let toggledKeys = [65,68,87];
     for (let key of toggledKeys) {
         keyBoardData[key + 512] = 255; // Toggled
     }

@@ -7,8 +7,11 @@
 #include "utility/common.glsl"
 #include "utility/asteroids.glsl"
 #include "utility/black_hole.glsl"
+#include "utility/precompute_fetch.glsl"
+#include "utility/precompute1_fetch.glsl"
 
 #iChannel2 "file://utility/precompute.glsl"
+#iChannel3 "file://utility/precompute1.glsl"
 
 /* Get minimal distance to each object, objects are generated here for now */
 vec4 getColAndDist(vec3 point) {
@@ -69,27 +72,45 @@ vec3 getLighting(vec3 point, vec3 lightPos, vec3 color) {
 }
 
 /// current_position is the ray origin
-/// ray_velocity should be normalized
 /// color is the resulting color
-vec4 blackHoleRender(vec3 currentPosition, vec3 rayVelocity, inout vec3 color) {
+const float ray_dt_divisor = 1.;
+vec4 blackHoleRender(vec2 fragCoord, vec3 currentPosition, vec3 rayVelocity, inout vec3 color) {
     // 4th coord is whether we found a point or diverged
+    // 0 for diverged
+    // 1 for converged on a point
     vec4 currentLocationAndMode = vec4(0.);
-    for (int i = 0; i < MAX_STEPS; ++i) {
+    float ray_dt = dt / ray_dt_divisor;
+    for (int i = 0; i < MAX_STEPS * int(ray_dt_divisor); ++i) {
         vec4 colAndDist = getColAndDist(currentPosition);
 
-        rayVelocity += blackHoleNullParticleAccl(currentPosition) * dt;
+        rayVelocity += blackHoleNullParticleAccl(currentPosition) * ray_dt;
 
-        float dist_to_travel = length(rayVelocity) * dt;
+        vec3 positionDelta = rayVelocity * ray_dt;
+        float dist_to_travel = length(positionDelta);
         if (dist_to_travel > colAndDist.w) {
-            rayVelocity *= colAndDist.w / dist_to_travel;
+            positionDelta *= colAndDist.w / dist_to_travel;
         }
 
-        currentPosition += rayVelocity * dt;
+        currentPosition += positionDelta;
+
+        // check that we got past height of second precomputed region
+        if (currentPosition.z >= 1.02) {
+            float mode = fetchPrecomputed1(fragCoord, currentPosition, rayVelocity);
+            if (mode == 0.) {  // reached below event horison
+                color = vec3(0.);
+                currentLocationAndMode = vec4(currentPosition, 1.);
+                break;
+            }
+            if (mode == 2.) {  // diverged
+                currentLocationAndMode = vec4(currentPosition, 2.);
+                break;
+            }
+        }
 
         // check that we got below event horizon
         if (distance(BH_pos, currentPosition) < BH_R) {
             color = vec3(0.);
-            currentLocationAndMode.xyzw = vec4(currentPosition, 1.);
+            currentLocationAndMode = vec4(currentPosition, 1.);
             break;
         }
 
@@ -100,43 +121,26 @@ vec4 blackHoleRender(vec3 currentPosition, vec3 rayVelocity, inout vec3 color) {
             break;
         }
     }
+    if (currentLocationAndMode.w != 1.) {
+        color = 0.2 * normalize(rayVelocity);
+    }
     return currentLocationAndMode;
 }
 
 /// color is the resulting color
 vec4 blackHoleRenderPrecomputed(vec2 fragCoord, inout vec3 color) {
-    /// interpolate position and velocity
-    vec2 flooredfragCoord = floor(fragCoord);  // remove possible .5
-    vec4 currentPositionAndMode = vec4(0.);
-    vec4 rayVelocityAndMode = vec4(0.);
-    if (
-        flooredfragCoord.x <= 1. || flooredfragCoord.y <= 0. ||
-        flooredfragCoord.x >= (iResolution.x-1.) || flooredfragCoord.y >= (iResolution.y-1.)
-    ) {
+    vec3 position = vec3(0.);
+    vec3 velocity = vec3(0.);
+    float mode = fetchPrecomputed(fragCoord, position, velocity);
+    if (mode == 0.) {  // reached event horison
         color = vec3(0.);
-        return vec4(vec3(0.), 1.);  /// we are at border, so inteprpolation is not possible
-    } else {
-        bool is_velocity = (flooredfragCoord.x-2.*floor(flooredfragCoord.x/2.)) == 0.;
-        if (is_velocity) {
-            rayVelocityAndMode = texelFetch(iChannel2, ivec2(flooredfragCoord), 0);
-            currentPositionAndMode = (
-                texelFetch(iChannel2, ivec2(flooredfragCoord-vec2(1., 0.)), 0) * .5 +
-                texelFetch(iChannel2, ivec2(flooredfragCoord+vec2(1., 0.)), 0) * .5
-            );
-        } else {
-            currentPositionAndMode = texelFetch(iChannel2, ivec2(flooredfragCoord), 0);
-            rayVelocityAndMode = (
-                texelFetch(iChannel2, ivec2(flooredfragCoord-vec2(1., 0.)), 0) * .5 +
-                texelFetch(iChannel2, ivec2(flooredfragCoord+vec2(1., 0.)), 0) * .5
-            );
-        }
-        /// if we reached black hole in any of them, return 0
-        if ((rayVelocityAndMode.w + currentPositionAndMode.w) < 2.) {
-            color = vec3(0.);
-            return vec4(vec3(0.), 1.);
-        }
+        return vec4(vec3(0.), 1.);
     }
-    return blackHoleRender(currentPositionAndMode.xyz, rayVelocityAndMode.xyz, color);
+    if (mode == 2.) {  // diverged
+        color = 0.2 * normalize(velocity);
+        return vec4(vec3(0.), 2.);
+    }
+    return blackHoleRender(fragCoord, position, velocity, color);
 }
 
 #endif  // RAY_GLSL

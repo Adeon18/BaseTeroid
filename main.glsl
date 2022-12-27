@@ -7,7 +7,7 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     // Normalized pixel coordinates (from 0 to 1)
     vec2 uv = (fragCoord-.5*iResolution.xy) / iResolution.y;
 
-    vec3 outCol = vec3(0.2666, 0.2784, 0.3529);
+    // vec3 outCol = vec3(0.2666, 0.2784, 0.3529);
 
     float die = texelFetch(iChannel0, ivec2(P_COLLISION_COL, PLAYER_LAYER_ROW), 0).x;
     if (die > 0.2) {
@@ -16,12 +16,11 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     }
 
     // get ray origin & direction
-    vec3 objColor = vec3(0.);
-    vec4 renderEndPointAndMode = blackHoleRenderPrecomputed(fragCoord, objColor);
+    vec3 outCol = vec3(0.);
+    vec4 renderEndPointAndMode = blackHoleRenderPrecomputed(fragCoord, outCol);
 
     if (renderEndPointAndMode.w == 1.) {
-        vec3 diffusedLighting = 1.354 * getLighting(renderEndPointAndMode.xyz, vec3(10, 10, -5), objColor);
-
+        vec3 diffusedLighting = 1.354 * getLighting(renderEndPointAndMode.xyz, vec3(10, 10, -5), outCol);
         outCol = diffusedLighting;
     }
     // Color correction
