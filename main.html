@@ -86,7 +86,7 @@ requestAnimationFrame(function loop() {
 <canvas id="canvas"></canvas>
 
 <!-- Shaders -->
-<script id='/Users/michael/uni/UCU/OS/BaseTeroid/utility/object.glsl' type='x-shader/x-fragment'>#version 300 es
+<script id='/home/adeon/projects/OS/BaseTeroid/utility/object.glsl' type='x-shader/x-fragment'>#version 300 es
     precision highp float;
     uniform vec3        iResolution;
 uniform float       iTime;
@@ -166,7 +166,7 @@ struct Piramid {
 
 #endif // OBJECT_GLSL
     void main() {}
-</script><script id='/Users/michael/uni/UCU/OS/BaseTeroid/utility/render.glsl' type='x-shader/x-fragment'>#version 300 es
+</script><script id='/home/adeon/projects/OS/BaseTeroid/utility/render.glsl' type='x-shader/x-fragment'>#version 300 es
     precision highp float;
     uniform vec3        iResolution;
 uniform float       iTime;
@@ -249,13 +249,16 @@ struct Piramid {
 
 #endif // OBJECT_GLSL
 
-#define MAX_STEPS 16
+#define MAX_STEPS 64
 #define MAX_DIST 100.
 #define SURF_DIST .01
 
 #define PI 3.14159
 
-const vec3 PLAYER_COLOR = vec3(0.7411, 0.5764, 0.9764);
+const vec3 PLAYER_COLOR_3 = vec3(0.313, 0.784, 0.47);
+const vec3 PLAYER_COLOR_2 = vec3(1., 0.7215, 0.4235);
+const vec3 PLAYER_COLOR_1 = vec3(1., 0.3333, 0.3333);
+
 const vec3 ASTEROID_COLOR = vec3(0.7, 0.7, 0.75);
 
 /*
@@ -352,6 +355,13 @@ float sdSphere(vec3 point, Sphere sphere) {
     return length(point) - sphere.rad;
 }
 
+float sdAsteroid(vec3 point, Sphere sphere) {
+
+    return min(distance(point, vec3(0.0)) - sphere.rad,
+           sdBox(point, Box(sphere.rad, sphere.rad, sphere.rad, vec3(3.0)))
+    );
+}
+
 /* Get distance to the Plane */
 float sdPlane(vec3 point, vec3 plane) {
     return dot(point, normalize(plane));
@@ -393,7 +403,7 @@ float sdPyramid(vec3 position, float halfWidth, float halfDepth, float halfHeigh
 
 #endif // RENDER_GLSL
     void main() {}
-</script><script id='/Users/michael/uni/UCU/OS/BaseTeroid/utility/common.glsl' type='x-shader/x-fragment'>#version 300 es
+</script><script id='/home/adeon/projects/OS/BaseTeroid/utility/common.glsl' type='x-shader/x-fragment'>#version 300 es
     precision highp float;
     uniform vec3        iResolution;
 uniform float       iTime;
@@ -425,6 +435,9 @@ uniform float       iSampleRate;
 #define ASTEROID_LAYER_ROW 0
 #define PLAYER_LAYER_ROW 1
 #define CAMERA_LAYER_ROW 2
+#define PROJECTILE_CREATION_ROW 3
+#define PROJECTILE_LAYER_ROW 4
+#define PROJECTILE_COLLISION_ROW 5
 
 #define P_MOVEMENT_COL 0
 #define P_ROTATION_COL 1
@@ -439,11 +452,16 @@ uniform float       iSampleRate;
 #define ASTEROID_SPEED 0.007
 #define ASTEROID_RADIUS 1.
 
+/* Projectiles properties */
+#define NUM_PROJECTILES 1.
+#define PROJECTILE_SPEED .0125
+#define PROJECTILE_RADIUS .7
+
 /* Player Properties */
 #define PLAYER_HEIGHT 1.5
 
     void main() {}
-</script><script id='/Users/michael/uni/UCU/OS/BaseTeroid/utility/camera.glsl' type='x-shader/x-fragment'>#version 300 es
+</script><script id='/home/adeon/projects/OS/BaseTeroid/utility/camera.glsl' type='x-shader/x-fragment'>#version 300 es
     precision highp float;
     uniform vec3        iResolution;
 uniform float       iTime;
@@ -529,13 +547,16 @@ struct Piramid {
 
 #endif // OBJECT_GLSL
 
-#define MAX_STEPS 16
+#define MAX_STEPS 64
 #define MAX_DIST 100.
 #define SURF_DIST .01
 
 #define PI 3.14159
 
-const vec3 PLAYER_COLOR = vec3(0.7411, 0.5764, 0.9764);
+const vec3 PLAYER_COLOR_3 = vec3(0.313, 0.784, 0.47);
+const vec3 PLAYER_COLOR_2 = vec3(1., 0.7215, 0.4235);
+const vec3 PLAYER_COLOR_1 = vec3(1., 0.3333, 0.3333);
+
 const vec3 ASTEROID_COLOR = vec3(0.7, 0.7, 0.75);
 
 /*
@@ -632,6 +653,13 @@ float sdSphere(vec3 point, Sphere sphere) {
     return length(point) - sphere.rad;
 }
 
+float sdAsteroid(vec3 point, Sphere sphere) {
+
+    return min(distance(point, vec3(0.0)) - sphere.rad,
+           sdBox(point, Box(sphere.rad, sphere.rad, sphere.rad, vec3(3.0)))
+    );
+}
+
 /* Get distance to the Plane */
 float sdPlane(vec3 point, vec3 plane) {
     return dot(point, normalize(plane));
@@ -702,7 +730,7 @@ vec3 getRd(vec2 uv, vec3 ro, vec4 camera_props) {
 
 #endif // CAMERA_GLSL
     void main() {}
-</script><script id='/Users/michael/uni/UCU/OS/BaseTeroid/utility/player.glsl' type='x-shader/x-fragment'>#version 300 es
+</script><script id='/home/adeon/projects/OS/BaseTeroid/utility/player.glsl' type='x-shader/x-fragment'>#version 300 es
     precision highp float;
     uniform vec3        iResolution;
 uniform float       iTime;
@@ -788,13 +816,16 @@ struct Piramid {
 
 #endif // OBJECT_GLSL
 
-#define MAX_STEPS 16
+#define MAX_STEPS 64
 #define MAX_DIST 100.
 #define SURF_DIST .01
 
 #define PI 3.14159
 
-const vec3 PLAYER_COLOR = vec3(0.7411, 0.5764, 0.9764);
+const vec3 PLAYER_COLOR_3 = vec3(0.313, 0.784, 0.47);
+const vec3 PLAYER_COLOR_2 = vec3(1., 0.7215, 0.4235);
+const vec3 PLAYER_COLOR_1 = vec3(1., 0.3333, 0.3333);
+
 const vec3 ASTEROID_COLOR = vec3(0.7, 0.7, 0.75);
 
 /*
@@ -891,6 +922,13 @@ float sdSphere(vec3 point, Sphere sphere) {
     return length(point) - sphere.rad;
 }
 
+float sdAsteroid(vec3 point, Sphere sphere) {
+
+    return min(distance(point, vec3(0.0)) - sphere.rad,
+           sdBox(point, Box(sphere.rad, sphere.rad, sphere.rad, vec3(3.0)))
+    );
+}
+
 /* Get distance to the Plane */
 float sdPlane(vec3 point, vec3 plane) {
     return dot(point, normalize(plane));
@@ -935,6 +973,9 @@ float sdPyramid(vec3 position, float halfWidth, float halfDepth, float halfHeigh
 #define ASTEROID_LAYER_ROW 0
 #define PLAYER_LAYER_ROW 1
 #define CAMERA_LAYER_ROW 2
+#define PROJECTILE_CREATION_ROW 3
+#define PROJECTILE_LAYER_ROW 4
+#define PROJECTILE_COLLISION_ROW 5
 
 #define P_MOVEMENT_COL 0
 #define P_ROTATION_COL 1
@@ -948,6 +989,11 @@ float sdPyramid(vec3 position, float halfWidth, float halfDepth, float halfHeigh
 #define NUM_ASTEROIDS 5.
 #define ASTEROID_SPEED 0.007
 #define ASTEROID_RADIUS 1.
+
+/* Projectiles properties */
+#define NUM_PROJECTILES 1.
+#define PROJECTILE_SPEED .0125
+#define PROJECTILE_RADIUS .7
 
 /* Player Properties */
 #define PLAYER_HEIGHT 1.5
@@ -1010,13 +1056,16 @@ struct Piramid {
 
 #endif // OBJECT_GLSL
 
-#define MAX_STEPS 16
+#define MAX_STEPS 64
 #define MAX_DIST 100.
 #define SURF_DIST .01
 
 #define PI 3.14159
 
-const vec3 PLAYER_COLOR = vec3(0.7411, 0.5764, 0.9764);
+const vec3 PLAYER_COLOR_3 = vec3(0.313, 0.784, 0.47);
+const vec3 PLAYER_COLOR_2 = vec3(1., 0.7215, 0.4235);
+const vec3 PLAYER_COLOR_1 = vec3(1., 0.3333, 0.3333);
+
 const vec3 ASTEROID_COLOR = vec3(0.7, 0.7, 0.75);
 
 /*
@@ -1111,6 +1160,13 @@ float sdCylinder(vec3 point, Cylinder cap) {
 /* Get distance to the Sphere - The fastest! */
 float sdSphere(vec3 point, Sphere sphere) {
     return length(point) - sphere.rad;
+}
+
+float sdAsteroid(vec3 point, Sphere sphere) {
+
+    return min(distance(point, vec3(0.0)) - sphere.rad,
+           sdBox(point, Box(sphere.rad, sphere.rad, sphere.rad, vec3(3.0)))
+    );
 }
 
 /* Get distance to the Plane */
@@ -1317,7 +1373,7 @@ void handleRotation(inout vec4 outFrag) {
 
 #endif  // PLAYER_GLSL
     void main() {}
-</script><script id='/Users/michael/uni/UCU/OS/BaseTeroid/utility/asteroids.glsl' type='x-shader/x-fragment'>#version 300 es
+</script><script id='/home/adeon/projects/OS/BaseTeroid/utility/asteroids.glsl' type='x-shader/x-fragment'>#version 300 es
     precision highp float;
     uniform vec3        iResolution;
 uniform float       iTime;
@@ -1403,13 +1459,16 @@ struct Piramid {
 
 #endif // OBJECT_GLSL
 
-#define MAX_STEPS 16
+#define MAX_STEPS 64
 #define MAX_DIST 100.
 #define SURF_DIST .01
 
 #define PI 3.14159
 
-const vec3 PLAYER_COLOR = vec3(0.7411, 0.5764, 0.9764);
+const vec3 PLAYER_COLOR_3 = vec3(0.313, 0.784, 0.47);
+const vec3 PLAYER_COLOR_2 = vec3(1., 0.7215, 0.4235);
+const vec3 PLAYER_COLOR_1 = vec3(1., 0.3333, 0.3333);
+
 const vec3 ASTEROID_COLOR = vec3(0.7, 0.7, 0.75);
 
 /*
@@ -1506,6 +1565,13 @@ float sdSphere(vec3 point, Sphere sphere) {
     return length(point) - sphere.rad;
 }
 
+float sdAsteroid(vec3 point, Sphere sphere) {
+
+    return min(distance(point, vec3(0.0)) - sphere.rad,
+           sdBox(point, Box(sphere.rad, sphere.rad, sphere.rad, vec3(3.0)))
+    );
+}
+
 /* Get distance to the Plane */
 float sdPlane(vec3 point, vec3 plane) {
     return dot(point, normalize(plane));
@@ -1550,6 +1616,9 @@ float sdPyramid(vec3 position, float halfWidth, float halfDepth, float halfHeigh
 #define ASTEROID_LAYER_ROW 0
 #define PLAYER_LAYER_ROW 1
 #define CAMERA_LAYER_ROW 2
+#define PROJECTILE_CREATION_ROW 3
+#define PROJECTILE_LAYER_ROW 4
+#define PROJECTILE_COLLISION_ROW 5
 
 #define P_MOVEMENT_COL 0
 #define P_ROTATION_COL 1
@@ -1563,6 +1632,11 @@ float sdPyramid(vec3 position, float halfWidth, float halfDepth, float halfHeigh
 #define NUM_ASTEROIDS 5.
 #define ASTEROID_SPEED 0.007
 #define ASTEROID_RADIUS 1.
+
+/* Projectiles properties */
+#define NUM_PROJECTILES 1.
+#define PROJECTILE_SPEED .0125
+#define PROJECTILE_RADIUS .7
 
 /* Player Properties */
 #define PLAYER_HEIGHT 1.5
@@ -1625,13 +1699,16 @@ struct Piramid {
 
 #endif // OBJECT_GLSL
 
-#define MAX_STEPS 16
+#define MAX_STEPS 64
 #define MAX_DIST 100.
 #define SURF_DIST .01
 
 #define PI 3.14159
 
-const vec3 PLAYER_COLOR = vec3(0.7411, 0.5764, 0.9764);
+const vec3 PLAYER_COLOR_3 = vec3(0.313, 0.784, 0.47);
+const vec3 PLAYER_COLOR_2 = vec3(1., 0.7215, 0.4235);
+const vec3 PLAYER_COLOR_1 = vec3(1., 0.3333, 0.3333);
+
 const vec3 ASTEROID_COLOR = vec3(0.7, 0.7, 0.75);
 
 /*
@@ -1726,6 +1803,13 @@ float sdCylinder(vec3 point, Cylinder cap) {
 /* Get distance to the Sphere - The fastest! */
 float sdSphere(vec3 point, Sphere sphere) {
     return length(point) - sphere.rad;
+}
+
+float sdAsteroid(vec3 point, Sphere sphere) {
+
+    return min(distance(point, vec3(0.0)) - sphere.rad,
+           sdBox(point, Box(sphere.rad, sphere.rad, sphere.rad, vec3(3.0)))
+    );
 }
 
 /* Get distance to the Plane */
@@ -1809,15 +1893,31 @@ float createAsteroids(vec3 point) {
         Sphere sph = Sphere(vec3((
             texelFetch(iChannel0, ivec2(i, 0), 0).xy * 2. - 1.
         ) * screenSize, 0.), 1.);
-        distToSphere = min(distToSphere, sdSphere(point - sph.pos, sph));
+        distToSphere = min(distToSphere, sdAsteroid(point - sph.pos, sph));
     }
 
     return distToSphere;
 }
 
+float createProjectiles(vec3 point) {
+    float distToProjectiles = 99999.;
+
+    vec2 screenSize = texelFetch(iChannel0, ivec2(C_SCREEN_SIZE_COL, CAMERA_LAYER_ROW), 0).xy;
+
+    int num_projectiles = int(NUM_PROJECTILES);
+    for (int i = 0; i < num_projectiles; ++i) {
+        Sphere sph = Sphere(vec3((
+            texelFetch(iChannel0, ivec2(i, PROJECTILE_LAYER_ROW), 0).xy * 2. - 1.
+        ) * screenSize, 0.), PROJECTILE_RADIUS);
+        distToProjectiles = min(distToProjectiles, sdSphere(point - sph.pos, sph));
+    }
+
+    return distToProjectiles;
+}
+
 #endif // ASTEROIDS_GLSL
     void main() {}
-</script><script id='/Users/michael/uni/UCU/OS/BaseTeroid/utility/black_hole.glsl' type='x-shader/x-fragment'>#version 300 es
+</script><script id='/home/adeon/projects/OS/BaseTeroid/utility/black_hole.glsl' type='x-shader/x-fragment'>#version 300 es
     precision highp float;
     uniform vec3        iResolution;
 uniform float       iTime;
@@ -1852,6 +1952,9 @@ uniform float       iSampleRate;
 #define ASTEROID_LAYER_ROW 0
 #define PLAYER_LAYER_ROW 1
 #define CAMERA_LAYER_ROW 2
+#define PROJECTILE_CREATION_ROW 3
+#define PROJECTILE_LAYER_ROW 4
+#define PROJECTILE_COLLISION_ROW 5
 
 #define P_MOVEMENT_COL 0
 #define P_ROTATION_COL 1
@@ -1866,22 +1969,27 @@ uniform float       iSampleRate;
 #define ASTEROID_SPEED 0.007
 #define ASTEROID_RADIUS 1.
 
+/* Projectiles properties */
+#define NUM_PROJECTILES 1.
+#define PROJECTILE_SPEED .0125
+#define PROJECTILE_RADIUS .7
+
 /* Player Properties */
 #define PLAYER_HEIGHT 1.5
 
 
-const vec3 BH_pos = vec3(-.5, 1.5, -14.);  // -14. // BH position
+const vec3 BH_pos = vec3(-.5, 2.5, -5.);  // -14. // BH position
 const float BH_R = 1.;                     // event horizon radius
 /// how much acceleration a black hole exerts on a light particle
 vec3 blackHoleNullParticleAccl(vec3 p) {
     vec3 r = (p - BH_pos);
-    return -1.5 * BH_R * r / pow(length(r), 5.0);
+    return 10. * -1.5 * BH_R * r / pow(length(r), 5.0);
 }
 const float dt = 0.15;
 
 #endif  // BLACK_HOLE_GLSL
     void main() {}
-</script><script id='/Users/michael/uni/UCU/OS/BaseTeroid/utility/precompute_fetch.glsl' type='x-shader/x-fragment'>#version 300 es
+</script><script id='/home/adeon/projects/OS/BaseTeroid/utility/precompute_fetch.glsl' type='x-shader/x-fragment'>#version 300 es
     precision highp float;
     uniform vec3        iResolution;
 uniform float       iTime;
@@ -1918,6 +2026,7 @@ float fetchPrecomputed(vec2 fragCoord, inout vec3 position, inout vec3 velocity)
     vec2 flooredfragCoord = floor(fragCoord);  // remove possible .5
     vec4 currentPositionAndMode = vec4(0.);
     vec4 rayVelocityAndMode = vec4(0.);
+    float mode = 1.;
     if (
         flooredfragCoord.x <= 1. || flooredfragCoord.y <= 0. ||
         flooredfragCoord.x >= (iResolution.x-1.) || flooredfragCoord.y >= (iResolution.y-1.)
@@ -1927,12 +2036,14 @@ float fetchPrecomputed(vec2 fragCoord, inout vec3 position, inout vec3 velocity)
         bool is_velocity = (flooredfragCoord.x-2.*floor(flooredfragCoord.x/2.)) == 0.;
         if (is_velocity) {
             rayVelocityAndMode = texelFetch(iChannel2, ivec2(flooredfragCoord), 0);
+            mode = rayVelocityAndMode.w;
             currentPositionAndMode = (
                 texelFetch(iChannel2, ivec2(flooredfragCoord-vec2(1., 0.)), 0) * .5 +
                 texelFetch(iChannel2, ivec2(flooredfragCoord+vec2(1., 0.)), 0) * .5
             );
         } else {
             currentPositionAndMode = texelFetch(iChannel2, ivec2(flooredfragCoord), 0);
+            mode = currentPositionAndMode.w;
             rayVelocityAndMode = (
                 texelFetch(iChannel2, ivec2(flooredfragCoord-vec2(1., 0.)), 0) * .5 +
                 texelFetch(iChannel2, ivec2(flooredfragCoord+vec2(1., 0.)), 0) * .5
@@ -1945,12 +2056,84 @@ float fetchPrecomputed(vec2 fragCoord, inout vec3 position, inout vec3 velocity)
     }
     position = currentPositionAndMode.xyz;
     velocity = rayVelocityAndMode.xyz;
-    return 1.;
+    return mode;
 }
 
 #endif  // PRECOMPUTE_FETCH_GLSL
     void main() {}
-</script><script id='/Users/michael/uni/UCU/OS/BaseTeroid/utility/ray.glsl' type='x-shader/x-fragment'>#version 300 es
+</script><script id='/home/adeon/projects/OS/BaseTeroid/utility/precompute1_fetch.glsl' type='x-shader/x-fragment'>#version 300 es
+    precision highp float;
+    uniform vec3        iResolution;
+uniform float       iTime;
+uniform float       iTimeDelta;
+uniform int         iFrame;
+uniform vec4        iDate;
+uniform vec3        iChannelResolution[10];
+uniform vec4        iMouse;
+uniform vec4        iMouseButton;
+uniform sampler2D   iChannel0;
+uniform sampler2D   iChannel1;
+uniform sampler2D   iChannel2;
+uniform sampler2D   iChannel3;
+uniform sampler2D   iChannel4;
+uniform sampler2D   iChannel5;
+uniform sampler2D   iChannel6;
+uniform sampler2D   iChannel7;
+uniform sampler2D   iChannel8;
+uniform sampler2D   iChannel9;
+uniform sampler2D   iKeyboard;
+uniform float       iSampleRate;
+
+#define iGlobalTime iTime
+#define iGlobalFrame iFrame
+
+#define SHADER_TOY
+
+    #ifndef PRECOMPUTE1_FETCH_GLSL
+#define PRECOMPUTE1_FETCH_GLSL
+
+/// returns 0 when fetch is at border of black hole reached
+float fetchPrecomputed1(vec2 fragCoord, inout vec3 position, inout vec3 velocity) {
+    /// interpolate position and velocity
+    vec2 flooredfragCoord = floor(fragCoord);  // remove possible .5
+    vec4 currentPositionAndMode = vec4(0.);
+    vec4 rayVelocityAndMode = vec4(0.);
+    float mode = 1.;
+    if (
+        flooredfragCoord.x <= 1. || flooredfragCoord.y <= 0. ||
+        flooredfragCoord.x >= (iResolution.x-1.) || flooredfragCoord.y >= (iResolution.y-1.)
+    ) {
+        return 0.;  /// we are at border, so inteprpolation is not possible
+    } else {
+        bool is_velocity = (flooredfragCoord.x-2.*floor(flooredfragCoord.x/2.)) == 0.;
+        if (is_velocity) {
+            rayVelocityAndMode = texelFetch(iChannel3, ivec2(flooredfragCoord), 0);
+            mode = rayVelocityAndMode.w;
+            currentPositionAndMode = (
+                texelFetch(iChannel3, ivec2(flooredfragCoord-vec2(1., 0.)), 0) * .5 +
+                texelFetch(iChannel3, ivec2(flooredfragCoord+vec2(1., 0.)), 0) * .5
+            );
+        } else {
+            currentPositionAndMode = texelFetch(iChannel3, ivec2(flooredfragCoord), 0);
+            mode = currentPositionAndMode.w;
+            rayVelocityAndMode = (
+                texelFetch(iChannel3, ivec2(flooredfragCoord-vec2(1., 0.)), 0) * .5 +
+                texelFetch(iChannel3, ivec2(flooredfragCoord+vec2(1., 0.)), 0) * .5
+            );
+        }
+        /// if we reached black hole in any of them, return 0
+        if ((rayVelocityAndMode.w + currentPositionAndMode.w) < 2.) {
+            return 0.;
+        }
+    }
+    position = currentPositionAndMode.xyz;
+    velocity = rayVelocityAndMode.xyz;
+    return mode;
+}
+
+#endif  // PRECOMPUTE1_FETCH_GLSL
+    void main() {}
+</script><script id='/home/adeon/projects/OS/BaseTeroid/utility/ray.glsl' type='x-shader/x-fragment'>#version 300 es
     precision highp float;
     uniform vec3        iResolution;
 uniform float       iTime;
@@ -2036,13 +2219,16 @@ struct Piramid {
 
 #endif // OBJECT_GLSL
 
-#define MAX_STEPS 16
+#define MAX_STEPS 64
 #define MAX_DIST 100.
 #define SURF_DIST .01
 
 #define PI 3.14159
 
-const vec3 PLAYER_COLOR = vec3(0.7411, 0.5764, 0.9764);
+const vec3 PLAYER_COLOR_3 = vec3(0.313, 0.784, 0.47);
+const vec3 PLAYER_COLOR_2 = vec3(1., 0.7215, 0.4235);
+const vec3 PLAYER_COLOR_1 = vec3(1., 0.3333, 0.3333);
+
 const vec3 ASTEROID_COLOR = vec3(0.7, 0.7, 0.75);
 
 /*
@@ -2137,6 +2323,13 @@ float sdCylinder(vec3 point, Cylinder cap) {
 /* Get distance to the Sphere - The fastest! */
 float sdSphere(vec3 point, Sphere sphere) {
     return length(point) - sphere.rad;
+}
+
+float sdAsteroid(vec3 point, Sphere sphere) {
+
+    return min(distance(point, vec3(0.0)) - sphere.rad,
+           sdBox(point, Box(sphere.rad, sphere.rad, sphere.rad, vec3(3.0)))
+    );
 }
 
 /* Get distance to the Plane */
@@ -2237,13 +2430,16 @@ struct Piramid {
 
 #endif // OBJECT_GLSL
 
-#define MAX_STEPS 16
+#define MAX_STEPS 64
 #define MAX_DIST 100.
 #define SURF_DIST .01
 
 #define PI 3.14159
 
-const vec3 PLAYER_COLOR = vec3(0.7411, 0.5764, 0.9764);
+const vec3 PLAYER_COLOR_3 = vec3(0.313, 0.784, 0.47);
+const vec3 PLAYER_COLOR_2 = vec3(1., 0.7215, 0.4235);
+const vec3 PLAYER_COLOR_1 = vec3(1., 0.3333, 0.3333);
+
 const vec3 ASTEROID_COLOR = vec3(0.7, 0.7, 0.75);
 
 /*
@@ -2340,6 +2536,13 @@ float sdSphere(vec3 point, Sphere sphere) {
     return length(point) - sphere.rad;
 }
 
+float sdAsteroid(vec3 point, Sphere sphere) {
+
+    return min(distance(point, vec3(0.0)) - sphere.rad,
+           sdBox(point, Box(sphere.rad, sphere.rad, sphere.rad, vec3(3.0)))
+    );
+}
+
 /* Get distance to the Plane */
 float sdPlane(vec3 point, vec3 plane) {
     return dot(point, normalize(plane));
@@ -2384,6 +2587,9 @@ float sdPyramid(vec3 position, float halfWidth, float halfDepth, float halfHeigh
 #define ASTEROID_LAYER_ROW 0
 #define PLAYER_LAYER_ROW 1
 #define CAMERA_LAYER_ROW 2
+#define PROJECTILE_CREATION_ROW 3
+#define PROJECTILE_LAYER_ROW 4
+#define PROJECTILE_COLLISION_ROW 5
 
 #define P_MOVEMENT_COL 0
 #define P_ROTATION_COL 1
@@ -2397,6 +2603,11 @@ float sdPyramid(vec3 position, float halfWidth, float halfDepth, float halfHeigh
 #define NUM_ASTEROIDS 5.
 #define ASTEROID_SPEED 0.007
 #define ASTEROID_RADIUS 1.
+
+/* Projectiles properties */
+#define NUM_PROJECTILES 1.
+#define PROJECTILE_SPEED .0125
+#define PROJECTILE_RADIUS .7
 
 /* Player Properties */
 #define PLAYER_HEIGHT 1.5
@@ -2459,13 +2670,16 @@ struct Piramid {
 
 #endif // OBJECT_GLSL
 
-#define MAX_STEPS 16
+#define MAX_STEPS 64
 #define MAX_DIST 100.
 #define SURF_DIST .01
 
 #define PI 3.14159
 
-const vec3 PLAYER_COLOR = vec3(0.7411, 0.5764, 0.9764);
+const vec3 PLAYER_COLOR_3 = vec3(0.313, 0.784, 0.47);
+const vec3 PLAYER_COLOR_2 = vec3(1., 0.7215, 0.4235);
+const vec3 PLAYER_COLOR_1 = vec3(1., 0.3333, 0.3333);
+
 const vec3 ASTEROID_COLOR = vec3(0.7, 0.7, 0.75);
 
 /*
@@ -2560,6 +2774,13 @@ float sdCylinder(vec3 point, Cylinder cap) {
 /* Get distance to the Sphere - The fastest! */
 float sdSphere(vec3 point, Sphere sphere) {
     return length(point) - sphere.rad;
+}
+
+float sdAsteroid(vec3 point, Sphere sphere) {
+
+    return min(distance(point, vec3(0.0)) - sphere.rad,
+           sdBox(point, Box(sphere.rad, sphere.rad, sphere.rad, vec3(3.0)))
+    );
 }
 
 /* Get distance to the Plane */
@@ -2823,13 +3044,16 @@ struct Piramid {
 
 #endif // OBJECT_GLSL
 
-#define MAX_STEPS 16
+#define MAX_STEPS 64
 #define MAX_DIST 100.
 #define SURF_DIST .01
 
 #define PI 3.14159
 
-const vec3 PLAYER_COLOR = vec3(0.7411, 0.5764, 0.9764);
+const vec3 PLAYER_COLOR_3 = vec3(0.313, 0.784, 0.47);
+const vec3 PLAYER_COLOR_2 = vec3(1., 0.7215, 0.4235);
+const vec3 PLAYER_COLOR_1 = vec3(1., 0.3333, 0.3333);
+
 const vec3 ASTEROID_COLOR = vec3(0.7, 0.7, 0.75);
 
 /*
@@ -2924,6 +3148,13 @@ float sdCylinder(vec3 point, Cylinder cap) {
 /* Get distance to the Sphere - The fastest! */
 float sdSphere(vec3 point, Sphere sphere) {
     return length(point) - sphere.rad;
+}
+
+float sdAsteroid(vec3 point, Sphere sphere) {
+
+    return min(distance(point, vec3(0.0)) - sphere.rad,
+           sdBox(point, Box(sphere.rad, sphere.rad, sphere.rad, vec3(3.0)))
+    );
 }
 
 /* Get distance to the Plane */
@@ -2999,6 +3230,9 @@ vec3 getRd(vec2 uv, vec3 ro, vec4 camera_props) {
 #define ASTEROID_LAYER_ROW 0
 #define PLAYER_LAYER_ROW 1
 #define CAMERA_LAYER_ROW 2
+#define PROJECTILE_CREATION_ROW 3
+#define PROJECTILE_LAYER_ROW 4
+#define PROJECTILE_COLLISION_ROW 5
 
 #define P_MOVEMENT_COL 0
 #define P_ROTATION_COL 1
@@ -3012,6 +3246,11 @@ vec3 getRd(vec2 uv, vec3 ro, vec4 camera_props) {
 #define NUM_ASTEROIDS 5.
 #define ASTEROID_SPEED 0.007
 #define ASTEROID_RADIUS 1.
+
+/* Projectiles properties */
+#define NUM_PROJECTILES 1.
+#define PROJECTILE_SPEED .0125
+#define PROJECTILE_RADIUS .7
 
 /* Player Properties */
 #define PLAYER_HEIGHT 1.5
@@ -3074,13 +3313,16 @@ struct Piramid {
 
 #endif // OBJECT_GLSL
 
-#define MAX_STEPS 16
+#define MAX_STEPS 64
 #define MAX_DIST 100.
 #define SURF_DIST .01
 
 #define PI 3.14159
 
-const vec3 PLAYER_COLOR = vec3(0.7411, 0.5764, 0.9764);
+const vec3 PLAYER_COLOR_3 = vec3(0.313, 0.784, 0.47);
+const vec3 PLAYER_COLOR_2 = vec3(1., 0.7215, 0.4235);
+const vec3 PLAYER_COLOR_1 = vec3(1., 0.3333, 0.3333);
+
 const vec3 ASTEROID_COLOR = vec3(0.7, 0.7, 0.75);
 
 /*
@@ -3177,6 +3419,13 @@ float sdSphere(vec3 point, Sphere sphere) {
     return length(point) - sphere.rad;
 }
 
+float sdAsteroid(vec3 point, Sphere sphere) {
+
+    return min(distance(point, vec3(0.0)) - sphere.rad,
+           sdBox(point, Box(sphere.rad, sphere.rad, sphere.rad, vec3(3.0)))
+    );
+}
+
 /* Get distance to the Plane */
 float sdPlane(vec3 point, vec3 plane) {
     return dot(point, normalize(plane));
@@ -3221,6 +3470,9 @@ float sdPyramid(vec3 position, float halfWidth, float halfDepth, float halfHeigh
 #define ASTEROID_LAYER_ROW 0
 #define PLAYER_LAYER_ROW 1
 #define CAMERA_LAYER_ROW 2
+#define PROJECTILE_CREATION_ROW 3
+#define PROJECTILE_LAYER_ROW 4
+#define PROJECTILE_COLLISION_ROW 5
 
 #define P_MOVEMENT_COL 0
 #define P_ROTATION_COL 1
@@ -3234,6 +3486,11 @@ float sdPyramid(vec3 position, float halfWidth, float halfDepth, float halfHeigh
 #define NUM_ASTEROIDS 5.
 #define ASTEROID_SPEED 0.007
 #define ASTEROID_RADIUS 1.
+
+/* Projectiles properties */
+#define NUM_PROJECTILES 1.
+#define PROJECTILE_SPEED .0125
+#define PROJECTILE_RADIUS .7
 
 /* Player Properties */
 #define PLAYER_HEIGHT 1.5
@@ -3296,13 +3553,16 @@ struct Piramid {
 
 #endif // OBJECT_GLSL
 
-#define MAX_STEPS 16
+#define MAX_STEPS 64
 #define MAX_DIST 100.
 #define SURF_DIST .01
 
 #define PI 3.14159
 
-const vec3 PLAYER_COLOR = vec3(0.7411, 0.5764, 0.9764);
+const vec3 PLAYER_COLOR_3 = vec3(0.313, 0.784, 0.47);
+const vec3 PLAYER_COLOR_2 = vec3(1., 0.7215, 0.4235);
+const vec3 PLAYER_COLOR_1 = vec3(1., 0.3333, 0.3333);
+
 const vec3 ASTEROID_COLOR = vec3(0.7, 0.7, 0.75);
 
 /*
@@ -3397,6 +3657,13 @@ float sdCylinder(vec3 point, Cylinder cap) {
 /* Get distance to the Sphere - The fastest! */
 float sdSphere(vec3 point, Sphere sphere) {
     return length(point) - sphere.rad;
+}
+
+float sdAsteroid(vec3 point, Sphere sphere) {
+
+    return min(distance(point, vec3(0.0)) - sphere.rad,
+           sdBox(point, Box(sphere.rad, sphere.rad, sphere.rad, vec3(3.0)))
+    );
 }
 
 /* Get distance to the Plane */
@@ -3480,10 +3747,26 @@ float createAsteroids(vec3 point) {
         Sphere sph = Sphere(vec3((
             texelFetch(iChannel0, ivec2(i, 0), 0).xy * 2. - 1.
         ) * screenSize, 0.), 1.);
-        distToSphere = min(distToSphere, sdSphere(point - sph.pos, sph));
+        distToSphere = min(distToSphere, sdAsteroid(point - sph.pos, sph));
     }
 
     return distToSphere;
+}
+
+float createProjectiles(vec3 point) {
+    float distToProjectiles = 99999.;
+
+    vec2 screenSize = texelFetch(iChannel0, ivec2(C_SCREEN_SIZE_COL, CAMERA_LAYER_ROW), 0).xy;
+
+    int num_projectiles = int(NUM_PROJECTILES);
+    for (int i = 0; i < num_projectiles; ++i) {
+        Sphere sph = Sphere(vec3((
+            texelFetch(iChannel0, ivec2(i, PROJECTILE_LAYER_ROW), 0).xy * 2. - 1.
+        ) * screenSize, 0.), PROJECTILE_RADIUS);
+        distToProjectiles = min(distToProjectiles, sdSphere(point - sph.pos, sph));
+    }
+
+    return distToProjectiles;
 }
 
 #endif // ASTEROIDS_GLSL
@@ -3494,6 +3777,9 @@ float createAsteroids(vec3 point) {
 #define ASTEROID_LAYER_ROW 0
 #define PLAYER_LAYER_ROW 1
 #define CAMERA_LAYER_ROW 2
+#define PROJECTILE_CREATION_ROW 3
+#define PROJECTILE_LAYER_ROW 4
+#define PROJECTILE_COLLISION_ROW 5
 
 #define P_MOVEMENT_COL 0
 #define P_ROTATION_COL 1
@@ -3508,16 +3794,21 @@ float createAsteroids(vec3 point) {
 #define ASTEROID_SPEED 0.007
 #define ASTEROID_RADIUS 1.
 
+/* Projectiles properties */
+#define NUM_PROJECTILES 1.
+#define PROJECTILE_SPEED .0125
+#define PROJECTILE_RADIUS .7
+
 /* Player Properties */
 #define PLAYER_HEIGHT 1.5
 
 
-const vec3 BH_pos = vec3(-.5, 1.5, -14.);  // -14. // BH position
+const vec3 BH_pos = vec3(-.5, 2.5, -5.);  // -14. // BH position
 const float BH_R = 1.;                     // event horizon radius
 /// how much acceleration a black hole exerts on a light particle
 vec3 blackHoleNullParticleAccl(vec3 p) {
     vec3 r = (p - BH_pos);
-    return -1.5 * BH_R * r / pow(length(r), 5.0);
+    return 10. * -1.5 * BH_R * r / pow(length(r), 5.0);
 }
 const float dt = 0.15;
 
@@ -3531,6 +3822,7 @@ float fetchPrecomputed(vec2 fragCoord, inout vec3 position, inout vec3 velocity)
     vec2 flooredfragCoord = floor(fragCoord);  // remove possible .5
     vec4 currentPositionAndMode = vec4(0.);
     vec4 rayVelocityAndMode = vec4(0.);
+    float mode = 1.;
     if (
         flooredfragCoord.x <= 1. || flooredfragCoord.y <= 0. ||
         flooredfragCoord.x >= (iResolution.x-1.) || flooredfragCoord.y >= (iResolution.y-1.)
@@ -3540,12 +3832,14 @@ float fetchPrecomputed(vec2 fragCoord, inout vec3 position, inout vec3 velocity)
         bool is_velocity = (flooredfragCoord.x-2.*floor(flooredfragCoord.x/2.)) == 0.;
         if (is_velocity) {
             rayVelocityAndMode = texelFetch(iChannel2, ivec2(flooredfragCoord), 0);
+            mode = rayVelocityAndMode.w;
             currentPositionAndMode = (
                 texelFetch(iChannel2, ivec2(flooredfragCoord-vec2(1., 0.)), 0) * .5 +
                 texelFetch(iChannel2, ivec2(flooredfragCoord+vec2(1., 0.)), 0) * .5
             );
         } else {
             currentPositionAndMode = texelFetch(iChannel2, ivec2(flooredfragCoord), 0);
+            mode = currentPositionAndMode.w;
             rayVelocityAndMode = (
                 texelFetch(iChannel2, ivec2(flooredfragCoord-vec2(1., 0.)), 0) * .5 +
                 texelFetch(iChannel2, ivec2(flooredfragCoord+vec2(1., 0.)), 0) * .5
@@ -3558,10 +3852,54 @@ float fetchPrecomputed(vec2 fragCoord, inout vec3 position, inout vec3 velocity)
     }
     position = currentPositionAndMode.xyz;
     velocity = rayVelocityAndMode.xyz;
-    return 1.;
+    return mode;
 }
 
 #endif  // PRECOMPUTE_FETCH_GLSL
+#ifndef PRECOMPUTE1_FETCH_GLSL
+#define PRECOMPUTE1_FETCH_GLSL
+
+/// returns 0 when fetch is at border of black hole reached
+float fetchPrecomputed1(vec2 fragCoord, inout vec3 position, inout vec3 velocity) {
+    /// interpolate position and velocity
+    vec2 flooredfragCoord = floor(fragCoord);  // remove possible .5
+    vec4 currentPositionAndMode = vec4(0.);
+    vec4 rayVelocityAndMode = vec4(0.);
+    float mode = 1.;
+    if (
+        flooredfragCoord.x <= 1. || flooredfragCoord.y <= 0. ||
+        flooredfragCoord.x >= (iResolution.x-1.) || flooredfragCoord.y >= (iResolution.y-1.)
+    ) {
+        return 0.;  /// we are at border, so inteprpolation is not possible
+    } else {
+        bool is_velocity = (flooredfragCoord.x-2.*floor(flooredfragCoord.x/2.)) == 0.;
+        if (is_velocity) {
+            rayVelocityAndMode = texelFetch(iChannel3, ivec2(flooredfragCoord), 0);
+            mode = rayVelocityAndMode.w;
+            currentPositionAndMode = (
+                texelFetch(iChannel3, ivec2(flooredfragCoord-vec2(1., 0.)), 0) * .5 +
+                texelFetch(iChannel3, ivec2(flooredfragCoord+vec2(1., 0.)), 0) * .5
+            );
+        } else {
+            currentPositionAndMode = texelFetch(iChannel3, ivec2(flooredfragCoord), 0);
+            mode = currentPositionAndMode.w;
+            rayVelocityAndMode = (
+                texelFetch(iChannel3, ivec2(flooredfragCoord-vec2(1., 0.)), 0) * .5 +
+                texelFetch(iChannel3, ivec2(flooredfragCoord+vec2(1., 0.)), 0) * .5
+            );
+        }
+        /// if we reached black hole in any of them, return 0
+        if ((rayVelocityAndMode.w + currentPositionAndMode.w) < 2.) {
+            return 0.;
+        }
+    }
+    position = currentPositionAndMode.xyz;
+    velocity = rayVelocityAndMode.xyz;
+    return mode;
+}
+
+#endif  // PRECOMPUTE1_FETCH_GLSL
+
 
 
 
@@ -3574,9 +3912,18 @@ vec4 getColAndDist(vec3 point) {
     float distPiramid = createPlayer(point, vec3(0.), vec3(offset, 0.));
 
     float distAsteroids = createAsteroids(point);
+    float distProjectiles = createProjectiles(point);
 
     /// Use respective colors for respective objects
-    vec4 colDist = minSd(vec4(PLAYER_COLOR, distPiramid), vec4(ASTEROID_COLOR, distAsteroids));
+    float hp = 0.3 - texelFetch(iChannel0, ivec2(P_COLLISION_COL, PLAYER_LAYER_ROW), 0).x;
+    vec3 player_color = vec3(0.);
+    if(hp == 0.3) {player_color = PLAYER_COLOR_3;}
+    if(abs(hp - 0.2) < 0.01) {player_color = PLAYER_COLOR_2;}
+    if(abs(hp - 0.1) < 0.01) {player_color = PLAYER_COLOR_1;}
+    vec3 projectile_color = player_color;
+
+    vec4 colDist = minSd(vec4(player_color, distPiramid), vec4(ASTEROID_COLOR, distAsteroids));
+    colDist = minSd(vec4(projectile_color, distProjectiles), colDist);
 
     /// render event horizon
     colDist = minSd(vec4(vec3(0.), length(point - BH_pos) - BH_R), colDist);
@@ -3616,27 +3963,45 @@ vec3 getLighting(vec3 point, vec3 lightPos, vec3 color) {
 }
 
 /// current_position is the ray origin
-/// ray_velocity should be normalized
 /// color is the resulting color
-vec4 blackHoleRender(vec3 currentPosition, vec3 rayVelocity, inout vec3 color) {
+const float ray_dt_divisor = 1.;
+vec4 blackHoleRender(vec2 fragCoord, vec3 currentPosition, vec3 rayVelocity, inout vec3 color) {
     // 4th coord is whether we found a point or diverged
+    // 0 for diverged
+    // 1 for converged on a point
     vec4 currentLocationAndMode = vec4(0.);
-    for (int i = 0; i < MAX_STEPS; ++i) {
+    float ray_dt = dt / ray_dt_divisor;
+    for (int i = 0; i < MAX_STEPS * int(ray_dt_divisor); ++i) {
         vec4 colAndDist = getColAndDist(currentPosition);
 
-        rayVelocity += blackHoleNullParticleAccl(currentPosition) * dt;
+        rayVelocity += blackHoleNullParticleAccl(currentPosition) * ray_dt;
 
-        float dist_to_travel = length(rayVelocity) * dt;
+        vec3 positionDelta = rayVelocity * ray_dt;
+        float dist_to_travel = length(positionDelta);
         if (dist_to_travel > colAndDist.w) {
-            rayVelocity *= colAndDist.w / dist_to_travel;
+            positionDelta *= colAndDist.w / dist_to_travel;
         }
 
-        currentPosition += rayVelocity * dt;
+        currentPosition += positionDelta;
+
+        // check that we got past height of second precomputed region
+        if (currentPosition.z >= 1.02) {
+            float mode = fetchPrecomputed1(fragCoord, currentPosition, rayVelocity);
+            if (mode == 0.) {  // reached below event horison
+                color = vec3(0.);
+                currentLocationAndMode = vec4(currentPosition, 1.);
+                break;
+            }
+            if (mode == 2.) {  // diverged
+                currentLocationAndMode = vec4(currentPosition, 2.);
+                break;
+            }
+        }
 
         // check that we got below event horizon
         if (distance(BH_pos, currentPosition) < BH_R) {
             color = vec3(0.);
-            currentLocationAndMode.xyzw = vec4(currentPosition, 1.);
+            currentLocationAndMode = vec4(currentPosition, 1.);
             break;
         }
 
@@ -3647,6 +4012,9 @@ vec4 blackHoleRender(vec3 currentPosition, vec3 rayVelocity, inout vec3 color) {
             break;
         }
     }
+    if (currentLocationAndMode.w != 1.) {
+        color = 0.2 * normalize(rayVelocity);
+    }
     return currentLocationAndMode;
 }
 
@@ -3655,16 +4023,20 @@ vec4 blackHoleRenderPrecomputed(vec2 fragCoord, inout vec3 color) {
     vec3 position = vec3(0.);
     vec3 velocity = vec3(0.);
     float mode = fetchPrecomputed(fragCoord, position, velocity);
-    if (mode == 0.) {
+    if (mode == 0.) {  // reached event horison
         color = vec3(0.);
         return vec4(vec3(0.), 1.);
     }
-    return blackHoleRender(position, velocity, color);
+    if (mode == 2.) {  // diverged
+        color = 0.2 * normalize(velocity);
+        return vec4(vec3(0.), 2.);
+    }
+    return blackHoleRender(fragCoord, position, velocity, color);
 }
 
 #endif  // RAY_GLSL
     void main() {}
-</script><script id='/Users/michael/uni/UCU/OS/BaseTeroid/utility/precompute_base.glsl' type='x-shader/x-fragment'>#version 300 es
+</script><script id='/home/adeon/projects/OS/BaseTeroid/utility/precompute_base.glsl' type='x-shader/x-fragment'>#version 300 es
     precision highp float;
     uniform vec3        iResolution;
 uniform float       iTime;
@@ -3753,13 +4125,16 @@ struct Piramid {
 
 #endif // OBJECT_GLSL
 
-#define MAX_STEPS 16
+#define MAX_STEPS 64
 #define MAX_DIST 100.
 #define SURF_DIST .01
 
 #define PI 3.14159
 
-const vec3 PLAYER_COLOR = vec3(0.7411, 0.5764, 0.9764);
+const vec3 PLAYER_COLOR_3 = vec3(0.313, 0.784, 0.47);
+const vec3 PLAYER_COLOR_2 = vec3(1., 0.7215, 0.4235);
+const vec3 PLAYER_COLOR_1 = vec3(1., 0.3333, 0.3333);
+
 const vec3 ASTEROID_COLOR = vec3(0.7, 0.7, 0.75);
 
 /*
@@ -3856,6 +4231,13 @@ float sdSphere(vec3 point, Sphere sphere) {
     return length(point) - sphere.rad;
 }
 
+float sdAsteroid(vec3 point, Sphere sphere) {
+
+    return min(distance(point, vec3(0.0)) - sphere.rad,
+           sdBox(point, Box(sphere.rad, sphere.rad, sphere.rad, vec3(3.0)))
+    );
+}
+
 /* Get distance to the Plane */
 float sdPlane(vec3 point, vec3 plane) {
     return dot(point, normalize(plane));
@@ -3932,6 +4314,9 @@ vec3 getRd(vec2 uv, vec3 ro, vec4 camera_props) {
 #define ASTEROID_LAYER_ROW 0
 #define PLAYER_LAYER_ROW 1
 #define CAMERA_LAYER_ROW 2
+#define PROJECTILE_CREATION_ROW 3
+#define PROJECTILE_LAYER_ROW 4
+#define PROJECTILE_COLLISION_ROW 5
 
 #define P_MOVEMENT_COL 0
 #define P_ROTATION_COL 1
@@ -3946,48 +4331,54 @@ vec3 getRd(vec2 uv, vec3 ro, vec4 camera_props) {
 #define ASTEROID_SPEED 0.007
 #define ASTEROID_RADIUS 1.
 
+/* Projectiles properties */
+#define NUM_PROJECTILES 1.
+#define PROJECTILE_SPEED .0125
+#define PROJECTILE_RADIUS .7
+
 /* Player Properties */
 #define PLAYER_HEIGHT 1.5
 
 
-const vec3 BH_pos = vec3(-.5, 1.5, -14.);  // -14. // BH position
+const vec3 BH_pos = vec3(-.5, 2.5, -5.);  // -14. // BH position
 const float BH_R = 1.;                     // event horizon radius
 /// how much acceleration a black hole exerts on a light particle
 vec3 blackHoleNullParticleAccl(vec3 p) {
     vec3 r = (p - BH_pos);
-    return -1.5 * BH_R * r / pow(length(r), 5.0);
+    return 10. * -1.5 * BH_R * r / pow(length(r), 5.0);
 }
 const float dt = 0.15;
 
 #endif  // BLACK_HOLE_GLSL
 
 #define MAX_STEPS_PRECOMPUTE 512
-const float precompute_dt_divisor = 30.;
+const float precompute_dt_divisor = 10.;
 float heightprecompute(inout vec3 current_position, inout vec3 ray_velocity, float aim_height) {
-    // 4th coord is whether we reached height 1 or got past event horison
-    // vec4 rayLocationOrVelocityAndMode = vec4(0.);
-    float mode = 0.;
+    // mode is whether we reached height 1 (1.) or got below event horison (0.)
+    // or did not converge (2.)
+    float mode = 2.;
     float precompute_dt = dt / precompute_dt_divisor;
     for (int i = 0; i < MAX_STEPS_PRECOMPUTE * int(precompute_dt_divisor); ++i) {
-        float dist = abs(current_position.z+aim_height);
+        float dist = abs(current_position.z - aim_height);
 
         ray_velocity += blackHoleNullParticleAccl(current_position) * precompute_dt;
 
-        float dist_to_travel = length(ray_velocity) * precompute_dt;
+        vec3 position_delta = ray_velocity * precompute_dt;
+        float dist_to_travel = length(position_delta);
         if (dist_to_travel > dist) {
-            ray_velocity *= dist / dist_to_travel;
+            position_delta *= dist / dist_to_travel;
         }
-
-        current_position += ray_velocity * precompute_dt;
+        current_position += position_delta;
 
         // check that we got below event horizon
         if (distance(BH_pos, current_position) < BH_R) {
+            mode = 0.;
             break;
         }
 
-        // check that we landed on a point
+        // check that we landed on a plane
         if (abs(dist) < SURF_DIST) {
-            ray_velocity = normalize(ray_velocity);
+            ray_velocity = ray_velocity;
             mode = 1.;
             break;
         }
@@ -3998,7 +4389,7 @@ float heightprecompute(inout vec3 current_position, inout vec3 ray_velocity, flo
 #endif  // PRECOMPUTE_BASE_GLSL
     void main() {}
 </script>
-<script id='/Users/michael/uni/UCU/OS/BaseTeroid/utility/data_channel.glsl' type='x-shader/x-fragment'>
+<script id='/home/adeon/projects/OS/BaseTeroid/utility/data_channel.glsl' type='x-shader/x-fragment'>
 uniform vec3        iResolution;
 uniform float       iTime;
 uniform float       iTimeDelta;
@@ -4111,13 +4502,16 @@ struct Piramid {
 
 #endif // OBJECT_GLSL
 
-#define MAX_STEPS 16
+#define MAX_STEPS 64
 #define MAX_DIST 100.
 #define SURF_DIST .01
 
 #define PI 3.14159
 
-const vec3 PLAYER_COLOR = vec3(0.7411, 0.5764, 0.9764);
+const vec3 PLAYER_COLOR_3 = vec3(0.313, 0.784, 0.47);
+const vec3 PLAYER_COLOR_2 = vec3(1., 0.7215, 0.4235);
+const vec3 PLAYER_COLOR_1 = vec3(1., 0.3333, 0.3333);
+
 const vec3 ASTEROID_COLOR = vec3(0.7, 0.7, 0.75);
 
 /*
@@ -4214,6 +4608,13 @@ float sdSphere(vec3 point, Sphere sphere) {
     return length(point) - sphere.rad;
 }
 
+float sdAsteroid(vec3 point, Sphere sphere) {
+
+    return min(distance(point, vec3(0.0)) - sphere.rad,
+           sdBox(point, Box(sphere.rad, sphere.rad, sphere.rad, vec3(3.0)))
+    );
+}
+
 /* Get distance to the Plane */
 float sdPlane(vec3 point, vec3 plane) {
     return dot(point, normalize(plane));
@@ -4258,6 +4659,9 @@ float sdPyramid(vec3 position, float halfWidth, float halfDepth, float halfHeigh
 #define ASTEROID_LAYER_ROW 0
 #define PLAYER_LAYER_ROW 1
 #define CAMERA_LAYER_ROW 2
+#define PROJECTILE_CREATION_ROW 3
+#define PROJECTILE_LAYER_ROW 4
+#define PROJECTILE_COLLISION_ROW 5
 
 #define P_MOVEMENT_COL 0
 #define P_ROTATION_COL 1
@@ -4271,6 +4675,11 @@ float sdPyramid(vec3 position, float halfWidth, float halfDepth, float halfHeigh
 #define NUM_ASTEROIDS 5.
 #define ASTEROID_SPEED 0.007
 #define ASTEROID_RADIUS 1.
+
+/* Projectiles properties */
+#define NUM_PROJECTILES 1.
+#define PROJECTILE_SPEED .0125
+#define PROJECTILE_RADIUS .7
 
 /* Player Properties */
 #define PLAYER_HEIGHT 1.5
@@ -4333,13 +4742,16 @@ struct Piramid {
 
 #endif // OBJECT_GLSL
 
-#define MAX_STEPS 16
+#define MAX_STEPS 64
 #define MAX_DIST 100.
 #define SURF_DIST .01
 
 #define PI 3.14159
 
-const vec3 PLAYER_COLOR = vec3(0.7411, 0.5764, 0.9764);
+const vec3 PLAYER_COLOR_3 = vec3(0.313, 0.784, 0.47);
+const vec3 PLAYER_COLOR_2 = vec3(1., 0.7215, 0.4235);
+const vec3 PLAYER_COLOR_1 = vec3(1., 0.3333, 0.3333);
+
 const vec3 ASTEROID_COLOR = vec3(0.7, 0.7, 0.75);
 
 /*
@@ -4436,6 +4848,13 @@ float sdSphere(vec3 point, Sphere sphere) {
     return length(point) - sphere.rad;
 }
 
+float sdAsteroid(vec3 point, Sphere sphere) {
+
+    return min(distance(point, vec3(0.0)) - sphere.rad,
+           sdBox(point, Box(sphere.rad, sphere.rad, sphere.rad, vec3(3.0)))
+    );
+}
+
 /* Get distance to the Plane */
 float sdPlane(vec3 point, vec3 plane) {
     return dot(point, normalize(plane));
@@ -4480,6 +4899,9 @@ float sdPyramid(vec3 position, float halfWidth, float halfDepth, float halfHeigh
 #define ASTEROID_LAYER_ROW 0
 #define PLAYER_LAYER_ROW 1
 #define CAMERA_LAYER_ROW 2
+#define PROJECTILE_CREATION_ROW 3
+#define PROJECTILE_LAYER_ROW 4
+#define PROJECTILE_COLLISION_ROW 5
 
 #define P_MOVEMENT_COL 0
 #define P_ROTATION_COL 1
@@ -4493,6 +4915,11 @@ float sdPyramid(vec3 position, float halfWidth, float halfDepth, float halfHeigh
 #define NUM_ASTEROIDS 5.
 #define ASTEROID_SPEED 0.007
 #define ASTEROID_RADIUS 1.
+
+/* Projectiles properties */
+#define NUM_PROJECTILES 1.
+#define PROJECTILE_SPEED .0125
+#define PROJECTILE_RADIUS .7
 
 /* Player Properties */
 #define PLAYER_HEIGHT 1.5
@@ -4555,13 +4982,16 @@ struct Piramid {
 
 #endif // OBJECT_GLSL
 
-#define MAX_STEPS 16
+#define MAX_STEPS 64
 #define MAX_DIST 100.
 #define SURF_DIST .01
 
 #define PI 3.14159
 
-const vec3 PLAYER_COLOR = vec3(0.7411, 0.5764, 0.9764);
+const vec3 PLAYER_COLOR_3 = vec3(0.313, 0.784, 0.47);
+const vec3 PLAYER_COLOR_2 = vec3(1., 0.7215, 0.4235);
+const vec3 PLAYER_COLOR_1 = vec3(1., 0.3333, 0.3333);
+
 const vec3 ASTEROID_COLOR = vec3(0.7, 0.7, 0.75);
 
 /*
@@ -4656,6 +5086,13 @@ float sdCylinder(vec3 point, Cylinder cap) {
 /* Get distance to the Sphere - The fastest! */
 float sdSphere(vec3 point, Sphere sphere) {
     return length(point) - sphere.rad;
+}
+
+float sdAsteroid(vec3 point, Sphere sphere) {
+
+    return min(distance(point, vec3(0.0)) - sphere.rad,
+           sdBox(point, Box(sphere.rad, sphere.rad, sphere.rad, vec3(3.0)))
+    );
 }
 
 /* Get distance to the Plane */
@@ -4865,23 +5302,27 @@ void handleRotation(inout vec4 outFrag) {
 /*
  * Capture keyboard input
 */
-vec2 handleKeyboard() {
-    vec2 direction = vec2(0., 0.);
+vec3 handleKeyboard() {
+    vec3 direction = vec3(0.);
 
     if (isKeyDown(Key_W)) {
-        direction += vec2(0., 1.);
+        direction.xy += vec2(0., 1.);
     }
 
     if (isKeyDown(Key_S)) {
-        direction += vec2(0., -1.);
+        direction.xy += vec2(0., -1.);
     }
 
     if (isKeyDown(Key_A)) {
-        direction += vec2(-1., 0.);
+        direction.xy += vec2(-1., 0.);
     }
 
     if (isKeyDown(Key_D)) {
-        direction += vec2(1., 0.);
+        direction.xy += vec2(1., 0.);
+    }
+
+    if (isKeyPressed(Key_E)) {
+        direction.z = 1.;
     }
 
     return direction;
@@ -4907,6 +5348,7 @@ float random(vec3 v) {
 void mainImage( out vec4 fragColor, in vec2 fragCoord )
 {
     vec4 outFrag = vec4(0., 0., 0., 0.);
+    // if (iTime == 0.) {fragColor = outFrag; return;}
 
     vec2 die = texelFetch(iChannel0, ivec2(P_COLLISION_COL, PLAYER_LAYER_ROW), 0).xy;
 
@@ -4942,13 +5384,19 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
         } else {
             outFrag.xy += outFrag.zw * ASTEROID_SPEED;
         }
+
+        // Destroy asteroid if there is a collision with a projectile
+        vec4 projectileCollision = texelFetch(iChannel0, ivec2(fragCoord.x, PROJECTILE_COLLISION_ROW), 0);
+        if (projectileCollision.x > 0.) {
+            outFrag = vec4(0.);
+        }
     }
     /*
      * Player shenanigans
     */
     else if (int(fragCoord.y) == PLAYER_LAYER_ROW) {
-        if (int(die.x) == 1) {
-            if (int(fragCoord.y) == PLAYER_LAYER_ROW && int(fragCoord.x) == P_COLLISION_COL) {
+        if (die.x > 0.2) {
+            if (int(fragCoord.x) == P_COLLISION_COL) {
                 if (iTime - die.y > 2.) {
                     fragColor = vec4(0.);
                 } else {
@@ -4964,8 +5412,8 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
             handleMovement(outFrag);
         }
         else if(int(fragCoord.x) == P_CONTROLS_COL){
-            vec2 controls = handleKeyboard();
-            outFrag.xy = controls;
+            vec3 controls = handleKeyboard().xyz;
+            outFrag.xyz = controls;
         }
         /// Handle player rotation
         else if (int(fragCoord.x) == P_ROTATION_COL) {
@@ -4973,19 +5421,29 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
         }
         else if (int(fragCoord.x) == P_COLLISION_COL) {
             
+            if (die.x > 0. && iTime - die.y < 1.) {
+                fragColor = vec4(die.x, die.y, 0., 0.);
+                return;
+            }
+
             vec2 screenSize = texelFetch(iChannel0, ivec2(C_SCREEN_SIZE_COL, CAMERA_LAYER_ROW), 0).xy;
             vec2 offset = texelFetch(iChannel0, ivec2(P_MOVEMENT_COL, PLAYER_LAYER_ROW), 0).xy;
-
+            bool collided = false;
             /// Collision detection with asteroids
             for (int i = 0; i < int(NUM_ASTEROIDS); ++i) {
                 vec2 asteroidCoords = (texelFetch(iChannel0, ivec2(i, int(ASTEROID_LAYER_ROW)), 0).xy * 2. - 1.) * screenSize;
                 if (distance(offset.xy, asteroidCoords) < PLAYER_HEIGHT / 2. + ASTEROID_RADIUS &&
                     (length(offset.xy) != 0. && length(asteroidCoords) != 0.)) {
-                    outFrag.x = 1.;
+                    outFrag.x = 0.1 + die.x;
                     outFrag.y = iTime;
+                    collided = true;
                 }
             }
-        } else {
+            if(!collided){
+                outFrag.xy = die;
+            }
+        }
+        else {
             discard;
         }
     }
@@ -5018,6 +5476,91 @@ void mainImage( out vec4 fragColor, in vec2 fragCoord )
         }
     }
     /*
+     * Projectile creation
+    */
+    else if (int(fragCoord.y) == PROJECTILE_CREATION_ROW && fragCoord.x < NUM_PROJECTILES && int(die.x) != 1) {
+        vec4 controls = texelFetch(iChannel0, ivec2(P_CONTROLS_COL, PLAYER_LAYER_ROW), 0);
+        vec4 currentProjectile = texelFetch(iChannel0, ivec2(fragCoord.x, fragCoord.y), 0);
+        float lastShootTime = texelFetch(iChannel0, ivec2(NUM_PROJECTILES, PROJECTILE_CREATION_ROW), 0).x;
+        outFrag = currentProjectile;
+
+        if (int(currentProjectile.x) == 1) {
+            outFrag.x = 2.;
+        }
+
+        bool wasAlreadyCreated = false;
+        for (int i = 0; i < int(NUM_PROJECTILES); ++i) {
+            float projectileStatus = texelFetch(iChannel0, ivec2(i, PROJECTILE_CREATION_ROW), 0).x;
+            if (projectileStatus > 0. && projectileStatus < 2.) {
+                wasAlreadyCreated = true;
+                break;
+            }
+        }
+
+        if (!wasAlreadyCreated && controls.z > 0. && currentProjectile.x < 1.) {
+            outFrag.x = 1.;
+        }
+
+        vec4 projectilePos = texelFetch(iChannel0, ivec2(fragCoord.x, PROJECTILE_LAYER_ROW), 0);    
+        vec2 screenSize = texelFetch(iChannel0, ivec2(C_SCREEN_SIZE_COL, CAMERA_LAYER_ROW), 0).xy;
+        if (projectilePos.x > 1. || projectilePos.x < 0. || projectilePos.y > 1. || projectilePos.y < 0.) {
+            outFrag.x = 0.;
+        }
+
+        for (int i = 0; i < int(NUM_ASTEROIDS); ++i) {
+            vec2 projectileCollision = texelFetch(iChannel0, ivec2(i, PROJECTILE_COLLISION_ROW), 0).xy;
+            if (projectileCollision.x > 0.) {
+                outFrag.x = 0.;
+            }
+        }
+    }
+    /*
+     * Projectile position calculation
+    */
+    else if (int(fragCoord.y) == PROJECTILE_LAYER_ROW && fragCoord.x < NUM_PROJECTILES && int(die.x) != 1) {
+        float creationValue = texelFetch(iChannel0, ivec2(fragCoord.x, PROJECTILE_CREATION_ROW), 0).x;
+        bool isJustCreated = creationValue > 0. && creationValue < 2.;
+        bool isCreated = creationValue > 1.;
+        vec4 currentProjectile = texelFetch(iChannel0, ivec2(fragCoord.x, fragCoord.y), 0);
+        if (isJustCreated) {
+            vec2 screenSize = texelFetch(iChannel0, ivec2(C_SCREEN_SIZE_COL, CAMERA_LAYER_ROW), 0).xy;
+            vec2 position = texelFetch(iChannel0, ivec2(P_MOVEMENT_COL, PLAYER_LAYER_ROW), 0).xy;
+            float rotationRad = texelFetch(iChannel0, ivec2(P_ROTATION_COL, PLAYER_LAYER_ROW), 0).x;
+            vec2 direction = vec2(sin(rotationRad), cos(rotationRad));
+
+            currentProjectile.xy = (position / screenSize + 1.) / 2.;
+            currentProjectile.zw = direction;
+        } else if (!isCreated) {
+            currentProjectile = vec4(0.);
+        }
+
+        if (isCreated) {
+            currentProjectile.xy += currentProjectile.zw * PROJECTILE_SPEED;
+        }
+
+        outFrag = currentProjectile;
+    }
+    /*
+     * Projectile collision with asteroids
+    */
+    else if (int(fragCoord.y) == PROJECTILE_COLLISION_ROW && fragCoord.x < NUM_ASTEROIDS) {
+        outFrag = vec4(0.);
+        vec2 screenSize = texelFetch(iChannel0, ivec2(C_SCREEN_SIZE_COL, CAMERA_LAYER_ROW), 0).xy;
+        vec2 asteroidCoords = (texelFetch(iChannel0, ivec2(fragCoord.x, int(ASTEROID_LAYER_ROW)), 0).xy * 2. - 1.) * screenSize;
+        for (int i = 0; i < int(NUM_PROJECTILES); ++i) {
+            bool isCreated = texelFetch(iChannel0, ivec2(i, PROJECTILE_CREATION_ROW), 0).x > 0.;
+            if (isCreated) {
+                vec2 projectilePos = (texelFetch(iChannel0, ivec2(i, PROJECTILE_LAYER_ROW), 0).xy * 2. - 1.) * screenSize;
+
+                if (distance(projectilePos.xy, asteroidCoords) < PROJECTILE_RADIUS / 2. + ASTEROID_RADIUS
+                    && (length(projectilePos.xy) != 0. && length(asteroidCoords) != 0.)) {
+
+                    outFrag.x = 1.;
+                }
+            }
+        }
+    }
+    /*
      * Discard all other pixels
     */
     else {
@@ -5032,7 +5575,7 @@ void main() {
     vec2 fragCoord = gl_FragCoord.xy;
     mainImage(gl_FragColor, fragCoord);
 }
-</script><script id='/Users/michael/uni/UCU/OS/BaseTeroid/utility/precompute.glsl' type='x-shader/x-fragment'>
+</script><script id='/home/adeon/projects/OS/BaseTeroid/utility/precompute.glsl' type='x-shader/x-fragment'>
 uniform vec3        iResolution;
 uniform float       iTime;
 uniform float       iTimeDelta;
@@ -5141,13 +5684,16 @@ struct Piramid {
 
 #endif // OBJECT_GLSL
 
-#define MAX_STEPS 16
+#define MAX_STEPS 64
 #define MAX_DIST 100.
 #define SURF_DIST .01
 
 #define PI 3.14159
 
-const vec3 PLAYER_COLOR = vec3(0.7411, 0.5764, 0.9764);
+const vec3 PLAYER_COLOR_3 = vec3(0.313, 0.784, 0.47);
+const vec3 PLAYER_COLOR_2 = vec3(1., 0.7215, 0.4235);
+const vec3 PLAYER_COLOR_1 = vec3(1., 0.3333, 0.3333);
+
 const vec3 ASTEROID_COLOR = vec3(0.7, 0.7, 0.75);
 
 /*
@@ -5242,6 +5788,13 @@ float sdCylinder(vec3 point, Cylinder cap) {
 /* Get distance to the Sphere - The fastest! */
 float sdSphere(vec3 point, Sphere sphere) {
     return length(point) - sphere.rad;
+}
+
+float sdAsteroid(vec3 point, Sphere sphere) {
+
+    return min(distance(point, vec3(0.0)) - sphere.rad,
+           sdBox(point, Box(sphere.rad, sphere.rad, sphere.rad, vec3(3.0)))
+    );
 }
 
 /* Get distance to the Plane */
@@ -5374,13 +5927,16 @@ struct Piramid {
 
 #endif // OBJECT_GLSL
 
-#define MAX_STEPS 16
+#define MAX_STEPS 64
 #define MAX_DIST 100.
 #define SURF_DIST .01
 
 #define PI 3.14159
 
-const vec3 PLAYER_COLOR = vec3(0.7411, 0.5764, 0.9764);
+const vec3 PLAYER_COLOR_3 = vec3(0.313, 0.784, 0.47);
+const vec3 PLAYER_COLOR_2 = vec3(1., 0.7215, 0.4235);
+const vec3 PLAYER_COLOR_1 = vec3(1., 0.3333, 0.3333);
+
 const vec3 ASTEROID_COLOR = vec3(0.7, 0.7, 0.75);
 
 /*
@@ -5477,6 +6033,13 @@ float sdSphere(vec3 point, Sphere sphere) {
     return length(point) - sphere.rad;
 }
 
+float sdAsteroid(vec3 point, Sphere sphere) {
+
+    return min(distance(point, vec3(0.0)) - sphere.rad,
+           sdBox(point, Box(sphere.rad, sphere.rad, sphere.rad, vec3(3.0)))
+    );
+}
+
 /* Get distance to the Plane */
 float sdPlane(vec3 point, vec3 plane) {
     return dot(point, normalize(plane));
@@ -5553,6 +6116,9 @@ vec3 getRd(vec2 uv, vec3 ro, vec4 camera_props) {
 #define ASTEROID_LAYER_ROW 0
 #define PLAYER_LAYER_ROW 1
 #define CAMERA_LAYER_ROW 2
+#define PROJECTILE_CREATION_ROW 3
+#define PROJECTILE_LAYER_ROW 4
+#define PROJECTILE_COLLISION_ROW 5
 
 #define P_MOVEMENT_COL 0
 #define P_ROTATION_COL 1
@@ -5567,48 +6133,54 @@ vec3 getRd(vec2 uv, vec3 ro, vec4 camera_props) {
 #define ASTEROID_SPEED 0.007
 #define ASTEROID_RADIUS 1.
 
+/* Projectiles properties */
+#define NUM_PROJECTILES 1.
+#define PROJECTILE_SPEED .0125
+#define PROJECTILE_RADIUS .7
+
 /* Player Properties */
 #define PLAYER_HEIGHT 1.5
 
 
-const vec3 BH_pos = vec3(-.5, 1.5, -14.);  // -14. // BH position
+const vec3 BH_pos = vec3(-.5, 2.5, -5.);  // -14. // BH position
 const float BH_R = 1.;                     // event horizon radius
 /// how much acceleration a black hole exerts on a light particle
 vec3 blackHoleNullParticleAccl(vec3 p) {
     vec3 r = (p - BH_pos);
-    return -1.5 * BH_R * r / pow(length(r), 5.0);
+    return 10. * -1.5 * BH_R * r / pow(length(r), 5.0);
 }
 const float dt = 0.15;
 
 #endif  // BLACK_HOLE_GLSL
 
 #define MAX_STEPS_PRECOMPUTE 512
-const float precompute_dt_divisor = 30.;
+const float precompute_dt_divisor = 10.;
 float heightprecompute(inout vec3 current_position, inout vec3 ray_velocity, float aim_height) {
-    // 4th coord is whether we reached height 1 or got past event horison
-    // vec4 rayLocationOrVelocityAndMode = vec4(0.);
-    float mode = 0.;
+    // mode is whether we reached height 1 (1.) or got below event horison (0.)
+    // or did not converge (2.)
+    float mode = 2.;
     float precompute_dt = dt / precompute_dt_divisor;
     for (int i = 0; i < MAX_STEPS_PRECOMPUTE * int(precompute_dt_divisor); ++i) {
-        float dist = abs(current_position.z+aim_height);
+        float dist = abs(current_position.z - aim_height);
 
         ray_velocity += blackHoleNullParticleAccl(current_position) * precompute_dt;
 
-        float dist_to_travel = length(ray_velocity) * precompute_dt;
+        vec3 position_delta = ray_velocity * precompute_dt;
+        float dist_to_travel = length(position_delta);
         if (dist_to_travel > dist) {
-            ray_velocity *= dist / dist_to_travel;
+            position_delta *= dist / dist_to_travel;
         }
-
-        current_position += ray_velocity * precompute_dt;
+        current_position += position_delta;
 
         // check that we got below event horizon
         if (distance(BH_pos, current_position) < BH_R) {
+            mode = 0.;
             break;
         }
 
-        // check that we landed on a point
+        // check that we landed on a plane
         if (abs(dist) < SURF_DIST) {
-            ray_velocity = normalize(ray_velocity);
+            ray_velocity = ray_velocity;
             mode = 1.;
             break;
         }
@@ -5631,13 +6203,17 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
         vec4 camera_props = vec4(0., 0., 20., 0.5);// texelFetch(iChannel0, ivec2(C_OPTIONS_COL, CAMERA_LAYER_ROW), 0);
         vec3 position = getRo(camera_props);
         vec3 velocity = getRd(uv, position, camera_props);
-        float mode = heightprecompute(position, velocity, 1.);
-        /// put velocity if fragCoord.x is divisible by 2
-        float flooredfragCoordx = floor(fragCoord.x);  // remove possible .5
-        if ((flooredfragCoordx-2.*floor(flooredfragCoordx/2.)) == 0.) {
-            fragColor = vec4(velocity, mode);
+        float mode = heightprecompute(position, velocity, -1.);
+        if (mode == 0.) {
+            fragColor = vec4(0.);
         } else {
-            fragColor = vec4(position, mode);
+            /// put velocity if fragCoord.x is divisible by 2
+            float flooredfragCoordx = floor(fragCoord.x);  // remove possible .5
+            if ((flooredfragCoordx-2.*floor(flooredfragCoordx/2.)) == 0.) {
+                fragColor = vec4(velocity, mode);
+            } else {
+                fragColor = vec4(position, mode);
+            }
         }
     } else {
         fragColor = texelFetch(iChannel1, ivec2(fragCoord), 0);
@@ -5647,7 +6223,704 @@ void main() {
     vec2 fragCoord = gl_FragCoord.xy;
     mainImage(gl_FragColor, fragCoord);
 }
-</script><script id='/Users/michael/uni/UCU/OS/BaseTeroid/main.glsl' type='x-shader/x-fragment'>
+</script><script id='/home/adeon/projects/OS/BaseTeroid/utility/precompute1.glsl' type='x-shader/x-fragment'>
+uniform vec3        iResolution;
+uniform float       iTime;
+uniform float       iTimeDelta;
+uniform int         iFrame;
+uniform vec4        iDate;
+uniform vec3        iChannelResolution[10];
+uniform vec4        iMouse;
+uniform vec4        iMouseButton;
+uniform sampler2D   iChannel0;
+uniform sampler2D   iChannel1;
+uniform sampler2D   iChannel2;
+uniform sampler2D   iChannel3;
+uniform sampler2D   iChannel4;
+uniform sampler2D   iChannel5;
+uniform sampler2D   iChannel6;
+uniform sampler2D   iChannel7;
+uniform sampler2D   iChannel8;
+uniform sampler2D   iChannel9;
+uniform sampler2D   iKeyboard;
+uniform float       iSampleRate;
+
+#define iGlobalTime iTime
+#define iGlobalFrame iFrame
+
+#define SHADER_TOY
+
+const int Key_Backspace = 8, Key_Tab = 9, Key_Enter = 13, Key_Shift = 16, Key_Ctrl = 17, Key_Alt = 18, Key_Pause = 19, Key_Caps = 20, Key_Escape = 27, Key_PageUp = 33, Key_PageDown = 34, Key_End = 35,
+    Key_Home = 36, Key_LeftArrow = 37, Key_UpArrow = 38, Key_RightArrow = 39, Key_DownArrow = 40, Key_Insert = 45, Key_Delete = 46, Key_0 = 48, Key_1 = 49, Key_2 = 50, Key_3 = 51, Key_4 = 52,
+    Key_5 = 53, Key_6 = 54, Key_7 = 55, Key_8 = 56, Key_9 = 57, Key_A = 65, Key_B = 66, Key_C = 67, Key_D = 68, Key_E = 69, Key_F = 70, Key_G = 71, Key_H = 72,
+    Key_I = 73, Key_J = 74, Key_K = 75, Key_L = 76, Key_M = 77, Key_N = 78, Key_O = 79, Key_P = 80, Key_Q = 81, Key_R = 82, Key_S = 83, Key_T = 84, Key_U = 85,
+    Key_V = 86, Key_W = 87, Key_X = 88, Key_Y = 89, Key_Z = 90, Key_LeftWindow = 91, Key_RightWindows = 92, Key_Select = 93, Key_Numpad0 = 96, Key_Numpad1 = 97, Key_Numpad2 = 98, Key_Numpad3 = 99,
+    Key_Numpad4 = 100, Key_Numpad5 = 101, Key_Numpad6 = 102, Key_Numpad7 = 103, Key_Numpad8 = 104, Key_Numpad9 = 105, Key_NumpadMultiply = 106, Key_NumpadAdd = 107, Key_NumpadSubtract = 109, Key_NumpadPeriod = 110, Key_NumpadDivide = 111, Key_F1 = 112, Key_F2 = 113, Key_F3 = 114, Key_F4 = 115, Key_F5 = 116, Key_F6 = 117, Key_F7 = 118, Key_F8 = 119, Key_F9 = 120, Key_F10 = 121, Key_F11 = 122, Key_F12 = 123, Key_NumLock = 144, Key_ScrollLock = 145,
+    Key_SemiColon = 186, Key_Equal = 187, Key_Comma = 188, Key_Dash = 189, Key_Period = 190, Key_ForwardSlash = 191, Key_GraveAccent = 192, Key_OpenBracket = 219, Key_BackSlash = 220, Key_CloseBraket = 221, Key_SingleQuote = 222;
+
+bool isKeyDown(int key) {
+    vec2 uv = vec2(float(key) / 255.0, 0.125);
+    return texture2D(iKeyboard, uv).r > 0.0;
+}
+bool isKeyPressed(int key) {
+    vec2 uv = vec2(float(key) / 255.0, 0.375);
+    return texture2D(iKeyboard, uv).r > 0.0;
+}
+bool isKeyToggled(int key) {
+    vec2 uv = vec2(float(key) / 255.0, 0.625);
+    return texture2D(iKeyboard, uv).r > 0.0;
+}
+bool isKeyReleased(int key) {
+    vec2 uv = vec2(float(key) / 255.0, 0.875);
+    return texture2D(iKeyboard, uv).r > 0.0;
+}
+#ifndef CAMERA_GLSL
+#define CAMERA_GLSL
+
+#ifndef RENDER_GLSL
+#define RENDER_GLSL
+
+#ifndef OBJECT_GLSL
+#define OBJECT_GLSL
+
+/* A Capsule has position of the top and bottom spheres and their radius */
+struct Capsule {
+    vec3 top;
+    vec3 bot;
+    float rad;
+};
+
+/* A Cylinder is the same as Capsule but the algorithms are different */
+struct Cylinder {
+    vec3 top;
+    vec3 bot;
+    float rad;
+};
+
+/* A Torus has a main radius and the thickness of the tube and position */
+struct Torus {
+    float radBig;
+    float radSmol;
+    vec3 pos;
+};
+
+/*
+* A box has width height and depth(all calculated from center to sides)
+* and position
+*/
+struct Box {
+    // width, height, depth can be put in a vec3
+    float wid;
+    float hig;
+    float dep;
+    vec3 pos;
+};
+
+/*
+ * A fucking sphere, idk
+*/
+struct Sphere {
+    vec3 pos;
+	float rad;
+};
+
+
+struct Piramid {
+    vec3 pos;
+    float height;
+};
+
+#endif // OBJECT_GLSL
+
+#define MAX_STEPS 64
+#define MAX_DIST 100.
+#define SURF_DIST .01
+
+#define PI 3.14159
+
+const vec3 PLAYER_COLOR_3 = vec3(0.313, 0.784, 0.47);
+const vec3 PLAYER_COLOR_2 = vec3(1., 0.7215, 0.4235);
+const vec3 PLAYER_COLOR_1 = vec3(1., 0.3333, 0.3333);
+
+const vec3 ASTEROID_COLOR = vec3(0.7, 0.7, 0.75);
+
+/*
+* Rotate object in one plane:
+* use obj.xy *= Rotate(val);
+* to rotate the object by some value on the xy plane
+*/
+mat2 Rotate(float val) {
+    float s = sin(val);
+    float c = cos(val );
+    return mat2(c, -s, s, c);
+}
+
+mat3 RotateOffset(float rotate, float x, float y){
+    mat3 rotateMat;
+    float s = sin(rotate);
+    float c = cos(rotate);
+    rotateMat[0] = vec3(c, -s, -x*c+y*s+x);
+    rotateMat[1] = vec3(s, c, -x*s-y*c+y);
+    rotateMat[2] = vec3(0., 0., 1.);
+    return rotateMat;
+}
+
+mat3 Translate3(float x, float y){
+    mat3 translateMat;
+    translateMat[0] = vec3(1., 0., x);
+    translateMat[1] = vec3(0., 1., y);
+    translateMat[2] = vec3(0., 0., 1.);
+    return translateMat;
+}
+
+/*
+ * Get the min distance vec4 from vec4(rgb, dist)
+*/
+vec4 minSd(vec4 first, vec4 second) {
+    return first.w < second.w? first : second;
+}
+//-----------------------------------------------------------------------------
+/*
+ * Distance functions -> give us the distanсe to said object type
+ * NEGATIVE return on the inside and POSITIVE on the outside
+ * * vec3 point: origin point - the position you want your object to be at
+ * * Object: obj to find distance to
+ */
+
+/* Get distance to the Box and put it in proper position */
+float sdBox(vec3 point, Box box) {
+    /// By default the scale is inversed
+
+    point = abs(point) - vec3(box.wid, box.hig, box.dep);
+    /// Account for inner position for there not to be distorted black dots
+    return (length(max(point, 0.)) + min(max(point.x, max(point.y, point.z)), 0.));
+}
+
+/* Get distance to the Torus and put it in proper position */
+float getDistTorus(vec3 point, Torus tor) {
+    /// Projected distance to the outside layer of a torus
+    float projDistToOut = length(point.xz) - tor.radBig;
+    return length(vec2(projDistToOut, point.y)) - tor.radSmol;
+}
+
+/* Get distance to the Capsule */
+float sdCapsule(vec3 point, Capsule cap) {
+    vec3 edge = cap.bot - cap.top;
+    vec3 distToCapsule = point - cap.top;
+
+    float distToHit = dot(edge, distToCapsule) / dot(edge, edge);
+    distToHit = clamp(distToHit, 0., 1.);
+
+    vec3 pointHit = cap.top + distToHit*edge;
+    return length(point - pointHit) - cap.rad;
+}
+
+/* Get distance to the Cylinder */
+float sdCylinder(vec3 point, Cylinder cap) {
+    vec3 edge = cap.bot - cap.top;
+    vec3 distToSide = point - cap.top;
+
+    float distToHit = dot(edge, distToSide) / dot(edge, edge);
+    // distToHit = clamp(distToHit, 0., 1.);
+
+    vec3 pointHit = cap.top + distToHit*edge;
+    // X-axis dist to cylinder
+    float xDist = length(point - pointHit) - cap.rad;
+    float yDist = (abs(distToHit - .5) - .5) * length(edge);
+
+    float exteriorDist = length(max(vec2(xDist, yDist), 0.));
+    float interiorDist = min(max(xDist, yDist), 0.);
+    return exteriorDist + interiorDist;
+}
+
+/* Get distance to the Sphere - The fastest! */
+float sdSphere(vec3 point, Sphere sphere) {
+    return length(point) - sphere.rad;
+}
+
+float sdAsteroid(vec3 point, Sphere sphere) {
+
+    return min(distance(point, vec3(0.0)) - sphere.rad,
+           sdBox(point, Box(sphere.rad, sphere.rad, sphere.rad, vec3(3.0)))
+    );
+}
+
+/* Get distance to the Plane */
+float sdPlane(vec3 point, vec3 plane) {
+    return dot(point, normalize(plane));
+}
+
+/*
+ * Get distance to the Piramid - for now used only in player creation
+ * Code "borrowed" from https://www.shadertoy.com/view/Ntd3DX
+ */
+float sdPyramid(vec3 position, float halfWidth, float halfDepth, float halfHeight) {
+    position.xz = abs(position.xz);
+
+    // bottom
+    float s1 = abs(position.y) - halfHeight;
+    vec3 base = vec3(max(position.x - halfWidth, 0.0), abs(position.y + halfHeight), max(position.z - halfDepth, 0.0));
+    float d1 = dot(base, base);
+
+    vec3 q = position - vec3(halfWidth, -halfHeight, halfDepth);
+    vec3 end = vec3(-halfWidth, 2.0 * halfHeight, -halfDepth);
+    vec3 segment = q - end * clamp(dot(q, end) / dot(end, end), 0.0, 1.0);
+    float d = dot(segment, segment);
+
+    // side
+    vec3 normal1 = vec3(end.y, -end.x, 0.0);
+    float s2 = dot(q.xy, normal1.xy);
+    float d2 = d;
+    if (dot(q.xy, -end.xy) < 0.0 && dot(q, cross(normal1, end)) < 0.0) {
+        d2 = s2 * s2 / dot(normal1.xy, normal1.xy);
+    }
+    // front/back
+    vec3 normal2 = vec3(0.0, -end.z, end.y);
+    float s3 = dot(q.yz, normal2.yz);
+    float d3 = d;
+    if (dot(q.yz, -end.yz) < 0.0 && dot(q, cross(normal2, -end)) < 0.0) {
+        d3 = s3 * s3 / dot(normal2.yz, normal2.yz);
+    }
+    return sqrt(min(min(d1, d2), d3)) * sign(max(max(s1, s2), s3));
+}
+
+#endif // RENDER_GLSL
+
+vec3 getRo(vec4 camera_props) {
+    vec3 ro = vec3(-camera_props.x, camera_props.y, camera_props.z);
+    ro.xz *= Rotate(PI);
+    return ro;
+}
+
+// lookat - central point of the camera
+// zoom - zoom  ==  distance from camera to the screen
+// c - center point on the screen = ro + forward * zoom factor z
+// ro = ray origin
+// right - if we look straight from the camera on screen, it is x offset
+// up - if we look straight from the camera on screen, it is y offset
+// intersection - the point on the screen where ray passes through it
+vec3 getRd(vec2 uv, vec3 ro, vec4 camera_props) {
+    // variables to control camera if we need it
+    vec3 lookat = vec3(camera_props.xy, 0.);
+    float zoom = camera_props.w;
+
+    vec3 forward = normalize(lookat - ro),
+        right = normalize(cross(vec3(0, 1, 0), forward)),
+        up = cross(forward, right),
+        c = ro + forward * zoom,
+        intersection = c + uv.x * right + uv.y * up,
+        d = normalize(intersection - ro);
+    return d;
+}
+
+#endif // CAMERA_GLSL
+#ifndef PRECOMPUTE_BASE_GLSL
+#define PRECOMPUTE_BASE_GLSL
+
+#ifndef CAMERA_GLSL
+#define CAMERA_GLSL
+
+#ifndef RENDER_GLSL
+#define RENDER_GLSL
+
+#ifndef OBJECT_GLSL
+#define OBJECT_GLSL
+
+/* A Capsule has position of the top and bottom spheres and their radius */
+struct Capsule {
+    vec3 top;
+    vec3 bot;
+    float rad;
+};
+
+/* A Cylinder is the same as Capsule but the algorithms are different */
+struct Cylinder {
+    vec3 top;
+    vec3 bot;
+    float rad;
+};
+
+/* A Torus has a main radius and the thickness of the tube and position */
+struct Torus {
+    float radBig;
+    float radSmol;
+    vec3 pos;
+};
+
+/*
+* A box has width height and depth(all calculated from center to sides)
+* and position
+*/
+struct Box {
+    // width, height, depth can be put in a vec3
+    float wid;
+    float hig;
+    float dep;
+    vec3 pos;
+};
+
+/*
+ * A fucking sphere, idk
+*/
+struct Sphere {
+    vec3 pos;
+	float rad;
+};
+
+
+struct Piramid {
+    vec3 pos;
+    float height;
+};
+
+#endif // OBJECT_GLSL
+
+#define MAX_STEPS 64
+#define MAX_DIST 100.
+#define SURF_DIST .01
+
+#define PI 3.14159
+
+const vec3 PLAYER_COLOR_3 = vec3(0.313, 0.784, 0.47);
+const vec3 PLAYER_COLOR_2 = vec3(1., 0.7215, 0.4235);
+const vec3 PLAYER_COLOR_1 = vec3(1., 0.3333, 0.3333);
+
+const vec3 ASTEROID_COLOR = vec3(0.7, 0.7, 0.75);
+
+/*
+* Rotate object in one plane:
+* use obj.xy *= Rotate(val);
+* to rotate the object by some value on the xy plane
+*/
+mat2 Rotate(float val) {
+    float s = sin(val);
+    float c = cos(val );
+    return mat2(c, -s, s, c);
+}
+
+mat3 RotateOffset(float rotate, float x, float y){
+    mat3 rotateMat;
+    float s = sin(rotate);
+    float c = cos(rotate);
+    rotateMat[0] = vec3(c, -s, -x*c+y*s+x);
+    rotateMat[1] = vec3(s, c, -x*s-y*c+y);
+    rotateMat[2] = vec3(0., 0., 1.);
+    return rotateMat;
+}
+
+mat3 Translate3(float x, float y){
+    mat3 translateMat;
+    translateMat[0] = vec3(1., 0., x);
+    translateMat[1] = vec3(0., 1., y);
+    translateMat[2] = vec3(0., 0., 1.);
+    return translateMat;
+}
+
+/*
+ * Get the min distance vec4 from vec4(rgb, dist)
+*/
+vec4 minSd(vec4 first, vec4 second) {
+    return first.w < second.w? first : second;
+}
+//-----------------------------------------------------------------------------
+/*
+ * Distance functions -> give us the distanсe to said object type
+ * NEGATIVE return on the inside and POSITIVE on the outside
+ * * vec3 point: origin point - the position you want your object to be at
+ * * Object: obj to find distance to
+ */
+
+/* Get distance to the Box and put it in proper position */
+float sdBox(vec3 point, Box box) {
+    /// By default the scale is inversed
+
+    point = abs(point) - vec3(box.wid, box.hig, box.dep);
+    /// Account for inner position for there not to be distorted black dots
+    return (length(max(point, 0.)) + min(max(point.x, max(point.y, point.z)), 0.));
+}
+
+/* Get distance to the Torus and put it in proper position */
+float getDistTorus(vec3 point, Torus tor) {
+    /// Projected distance to the outside layer of a torus
+    float projDistToOut = length(point.xz) - tor.radBig;
+    return length(vec2(projDistToOut, point.y)) - tor.radSmol;
+}
+
+/* Get distance to the Capsule */
+float sdCapsule(vec3 point, Capsule cap) {
+    vec3 edge = cap.bot - cap.top;
+    vec3 distToCapsule = point - cap.top;
+
+    float distToHit = dot(edge, distToCapsule) / dot(edge, edge);
+    distToHit = clamp(distToHit, 0., 1.);
+
+    vec3 pointHit = cap.top + distToHit*edge;
+    return length(point - pointHit) - cap.rad;
+}
+
+/* Get distance to the Cylinder */
+float sdCylinder(vec3 point, Cylinder cap) {
+    vec3 edge = cap.bot - cap.top;
+    vec3 distToSide = point - cap.top;
+
+    float distToHit = dot(edge, distToSide) / dot(edge, edge);
+    // distToHit = clamp(distToHit, 0., 1.);
+
+    vec3 pointHit = cap.top + distToHit*edge;
+    // X-axis dist to cylinder
+    float xDist = length(point - pointHit) - cap.rad;
+    float yDist = (abs(distToHit - .5) - .5) * length(edge);
+
+    float exteriorDist = length(max(vec2(xDist, yDist), 0.));
+    float interiorDist = min(max(xDist, yDist), 0.);
+    return exteriorDist + interiorDist;
+}
+
+/* Get distance to the Sphere - The fastest! */
+float sdSphere(vec3 point, Sphere sphere) {
+    return length(point) - sphere.rad;
+}
+
+float sdAsteroid(vec3 point, Sphere sphere) {
+
+    return min(distance(point, vec3(0.0)) - sphere.rad,
+           sdBox(point, Box(sphere.rad, sphere.rad, sphere.rad, vec3(3.0)))
+    );
+}
+
+/* Get distance to the Plane */
+float sdPlane(vec3 point, vec3 plane) {
+    return dot(point, normalize(plane));
+}
+
+/*
+ * Get distance to the Piramid - for now used only in player creation
+ * Code "borrowed" from https://www.shadertoy.com/view/Ntd3DX
+ */
+float sdPyramid(vec3 position, float halfWidth, float halfDepth, float halfHeight) {
+    position.xz = abs(position.xz);
+
+    // bottom
+    float s1 = abs(position.y) - halfHeight;
+    vec3 base = vec3(max(position.x - halfWidth, 0.0), abs(position.y + halfHeight), max(position.z - halfDepth, 0.0));
+    float d1 = dot(base, base);
+
+    vec3 q = position - vec3(halfWidth, -halfHeight, halfDepth);
+    vec3 end = vec3(-halfWidth, 2.0 * halfHeight, -halfDepth);
+    vec3 segment = q - end * clamp(dot(q, end) / dot(end, end), 0.0, 1.0);
+    float d = dot(segment, segment);
+
+    // side
+    vec3 normal1 = vec3(end.y, -end.x, 0.0);
+    float s2 = dot(q.xy, normal1.xy);
+    float d2 = d;
+    if (dot(q.xy, -end.xy) < 0.0 && dot(q, cross(normal1, end)) < 0.0) {
+        d2 = s2 * s2 / dot(normal1.xy, normal1.xy);
+    }
+    // front/back
+    vec3 normal2 = vec3(0.0, -end.z, end.y);
+    float s3 = dot(q.yz, normal2.yz);
+    float d3 = d;
+    if (dot(q.yz, -end.yz) < 0.0 && dot(q, cross(normal2, -end)) < 0.0) {
+        d3 = s3 * s3 / dot(normal2.yz, normal2.yz);
+    }
+    return sqrt(min(min(d1, d2), d3)) * sign(max(max(s1, s2), s3));
+}
+
+#endif // RENDER_GLSL
+
+vec3 getRo(vec4 camera_props) {
+    vec3 ro = vec3(-camera_props.x, camera_props.y, camera_props.z);
+    ro.xz *= Rotate(PI);
+    return ro;
+}
+
+// lookat - central point of the camera
+// zoom - zoom  ==  distance from camera to the screen
+// c - center point on the screen = ro + forward * zoom factor z
+// ro = ray origin
+// right - if we look straight from the camera on screen, it is x offset
+// up - if we look straight from the camera on screen, it is y offset
+// intersection - the point on the screen where ray passes through it
+vec3 getRd(vec2 uv, vec3 ro, vec4 camera_props) {
+    // variables to control camera if we need it
+    vec3 lookat = vec3(camera_props.xy, 0.);
+    float zoom = camera_props.w;
+
+    vec3 forward = normalize(lookat - ro),
+        right = normalize(cross(vec3(0, 1, 0), forward)),
+        up = cross(forward, right),
+        c = ro + forward * zoom,
+        intersection = c + uv.x * right + uv.y * up,
+        d = normalize(intersection - ro);
+    return d;
+}
+
+#endif // CAMERA_GLSL
+#ifndef BLACK_HOLE_GLSL
+#define BLACK_HOLE_GLSL
+
+/* Layers of data in pixels - basically Y coordinates */
+#define ASTEROID_LAYER_ROW 0
+#define PLAYER_LAYER_ROW 1
+#define CAMERA_LAYER_ROW 2
+#define PROJECTILE_CREATION_ROW 3
+#define PROJECTILE_LAYER_ROW 4
+#define PROJECTILE_COLLISION_ROW 5
+
+#define P_MOVEMENT_COL 0
+#define P_ROTATION_COL 1
+#define P_CONTROLS_COL 2
+#define P_COLLISION_COL 3
+
+#define C_OPTIONS_COL 0
+#define C_SCREEN_SIZE_COL 1
+
+/* Asteroid properties */
+#define NUM_ASTEROIDS 5.
+#define ASTEROID_SPEED 0.007
+#define ASTEROID_RADIUS 1.
+
+/* Projectiles properties */
+#define NUM_PROJECTILES 1.
+#define PROJECTILE_SPEED .0125
+#define PROJECTILE_RADIUS .7
+
+/* Player Properties */
+#define PLAYER_HEIGHT 1.5
+
+
+const vec3 BH_pos = vec3(-.5, 2.5, -5.);  // -14. // BH position
+const float BH_R = 1.;                     // event horizon radius
+/// how much acceleration a black hole exerts on a light particle
+vec3 blackHoleNullParticleAccl(vec3 p) {
+    vec3 r = (p - BH_pos);
+    return 10. * -1.5 * BH_R * r / pow(length(r), 5.0);
+}
+const float dt = 0.15;
+
+#endif  // BLACK_HOLE_GLSL
+
+#define MAX_STEPS_PRECOMPUTE 512
+const float precompute_dt_divisor = 10.;
+float heightprecompute(inout vec3 current_position, inout vec3 ray_velocity, float aim_height) {
+    // mode is whether we reached height 1 (1.) or got below event horison (0.)
+    // or did not converge (2.)
+    float mode = 2.;
+    float precompute_dt = dt / precompute_dt_divisor;
+    for (int i = 0; i < MAX_STEPS_PRECOMPUTE * int(precompute_dt_divisor); ++i) {
+        float dist = abs(current_position.z - aim_height);
+
+        ray_velocity += blackHoleNullParticleAccl(current_position) * precompute_dt;
+
+        vec3 position_delta = ray_velocity * precompute_dt;
+        float dist_to_travel = length(position_delta);
+        if (dist_to_travel > dist) {
+            position_delta *= dist / dist_to_travel;
+        }
+        current_position += position_delta;
+
+        // check that we got below event horizon
+        if (distance(BH_pos, current_position) < BH_R) {
+            mode = 0.;
+            break;
+        }
+
+        // check that we landed on a plane
+        if (abs(dist) < SURF_DIST) {
+            ray_velocity = ray_velocity;
+            mode = 1.;
+            break;
+        }
+    }
+    return mode;
+}
+
+#endif  // PRECOMPUTE_BASE_GLSL
+#ifndef PRECOMPUTE_FETCH_GLSL
+#define PRECOMPUTE_FETCH_GLSL
+
+/// returns 0 when fetch is at border of black hole reached
+float fetchPrecomputed(vec2 fragCoord, inout vec3 position, inout vec3 velocity) {
+    /// interpolate position and velocity
+    vec2 flooredfragCoord = floor(fragCoord);  // remove possible .5
+    vec4 currentPositionAndMode = vec4(0.);
+    vec4 rayVelocityAndMode = vec4(0.);
+    float mode = 1.;
+    if (
+        flooredfragCoord.x <= 1. || flooredfragCoord.y <= 0. ||
+        flooredfragCoord.x >= (iResolution.x-1.) || flooredfragCoord.y >= (iResolution.y-1.)
+    ) {
+        return 0.;  /// we are at border, so inteprpolation is not possible
+    } else {
+        bool is_velocity = (flooredfragCoord.x-2.*floor(flooredfragCoord.x/2.)) == 0.;
+        if (is_velocity) {
+            rayVelocityAndMode = texelFetch(iChannel2, ivec2(flooredfragCoord), 0);
+            mode = rayVelocityAndMode.w;
+            currentPositionAndMode = (
+                texelFetch(iChannel2, ivec2(flooredfragCoord-vec2(1., 0.)), 0) * .5 +
+                texelFetch(iChannel2, ivec2(flooredfragCoord+vec2(1., 0.)), 0) * .5
+            );
+        } else {
+            currentPositionAndMode = texelFetch(iChannel2, ivec2(flooredfragCoord), 0);
+            mode = currentPositionAndMode.w;
+            rayVelocityAndMode = (
+                texelFetch(iChannel2, ivec2(flooredfragCoord-vec2(1., 0.)), 0) * .5 +
+                texelFetch(iChannel2, ivec2(flooredfragCoord+vec2(1., 0.)), 0) * .5
+            );
+        }
+        /// if we reached black hole in any of them, return 0
+        if ((rayVelocityAndMode.w + currentPositionAndMode.w) < 2.) {
+            return 0.;
+        }
+    }
+    position = currentPositionAndMode.xyz;
+    velocity = rayVelocityAndMode.xyz;
+    return mode;
+}
+
+#endif  // PRECOMPUTE_FETCH_GLSL
+
+
+
+
+
+void mainImage(out vec4 fragColor, in vec2 fragCoord) {
+    if (iFrame == 0) {
+        vec2 uv = (fragCoord-.5*iResolution.xy) / iResolution.y;
+        vec3 position = vec3(0.);
+        vec3 velocity = vec3(0.);
+        float mode = fetchPrecomputed(fragCoord, position, velocity);
+        if (mode == 0.) {
+            fragColor = vec4(0.);
+        } else {
+            mode = heightprecompute(position, velocity, 1.02);
+            if (mode == 0.) {
+                fragColor = vec4(0.);
+            } else {
+                mode = heightprecompute(position, velocity, 1.);
+                if (mode == 0.) {
+                    fragColor = vec4(0.);
+                } else {
+                    /// put velocity if fragCoord.x is divisible by 2
+                    float flooredfragCoordx = floor(fragCoord.x);  // remove possible .5
+                    if ((flooredfragCoordx-2.*floor(flooredfragCoordx/2.)) == 0.) {
+                        fragColor = vec4(velocity, mode);
+                    } else {
+                        fragColor = vec4(position, mode);
+                    }
+                }
+            }
+        }
+    } else {
+        fragColor = texelFetch(iChannel1, ivec2(fragCoord), 0);
+    }
+}
+void main() {
+    vec2 fragCoord = gl_FragCoord.xy;
+    mainImage(gl_FragColor, fragCoord);
+}
+</script><script id='/home/adeon/projects/OS/BaseTeroid/main.glsl' type='x-shader/x-fragment'>
 uniform vec3        iResolution;
 uniform float       iTime;
 uniform float       iTimeDelta;
@@ -5756,13 +7029,16 @@ struct Piramid {
 
 #endif // OBJECT_GLSL
 
-#define MAX_STEPS 16
+#define MAX_STEPS 64
 #define MAX_DIST 100.
 #define SURF_DIST .01
 
 #define PI 3.14159
 
-const vec3 PLAYER_COLOR = vec3(0.7411, 0.5764, 0.9764);
+const vec3 PLAYER_COLOR_3 = vec3(0.313, 0.784, 0.47);
+const vec3 PLAYER_COLOR_2 = vec3(1., 0.7215, 0.4235);
+const vec3 PLAYER_COLOR_1 = vec3(1., 0.3333, 0.3333);
+
 const vec3 ASTEROID_COLOR = vec3(0.7, 0.7, 0.75);
 
 /*
@@ -5857,6 +7133,13 @@ float sdCylinder(vec3 point, Cylinder cap) {
 /* Get distance to the Sphere - The fastest! */
 float sdSphere(vec3 point, Sphere sphere) {
     return length(point) - sphere.rad;
+}
+
+float sdAsteroid(vec3 point, Sphere sphere) {
+
+    return min(distance(point, vec3(0.0)) - sphere.rad,
+           sdBox(point, Box(sphere.rad, sphere.rad, sphere.rad, vec3(3.0)))
+    );
 }
 
 /* Get distance to the Plane */
@@ -5957,13 +7240,16 @@ struct Piramid {
 
 #endif // OBJECT_GLSL
 
-#define MAX_STEPS 16
+#define MAX_STEPS 64
 #define MAX_DIST 100.
 #define SURF_DIST .01
 
 #define PI 3.14159
 
-const vec3 PLAYER_COLOR = vec3(0.7411, 0.5764, 0.9764);
+const vec3 PLAYER_COLOR_3 = vec3(0.313, 0.784, 0.47);
+const vec3 PLAYER_COLOR_2 = vec3(1., 0.7215, 0.4235);
+const vec3 PLAYER_COLOR_1 = vec3(1., 0.3333, 0.3333);
+
 const vec3 ASTEROID_COLOR = vec3(0.7, 0.7, 0.75);
 
 /*
@@ -6060,6 +7346,13 @@ float sdSphere(vec3 point, Sphere sphere) {
     return length(point) - sphere.rad;
 }
 
+float sdAsteroid(vec3 point, Sphere sphere) {
+
+    return min(distance(point, vec3(0.0)) - sphere.rad,
+           sdBox(point, Box(sphere.rad, sphere.rad, sphere.rad, vec3(3.0)))
+    );
+}
+
 /* Get distance to the Plane */
 float sdPlane(vec3 point, vec3 plane) {
     return dot(point, normalize(plane));
@@ -6104,6 +7397,9 @@ float sdPyramid(vec3 position, float halfWidth, float halfDepth, float halfHeigh
 #define ASTEROID_LAYER_ROW 0
 #define PLAYER_LAYER_ROW 1
 #define CAMERA_LAYER_ROW 2
+#define PROJECTILE_CREATION_ROW 3
+#define PROJECTILE_LAYER_ROW 4
+#define PROJECTILE_COLLISION_ROW 5
 
 #define P_MOVEMENT_COL 0
 #define P_ROTATION_COL 1
@@ -6117,6 +7413,11 @@ float sdPyramid(vec3 position, float halfWidth, float halfDepth, float halfHeigh
 #define NUM_ASTEROIDS 5.
 #define ASTEROID_SPEED 0.007
 #define ASTEROID_RADIUS 1.
+
+/* Projectiles properties */
+#define NUM_PROJECTILES 1.
+#define PROJECTILE_SPEED .0125
+#define PROJECTILE_RADIUS .7
 
 /* Player Properties */
 #define PLAYER_HEIGHT 1.5
@@ -6179,13 +7480,16 @@ struct Piramid {
 
 #endif // OBJECT_GLSL
 
-#define MAX_STEPS 16
+#define MAX_STEPS 64
 #define MAX_DIST 100.
 #define SURF_DIST .01
 
 #define PI 3.14159
 
-const vec3 PLAYER_COLOR = vec3(0.7411, 0.5764, 0.9764);
+const vec3 PLAYER_COLOR_3 = vec3(0.313, 0.784, 0.47);
+const vec3 PLAYER_COLOR_2 = vec3(1., 0.7215, 0.4235);
+const vec3 PLAYER_COLOR_1 = vec3(1., 0.3333, 0.3333);
+
 const vec3 ASTEROID_COLOR = vec3(0.7, 0.7, 0.75);
 
 /*
@@ -6280,6 +7584,13 @@ float sdCylinder(vec3 point, Cylinder cap) {
 /* Get distance to the Sphere - The fastest! */
 float sdSphere(vec3 point, Sphere sphere) {
     return length(point) - sphere.rad;
+}
+
+float sdAsteroid(vec3 point, Sphere sphere) {
+
+    return min(distance(point, vec3(0.0)) - sphere.rad,
+           sdBox(point, Box(sphere.rad, sphere.rad, sphere.rad, vec3(3.0)))
+    );
 }
 
 /* Get distance to the Plane */
@@ -6543,13 +7854,16 @@ struct Piramid {
 
 #endif // OBJECT_GLSL
 
-#define MAX_STEPS 16
+#define MAX_STEPS 64
 #define MAX_DIST 100.
 #define SURF_DIST .01
 
 #define PI 3.14159
 
-const vec3 PLAYER_COLOR = vec3(0.7411, 0.5764, 0.9764);
+const vec3 PLAYER_COLOR_3 = vec3(0.313, 0.784, 0.47);
+const vec3 PLAYER_COLOR_2 = vec3(1., 0.7215, 0.4235);
+const vec3 PLAYER_COLOR_1 = vec3(1., 0.3333, 0.3333);
+
 const vec3 ASTEROID_COLOR = vec3(0.7, 0.7, 0.75);
 
 /*
@@ -6644,6 +7958,13 @@ float sdCylinder(vec3 point, Cylinder cap) {
 /* Get distance to the Sphere - The fastest! */
 float sdSphere(vec3 point, Sphere sphere) {
     return length(point) - sphere.rad;
+}
+
+float sdAsteroid(vec3 point, Sphere sphere) {
+
+    return min(distance(point, vec3(0.0)) - sphere.rad,
+           sdBox(point, Box(sphere.rad, sphere.rad, sphere.rad, vec3(3.0)))
+    );
 }
 
 /* Get distance to the Plane */
@@ -6719,6 +8040,9 @@ vec3 getRd(vec2 uv, vec3 ro, vec4 camera_props) {
 #define ASTEROID_LAYER_ROW 0
 #define PLAYER_LAYER_ROW 1
 #define CAMERA_LAYER_ROW 2
+#define PROJECTILE_CREATION_ROW 3
+#define PROJECTILE_LAYER_ROW 4
+#define PROJECTILE_COLLISION_ROW 5
 
 #define P_MOVEMENT_COL 0
 #define P_ROTATION_COL 1
@@ -6732,6 +8056,11 @@ vec3 getRd(vec2 uv, vec3 ro, vec4 camera_props) {
 #define NUM_ASTEROIDS 5.
 #define ASTEROID_SPEED 0.007
 #define ASTEROID_RADIUS 1.
+
+/* Projectiles properties */
+#define NUM_PROJECTILES 1.
+#define PROJECTILE_SPEED .0125
+#define PROJECTILE_RADIUS .7
 
 /* Player Properties */
 #define PLAYER_HEIGHT 1.5
@@ -6794,13 +8123,16 @@ struct Piramid {
 
 #endif // OBJECT_GLSL
 
-#define MAX_STEPS 16
+#define MAX_STEPS 64
 #define MAX_DIST 100.
 #define SURF_DIST .01
 
 #define PI 3.14159
 
-const vec3 PLAYER_COLOR = vec3(0.7411, 0.5764, 0.9764);
+const vec3 PLAYER_COLOR_3 = vec3(0.313, 0.784, 0.47);
+const vec3 PLAYER_COLOR_2 = vec3(1., 0.7215, 0.4235);
+const vec3 PLAYER_COLOR_1 = vec3(1., 0.3333, 0.3333);
+
 const vec3 ASTEROID_COLOR = vec3(0.7, 0.7, 0.75);
 
 /*
@@ -6897,6 +8229,13 @@ float sdSphere(vec3 point, Sphere sphere) {
     return length(point) - sphere.rad;
 }
 
+float sdAsteroid(vec3 point, Sphere sphere) {
+
+    return min(distance(point, vec3(0.0)) - sphere.rad,
+           sdBox(point, Box(sphere.rad, sphere.rad, sphere.rad, vec3(3.0)))
+    );
+}
+
 /* Get distance to the Plane */
 float sdPlane(vec3 point, vec3 plane) {
     return dot(point, normalize(plane));
@@ -6941,6 +8280,9 @@ float sdPyramid(vec3 position, float halfWidth, float halfDepth, float halfHeigh
 #define ASTEROID_LAYER_ROW 0
 #define PLAYER_LAYER_ROW 1
 #define CAMERA_LAYER_ROW 2
+#define PROJECTILE_CREATION_ROW 3
+#define PROJECTILE_LAYER_ROW 4
+#define PROJECTILE_COLLISION_ROW 5
 
 #define P_MOVEMENT_COL 0
 #define P_ROTATION_COL 1
@@ -6954,6 +8296,11 @@ float sdPyramid(vec3 position, float halfWidth, float halfDepth, float halfHeigh
 #define NUM_ASTEROIDS 5.
 #define ASTEROID_SPEED 0.007
 #define ASTEROID_RADIUS 1.
+
+/* Projectiles properties */
+#define NUM_PROJECTILES 1.
+#define PROJECTILE_SPEED .0125
+#define PROJECTILE_RADIUS .7
 
 /* Player Properties */
 #define PLAYER_HEIGHT 1.5
@@ -7016,13 +8363,16 @@ struct Piramid {
 
 #endif // OBJECT_GLSL
 
-#define MAX_STEPS 16
+#define MAX_STEPS 64
 #define MAX_DIST 100.
 #define SURF_DIST .01
 
 #define PI 3.14159
 
-const vec3 PLAYER_COLOR = vec3(0.7411, 0.5764, 0.9764);
+const vec3 PLAYER_COLOR_3 = vec3(0.313, 0.784, 0.47);
+const vec3 PLAYER_COLOR_2 = vec3(1., 0.7215, 0.4235);
+const vec3 PLAYER_COLOR_1 = vec3(1., 0.3333, 0.3333);
+
 const vec3 ASTEROID_COLOR = vec3(0.7, 0.7, 0.75);
 
 /*
@@ -7117,6 +8467,13 @@ float sdCylinder(vec3 point, Cylinder cap) {
 /* Get distance to the Sphere - The fastest! */
 float sdSphere(vec3 point, Sphere sphere) {
     return length(point) - sphere.rad;
+}
+
+float sdAsteroid(vec3 point, Sphere sphere) {
+
+    return min(distance(point, vec3(0.0)) - sphere.rad,
+           sdBox(point, Box(sphere.rad, sphere.rad, sphere.rad, vec3(3.0)))
+    );
 }
 
 /* Get distance to the Plane */
@@ -7200,10 +8557,26 @@ float createAsteroids(vec3 point) {
         Sphere sph = Sphere(vec3((
             texelFetch(iChannel0, ivec2(i, 0), 0).xy * 2. - 1.
         ) * screenSize, 0.), 1.);
-        distToSphere = min(distToSphere, sdSphere(point - sph.pos, sph));
+        distToSphere = min(distToSphere, sdAsteroid(point - sph.pos, sph));
     }
 
     return distToSphere;
+}
+
+float createProjectiles(vec3 point) {
+    float distToProjectiles = 99999.;
+
+    vec2 screenSize = texelFetch(iChannel0, ivec2(C_SCREEN_SIZE_COL, CAMERA_LAYER_ROW), 0).xy;
+
+    int num_projectiles = int(NUM_PROJECTILES);
+    for (int i = 0; i < num_projectiles; ++i) {
+        Sphere sph = Sphere(vec3((
+            texelFetch(iChannel0, ivec2(i, PROJECTILE_LAYER_ROW), 0).xy * 2. - 1.
+        ) * screenSize, 0.), PROJECTILE_RADIUS);
+        distToProjectiles = min(distToProjectiles, sdSphere(point - sph.pos, sph));
+    }
+
+    return distToProjectiles;
 }
 
 #endif // ASTEROIDS_GLSL
@@ -7214,6 +8587,9 @@ float createAsteroids(vec3 point) {
 #define ASTEROID_LAYER_ROW 0
 #define PLAYER_LAYER_ROW 1
 #define CAMERA_LAYER_ROW 2
+#define PROJECTILE_CREATION_ROW 3
+#define PROJECTILE_LAYER_ROW 4
+#define PROJECTILE_COLLISION_ROW 5
 
 #define P_MOVEMENT_COL 0
 #define P_ROTATION_COL 1
@@ -7228,16 +8604,21 @@ float createAsteroids(vec3 point) {
 #define ASTEROID_SPEED 0.007
 #define ASTEROID_RADIUS 1.
 
+/* Projectiles properties */
+#define NUM_PROJECTILES 1.
+#define PROJECTILE_SPEED .0125
+#define PROJECTILE_RADIUS .7
+
 /* Player Properties */
 #define PLAYER_HEIGHT 1.5
 
 
-const vec3 BH_pos = vec3(-.5, 1.5, -14.);  // -14. // BH position
+const vec3 BH_pos = vec3(-.5, 2.5, -5.);  // -14. // BH position
 const float BH_R = 1.;                     // event horizon radius
 /// how much acceleration a black hole exerts on a light particle
 vec3 blackHoleNullParticleAccl(vec3 p) {
     vec3 r = (p - BH_pos);
-    return -1.5 * BH_R * r / pow(length(r), 5.0);
+    return 10. * -1.5 * BH_R * r / pow(length(r), 5.0);
 }
 const float dt = 0.15;
 
@@ -7251,6 +8632,7 @@ float fetchPrecomputed(vec2 fragCoord, inout vec3 position, inout vec3 velocity)
     vec2 flooredfragCoord = floor(fragCoord);  // remove possible .5
     vec4 currentPositionAndMode = vec4(0.);
     vec4 rayVelocityAndMode = vec4(0.);
+    float mode = 1.;
     if (
         flooredfragCoord.x <= 1. || flooredfragCoord.y <= 0. ||
         flooredfragCoord.x >= (iResolution.x-1.) || flooredfragCoord.y >= (iResolution.y-1.)
@@ -7260,12 +8642,14 @@ float fetchPrecomputed(vec2 fragCoord, inout vec3 position, inout vec3 velocity)
         bool is_velocity = (flooredfragCoord.x-2.*floor(flooredfragCoord.x/2.)) == 0.;
         if (is_velocity) {
             rayVelocityAndMode = texelFetch(iChannel2, ivec2(flooredfragCoord), 0);
+            mode = rayVelocityAndMode.w;
             currentPositionAndMode = (
                 texelFetch(iChannel2, ivec2(flooredfragCoord-vec2(1., 0.)), 0) * .5 +
                 texelFetch(iChannel2, ivec2(flooredfragCoord+vec2(1., 0.)), 0) * .5
             );
         } else {
             currentPositionAndMode = texelFetch(iChannel2, ivec2(flooredfragCoord), 0);
+            mode = currentPositionAndMode.w;
             rayVelocityAndMode = (
                 texelFetch(iChannel2, ivec2(flooredfragCoord-vec2(1., 0.)), 0) * .5 +
                 texelFetch(iChannel2, ivec2(flooredfragCoord+vec2(1., 0.)), 0) * .5
@@ -7278,10 +8662,54 @@ float fetchPrecomputed(vec2 fragCoord, inout vec3 position, inout vec3 velocity)
     }
     position = currentPositionAndMode.xyz;
     velocity = rayVelocityAndMode.xyz;
-    return 1.;
+    return mode;
 }
 
 #endif  // PRECOMPUTE_FETCH_GLSL
+#ifndef PRECOMPUTE1_FETCH_GLSL
+#define PRECOMPUTE1_FETCH_GLSL
+
+/// returns 0 when fetch is at border of black hole reached
+float fetchPrecomputed1(vec2 fragCoord, inout vec3 position, inout vec3 velocity) {
+    /// interpolate position and velocity
+    vec2 flooredfragCoord = floor(fragCoord);  // remove possible .5
+    vec4 currentPositionAndMode = vec4(0.);
+    vec4 rayVelocityAndMode = vec4(0.);
+    float mode = 1.;
+    if (
+        flooredfragCoord.x <= 1. || flooredfragCoord.y <= 0. ||
+        flooredfragCoord.x >= (iResolution.x-1.) || flooredfragCoord.y >= (iResolution.y-1.)
+    ) {
+        return 0.;  /// we are at border, so inteprpolation is not possible
+    } else {
+        bool is_velocity = (flooredfragCoord.x-2.*floor(flooredfragCoord.x/2.)) == 0.;
+        if (is_velocity) {
+            rayVelocityAndMode = texelFetch(iChannel3, ivec2(flooredfragCoord), 0);
+            mode = rayVelocityAndMode.w;
+            currentPositionAndMode = (
+                texelFetch(iChannel3, ivec2(flooredfragCoord-vec2(1., 0.)), 0) * .5 +
+                texelFetch(iChannel3, ivec2(flooredfragCoord+vec2(1., 0.)), 0) * .5
+            );
+        } else {
+            currentPositionAndMode = texelFetch(iChannel3, ivec2(flooredfragCoord), 0);
+            mode = currentPositionAndMode.w;
+            rayVelocityAndMode = (
+                texelFetch(iChannel3, ivec2(flooredfragCoord-vec2(1., 0.)), 0) * .5 +
+                texelFetch(iChannel3, ivec2(flooredfragCoord+vec2(1., 0.)), 0) * .5
+            );
+        }
+        /// if we reached black hole in any of them, return 0
+        if ((rayVelocityAndMode.w + currentPositionAndMode.w) < 2.) {
+            return 0.;
+        }
+    }
+    position = currentPositionAndMode.xyz;
+    velocity = rayVelocityAndMode.xyz;
+    return mode;
+}
+
+#endif  // PRECOMPUTE1_FETCH_GLSL
+
 
 
 
@@ -7294,9 +8722,18 @@ vec4 getColAndDist(vec3 point) {
     float distPiramid = createPlayer(point, vec3(0.), vec3(offset, 0.));
 
     float distAsteroids = createAsteroids(point);
+    float distProjectiles = createProjectiles(point);
 
     /// Use respective colors for respective objects
-    vec4 colDist = minSd(vec4(PLAYER_COLOR, distPiramid), vec4(ASTEROID_COLOR, distAsteroids));
+    float hp = 0.3 - texelFetch(iChannel0, ivec2(P_COLLISION_COL, PLAYER_LAYER_ROW), 0).x;
+    vec3 player_color = vec3(0.);
+    if(hp == 0.3) {player_color = PLAYER_COLOR_3;}
+    if(abs(hp - 0.2) < 0.01) {player_color = PLAYER_COLOR_2;}
+    if(abs(hp - 0.1) < 0.01) {player_color = PLAYER_COLOR_1;}
+    vec3 projectile_color = player_color;
+
+    vec4 colDist = minSd(vec4(player_color, distPiramid), vec4(ASTEROID_COLOR, distAsteroids));
+    colDist = minSd(vec4(projectile_color, distProjectiles), colDist);
 
     /// render event horizon
     colDist = minSd(vec4(vec3(0.), length(point - BH_pos) - BH_R), colDist);
@@ -7336,27 +8773,45 @@ vec3 getLighting(vec3 point, vec3 lightPos, vec3 color) {
 }
 
 /// current_position is the ray origin
-/// ray_velocity should be normalized
 /// color is the resulting color
-vec4 blackHoleRender(vec3 currentPosition, vec3 rayVelocity, inout vec3 color) {
+const float ray_dt_divisor = 1.;
+vec4 blackHoleRender(vec2 fragCoord, vec3 currentPosition, vec3 rayVelocity, inout vec3 color) {
     // 4th coord is whether we found a point or diverged
+    // 0 for diverged
+    // 1 for converged on a point
     vec4 currentLocationAndMode = vec4(0.);
-    for (int i = 0; i < MAX_STEPS; ++i) {
+    float ray_dt = dt / ray_dt_divisor;
+    for (int i = 0; i < MAX_STEPS * int(ray_dt_divisor); ++i) {
         vec4 colAndDist = getColAndDist(currentPosition);
 
-        rayVelocity += blackHoleNullParticleAccl(currentPosition) * dt;
+        rayVelocity += blackHoleNullParticleAccl(currentPosition) * ray_dt;
 
-        float dist_to_travel = length(rayVelocity) * dt;
+        vec3 positionDelta = rayVelocity * ray_dt;
+        float dist_to_travel = length(positionDelta);
         if (dist_to_travel > colAndDist.w) {
-            rayVelocity *= colAndDist.w / dist_to_travel;
+            positionDelta *= colAndDist.w / dist_to_travel;
         }
 
-        currentPosition += rayVelocity * dt;
+        currentPosition += positionDelta;
+
+        // check that we got past height of second precomputed region
+        if (currentPosition.z >= 1.02) {
+            float mode = fetchPrecomputed1(fragCoord, currentPosition, rayVelocity);
+            if (mode == 0.) {  // reached below event horison
+                color = vec3(0.);
+                currentLocationAndMode = vec4(currentPosition, 1.);
+                break;
+            }
+            if (mode == 2.) {  // diverged
+                currentLocationAndMode = vec4(currentPosition, 2.);
+                break;
+            }
+        }
 
         // check that we got below event horizon
         if (distance(BH_pos, currentPosition) < BH_R) {
             color = vec3(0.);
-            currentLocationAndMode.xyzw = vec4(currentPosition, 1.);
+            currentLocationAndMode = vec4(currentPosition, 1.);
             break;
         }
 
@@ -7367,6 +8822,9 @@ vec4 blackHoleRender(vec3 currentPosition, vec3 rayVelocity, inout vec3 color) {
             break;
         }
     }
+    if (currentLocationAndMode.w != 1.) {
+        color = 0.2 * normalize(rayVelocity);
+    }
     return currentLocationAndMode;
 }
 
@@ -7375,11 +8833,15 @@ vec4 blackHoleRenderPrecomputed(vec2 fragCoord, inout vec3 color) {
     vec3 position = vec3(0.);
     vec3 velocity = vec3(0.);
     float mode = fetchPrecomputed(fragCoord, position, velocity);
-    if (mode == 0.) {
+    if (mode == 0.) {  // reached event horison
         color = vec3(0.);
         return vec4(vec3(0.), 1.);
     }
-    return blackHoleRender(position, velocity, color);
+    if (mode == 2.) {  // diverged
+        color = 0.2 * normalize(velocity);
+        return vec4(vec3(0.), 2.);
+    }
+    return blackHoleRender(fragCoord, position, velocity, color);
 }
 
 #endif  // RAY_GLSL
@@ -7391,21 +8853,20 @@ void mainImage(out vec4 fragColor, in vec2 fragCoord) {
     // Normalized pixel coordinates (from 0 to 1)
     vec2 uv = (fragCoord-.5*iResolution.xy) / iResolution.y;
 
-    vec3 outCol = vec3(0.2666, 0.2784, 0.3529);
+    // vec3 outCol = vec3(0.2666, 0.2784, 0.3529);
 
     float die = texelFetch(iChannel0, ivec2(P_COLLISION_COL, PLAYER_LAYER_ROW), 0).x;
-    if (int(die) == 1) {
+    if (die > 0.2) {
         fragColor = texture(iChannel1, fragCoord/iResolution.xy);
         return;
     }
 
     // get ray origin & direction
-    vec3 objColor = vec3(0.);
-    vec4 renderEndPointAndMode = blackHoleRenderPrecomputed(fragCoord, objColor);
+    vec3 outCol = vec3(0.);
+    vec4 renderEndPointAndMode = blackHoleRenderPrecomputed(fragCoord, outCol);
 
     if (renderEndPointAndMode.w == 1.) {
-        vec3 diffusedLighting = 1.354 * getLighting(renderEndPointAndMode.xyz, vec3(10, 10, -5), objColor);
-
+        vec3 diffusedLighting = 1.354 * getLighting(renderEndPointAndMode.xyz, vec3(10, 10, -5), outCol);
         outCol = diffusedLighting;
     }
     // Color correction
@@ -7566,9 +9027,9 @@ void main() {
 
     let renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true, context: gl, preserveDrawingBuffer: true });
     let resolution = new THREE.Vector3();
-    let mouse = new THREE.Vector4(264, 602, -264, -602);
+    let mouse = new THREE.Vector4(593, 291, -596, -291);
     let mouseButton = new THREE.Vector4(0, 0, 0, 0);
-    let normalizedMouse = new THREE.Vector2(0.1994261119081779, 1);
+    let normalizedMouse = new THREE.Vector2(0.10432569974554708, 1);
     let frameCounter = 0;
 
     // Audio Init
@@ -7580,16 +9041,16 @@ void main() {
     let buffers = [];
     // Buffers
     buffers.push({
-        Name: '/Users/michael/uni/UCU/OS/BaseTeroid/utility/data_channel.glsl',
-        File: '/Users/michael/uni/UCU/OS/BaseTeroid/utility/data_channel.glsl',
-        LineOffset: 959,
+        Name: '/home/adeon/projects/OS/BaseTeroid/utility/data_channel.glsl',
+        File: '/home/adeon/projects/OS/BaseTeroid/utility/data_channel.glsl',
+        LineOffset: 1005,
         Target: new THREE.WebGLRenderTarget(resolution.x, resolution.y, { type: framebufferType }),
         ChannelResolution: Array(10).fill(new THREE.Vector3(0,0,0)),
         PingPongTarget: new THREE.WebGLRenderTarget(resolution.x, resolution.y, { type: framebufferType }),
         PingPongChannel: 0,
-        Dependents: [{"Index":1,"Channel":0},{"Index":2,"Channel":0},{"Index":2,"Channel":0},{"Index":2,"Channel":0}],
+        Dependents: [{"Index":1,"Channel":0},{"Index":2,"Channel":0},{"Index":3,"Channel":0},{"Index":3,"Channel":0},{"Index":3,"Channel":0}],
         Shader: new THREE.ShaderMaterial({
-            fragmentShader: document.getElementById('/Users/michael/uni/UCU/OS/BaseTeroid/utility/data_channel.glsl').textContent,
+            fragmentShader: document.getElementById('/home/adeon/projects/OS/BaseTeroid/utility/data_channel.glsl').textContent,
             depthWrite: false,
             depthTest: false,
             uniforms: {
@@ -7622,16 +9083,16 @@ void main() {
             }
         })
     });buffers.push({
-        Name: '/Users/michael/uni/UCU/OS/BaseTeroid/utility/precompute.glsl',
-        File: '/Users/michael/uni/UCU/OS/BaseTeroid/utility/precompute.glsl',
-        LineOffset: 665,
+        Name: '/home/adeon/projects/OS/BaseTeroid/utility/precompute.glsl',
+        File: '/home/adeon/projects/OS/BaseTeroid/utility/precompute.glsl',
+        LineOffset: 694,
         Target: new THREE.WebGLRenderTarget(resolution.x, resolution.y, { type: framebufferType }),
         ChannelResolution: Array(10).fill(new THREE.Vector3(0,0,0)),
         PingPongTarget: new THREE.WebGLRenderTarget(resolution.x, resolution.y, { type: framebufferType }),
         PingPongChannel: 1,
-        Dependents: [{"Index":2,"Channel":2}],
+        Dependents: [{"Index":2,"Channel":2},{"Index":3,"Channel":2}],
         Shader: new THREE.ShaderMaterial({
-            fragmentShader: document.getElementById('/Users/michael/uni/UCU/OS/BaseTeroid/utility/precompute.glsl').textContent,
+            fragmentShader: document.getElementById('/home/adeon/projects/OS/BaseTeroid/utility/precompute.glsl').textContent,
             depthWrite: false,
             depthTest: false,
             uniforms: {
@@ -7664,16 +9125,58 @@ void main() {
             }
         })
     });buffers.push({
-        Name: '/Users/michael/uni/UCU/OS/BaseTeroid/main.glsl',
-        File: '/Users/michael/uni/UCU/OS/BaseTeroid/main.glsl',
-        LineOffset: 1817,
+        Name: '/home/adeon/projects/OS/BaseTeroid/utility/precompute1.glsl',
+        File: '/home/adeon/projects/OS/BaseTeroid/utility/precompute1.glsl',
+        LineOffset: 736,
+        Target: new THREE.WebGLRenderTarget(resolution.x, resolution.y, { type: framebufferType }),
+        ChannelResolution: Array(10).fill(new THREE.Vector3(0,0,0)),
+        PingPongTarget: new THREE.WebGLRenderTarget(resolution.x, resolution.y, { type: framebufferType }),
+        PingPongChannel: 1,
+        Dependents: [{"Index":3,"Channel":3}],
+        Shader: new THREE.ShaderMaterial({
+            fragmentShader: document.getElementById('/home/adeon/projects/OS/BaseTeroid/utility/precompute1.glsl').textContent,
+            depthWrite: false,
+            depthTest: false,
+            uniforms: {
+                iResolution: { type: 'v3', value: resolution },
+                iTime: { type: 'f', value: 0.0 },
+                iTimeDelta: { type: 'f', value: 0.0 },
+                iFrame: { type: 'i', value: 0 },
+                iMouse: { type: 'v4', value: mouse },
+                iMouseButton: { type: 'v2', value: mouseButton },
+    
+                iChannelResolution: { type: 'v3v', value: Array(10).fill(new THREE.Vector3(0,0,0)) },
+    
+                iDate: { type: 'v4', value: date },
+                iSampleRate: { type: 'f', value: audioContext.sampleRate },
+    
+                iChannel0: { type: 't' },
+                iChannel1: { type: 't' },
+                iChannel2: { type: 't' },
+                iChannel3: { type: 't' },
+                iChannel4: { type: 't' },
+                iChannel5: { type: 't' },
+                iChannel6: { type: 't' },
+                iChannel7: { type: 't' },
+                iChannel8: { type: 't' },
+                iChannel9: { type: 't' },
+    
+                resolution: { type: 'v2', value: resolution },
+                time: { type: 'f', value: 0.0 },
+                mouse: { type: 'v2', value: normalizedMouse },
+            }
+        })
+    });buffers.push({
+        Name: '/home/adeon/projects/OS/BaseTeroid/main.glsl',
+        File: '/home/adeon/projects/OS/BaseTeroid/main.glsl',
+        LineOffset: 2006,
         Target: null,
         ChannelResolution: Array(10).fill(new THREE.Vector3(0,0,0)),
         PingPongTarget: null,
         PingPongChannel: 0,
         Dependents: [],
         Shader: new THREE.ShaderMaterial({
-            fragmentShader: document.getElementById('/Users/michael/uni/UCU/OS/BaseTeroid/main.glsl').textContent,
+            fragmentShader: document.getElementById('/home/adeon/projects/OS/BaseTeroid/main.glsl').textContent,
             depthWrite: false,
             depthTest: false,
             uniforms: {
@@ -7709,35 +9212,38 @@ void main() {
     let commonIncludes = [];
     // Includes
     commonIncludes.push({
-        Name: '/Users/michael/uni/UCU/OS/BaseTeroid/utility/object.glsl',
-        File: '/Users/michael/uni/UCU/OS/BaseTeroid/utility/object.glsl'
+        Name: '/home/adeon/projects/OS/BaseTeroid/utility/object.glsl',
+        File: '/home/adeon/projects/OS/BaseTeroid/utility/object.glsl'
     });commonIncludes.push({
-        Name: '/Users/michael/uni/UCU/OS/BaseTeroid/utility/render.glsl',
-        File: '/Users/michael/uni/UCU/OS/BaseTeroid/utility/render.glsl'
+        Name: '/home/adeon/projects/OS/BaseTeroid/utility/render.glsl',
+        File: '/home/adeon/projects/OS/BaseTeroid/utility/render.glsl'
     });commonIncludes.push({
-        Name: '/Users/michael/uni/UCU/OS/BaseTeroid/utility/common.glsl',
-        File: '/Users/michael/uni/UCU/OS/BaseTeroid/utility/common.glsl'
+        Name: '/home/adeon/projects/OS/BaseTeroid/utility/common.glsl',
+        File: '/home/adeon/projects/OS/BaseTeroid/utility/common.glsl'
     });commonIncludes.push({
-        Name: '/Users/michael/uni/UCU/OS/BaseTeroid/utility/camera.glsl',
-        File: '/Users/michael/uni/UCU/OS/BaseTeroid/utility/camera.glsl'
+        Name: '/home/adeon/projects/OS/BaseTeroid/utility/camera.glsl',
+        File: '/home/adeon/projects/OS/BaseTeroid/utility/camera.glsl'
     });commonIncludes.push({
-        Name: '/Users/michael/uni/UCU/OS/BaseTeroid/utility/player.glsl',
-        File: '/Users/michael/uni/UCU/OS/BaseTeroid/utility/player.glsl'
+        Name: '/home/adeon/projects/OS/BaseTeroid/utility/player.glsl',
+        File: '/home/adeon/projects/OS/BaseTeroid/utility/player.glsl'
     });commonIncludes.push({
-        Name: '/Users/michael/uni/UCU/OS/BaseTeroid/utility/asteroids.glsl',
-        File: '/Users/michael/uni/UCU/OS/BaseTeroid/utility/asteroids.glsl'
+        Name: '/home/adeon/projects/OS/BaseTeroid/utility/asteroids.glsl',
+        File: '/home/adeon/projects/OS/BaseTeroid/utility/asteroids.glsl'
     });commonIncludes.push({
-        Name: '/Users/michael/uni/UCU/OS/BaseTeroid/utility/black_hole.glsl',
-        File: '/Users/michael/uni/UCU/OS/BaseTeroid/utility/black_hole.glsl'
+        Name: '/home/adeon/projects/OS/BaseTeroid/utility/black_hole.glsl',
+        File: '/home/adeon/projects/OS/BaseTeroid/utility/black_hole.glsl'
     });commonIncludes.push({
-        Name: '/Users/michael/uni/UCU/OS/BaseTeroid/utility/precompute_fetch.glsl',
-        File: '/Users/michael/uni/UCU/OS/BaseTeroid/utility/precompute_fetch.glsl'
+        Name: '/home/adeon/projects/OS/BaseTeroid/utility/precompute_fetch.glsl',
+        File: '/home/adeon/projects/OS/BaseTeroid/utility/precompute_fetch.glsl'
     });commonIncludes.push({
-        Name: '/Users/michael/uni/UCU/OS/BaseTeroid/utility/ray.glsl',
-        File: '/Users/michael/uni/UCU/OS/BaseTeroid/utility/ray.glsl'
+        Name: '/home/adeon/projects/OS/BaseTeroid/utility/precompute1_fetch.glsl',
+        File: '/home/adeon/projects/OS/BaseTeroid/utility/precompute1_fetch.glsl'
     });commonIncludes.push({
-        Name: '/Users/michael/uni/UCU/OS/BaseTeroid/utility/precompute_base.glsl',
-        File: '/Users/michael/uni/UCU/OS/BaseTeroid/utility/precompute_base.glsl'
+        Name: '/home/adeon/projects/OS/BaseTeroid/utility/ray.glsl',
+        File: '/home/adeon/projects/OS/BaseTeroid/utility/ray.glsl'
+    });commonIncludes.push({
+        Name: '/home/adeon/projects/OS/BaseTeroid/utility/precompute_base.glsl',
+        File: '/home/adeon/projects/OS/BaseTeroid/utility/precompute_base.glsl'
     });
 
     // WebGL2 inserts more lines into the shader
@@ -7756,7 +9262,7 @@ void main() {
     keyBoardTexture.needsUpdate = true;
     let pressedKeys = [];
     let releasedKeys = [];
-    let toggledKeys = [65,68,87];
+    let toggledKeys = [83,87];
     for (let key of toggledKeys) {
         keyBoardData[key + 512] = 255; // Toggled
     }
@@ -7808,10 +9314,10 @@ void main() {
         texture.wrapS = THREE.RepeatWrapping;
         texture.wrapT = THREE.RepeatWrapping;
         return texture;
-    })() };buffers[2].ChannelResolution[0] = new THREE.Vector3(buffers[0].Target.width, buffers[0].Target.height, 1);
+    })() };buffers[2].ChannelResolution[1] = new THREE.Vector3(buffers[2].Target.width, buffers[2].Target.height, 1);
     buffers[2].Shader.uniforms.iChannelResolution.value = buffers[2].ChannelResolution;
-    buffers[2].Shader.uniforms.iChannel0 = { type: 't', value: (() => {
-        let texture = buffers[0].Target.texture;
+    buffers[2].Shader.uniforms.iChannel1 = { type: 't', value: (() => {
+        let texture = buffers[2].Target.texture;
         texture.magFilter = THREE.LinearFilter;
         texture.minFilter = THREE.LinearFilter;
         texture.wrapS = THREE.RepeatWrapping;
@@ -7826,18 +9332,56 @@ void main() {
         texture.wrapS = THREE.RepeatWrapping;
         texture.wrapT = THREE.RepeatWrapping;
         return texture;
-    })() };buffers[2].ChannelResolution[0] = new THREE.Vector3(buffers[0].Target.width, buffers[0].Target.height, 1);
-    buffers[2].Shader.uniforms.iChannelResolution.value = buffers[2].ChannelResolution;
-    buffers[2].Shader.uniforms.iChannel0 = { type: 't', value: (() => {
+    })() };
+    buffers[2].Shader.uniforms.iChannel1 = { type: 't', value: buffers[2].PingPongTarget.texture };
+    buffers[3].ChannelResolution[0] = new THREE.Vector3(buffers[0].Target.width, buffers[0].Target.height, 1);
+    buffers[3].Shader.uniforms.iChannelResolution.value = buffers[3].ChannelResolution;
+    buffers[3].Shader.uniforms.iChannel0 = { type: 't', value: (() => {
         let texture = buffers[0].Target.texture;
         texture.magFilter = THREE.LinearFilter;
         texture.minFilter = THREE.LinearFilter;
         texture.wrapS = THREE.RepeatWrapping;
         texture.wrapT = THREE.RepeatWrapping;
         return texture;
-    })() };buffers[2].ChannelResolution[1] = null;
-    buffers[2].Shader.uniforms.iChannelResolution.value = buffers[2].ChannelResolution;
-    buffers[2].Shader.uniforms.iChannel1 = { type: 't', value: texLoader.load('/Users/michael/uni/UCU/OS/BaseTeroid/img/game_over.png', function(texture) {
+    })() };buffers[3].ChannelResolution[0] = new THREE.Vector3(buffers[0].Target.width, buffers[0].Target.height, 1);
+    buffers[3].Shader.uniforms.iChannelResolution.value = buffers[3].ChannelResolution;
+    buffers[3].Shader.uniforms.iChannel0 = { type: 't', value: (() => {
+        let texture = buffers[0].Target.texture;
+        texture.magFilter = THREE.LinearFilter;
+        texture.minFilter = THREE.LinearFilter;
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        return texture;
+    })() };buffers[3].ChannelResolution[2] = new THREE.Vector3(buffers[1].Target.width, buffers[1].Target.height, 1);
+    buffers[3].Shader.uniforms.iChannelResolution.value = buffers[3].ChannelResolution;
+    buffers[3].Shader.uniforms.iChannel2 = { type: 't', value: (() => {
+        let texture = buffers[1].Target.texture;
+        texture.magFilter = THREE.LinearFilter;
+        texture.minFilter = THREE.LinearFilter;
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        return texture;
+    })() };buffers[3].ChannelResolution[3] = new THREE.Vector3(buffers[2].Target.width, buffers[2].Target.height, 1);
+    buffers[3].Shader.uniforms.iChannelResolution.value = buffers[3].ChannelResolution;
+    buffers[3].Shader.uniforms.iChannel3 = { type: 't', value: (() => {
+        let texture = buffers[2].Target.texture;
+        texture.magFilter = THREE.LinearFilter;
+        texture.minFilter = THREE.LinearFilter;
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        return texture;
+    })() };buffers[3].ChannelResolution[0] = new THREE.Vector3(buffers[0].Target.width, buffers[0].Target.height, 1);
+    buffers[3].Shader.uniforms.iChannelResolution.value = buffers[3].ChannelResolution;
+    buffers[3].Shader.uniforms.iChannel0 = { type: 't', value: (() => {
+        let texture = buffers[0].Target.texture;
+        texture.magFilter = THREE.LinearFilter;
+        texture.minFilter = THREE.LinearFilter;
+        texture.wrapS = THREE.RepeatWrapping;
+        texture.wrapT = THREE.RepeatWrapping;
+        return texture;
+    })() };buffers[3].ChannelResolution[1] = null;
+    buffers[3].Shader.uniforms.iChannelResolution.value = buffers[3].ChannelResolution;
+    buffers[3].Shader.uniforms.iChannel1 = { type: 't', value: texLoader.load('/home/adeon/projects/OS/BaseTeroid/img/game_over.png', function(texture) {
         function isPowerOfTwo(n) {
         return n && (n & (n - 1)) === 0;
     };
@@ -7847,7 +9391,7 @@ void main() {
         
         
         let diagnosticBatch = {
-            filename: '/Users/michael/uni/UCU/OS/BaseTeroid/main.glsl',
+            filename: '/home/adeon/projects/OS/BaseTeroid/main.glsl',
             diagnostics: diagnostics
         };
         if (vscode !== undefined) {
@@ -7858,8 +9402,8 @@ void main() {
             });
         }
     };
-    buffers[2].ChannelResolution[1] = new THREE.Vector3(texture.image.width, texture.image.height, 1);
-    buffers[2].Shader.uniforms.iChannelResolution.value = buffers[2].ChannelResolution;
+    buffers[3].ChannelResolution[1] = new THREE.Vector3(texture.image.width, texture.image.height, 1);
+    buffers[3].Shader.uniforms.iChannelResolution.value = buffers[3].ChannelResolution;
     
         texture.magFilter = THREE.LinearFilter;
         texture.minFilter = THREE.LinearFilter;
@@ -7870,7 +9414,7 @@ void main() {
         if (vscode !== undefined) {
             vscode.postMessage({
                 command: 'errorMessage',
-                message: 'Failed loading texture file /Users/michael/uni/UCU/OS/BaseTeroid/img/game_over.png'
+                message: 'Failed loading texture file /home/adeon/projects/OS/BaseTeroid/img/game_over.png'
             });
         }
     }) };

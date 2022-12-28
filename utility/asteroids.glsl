@@ -16,7 +16,7 @@ float createAsteroids(vec3 point) {
         Sphere sph = Sphere(vec3((
             texelFetch(iChannel0, ivec2(i, 0), 0).xy * 2. - 1.
         ) * screenSize, 0.), 1.);
-        distToSphere = min(distToSphere, sdSphere(point - sph.pos, sph));
+        distToSphere = min(distToSphere, sdAsteroid(point - sph.pos, sph, i));
     }
 
     return distToSphere;

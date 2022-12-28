@@ -13,7 +13,7 @@ const vec3 PLAYER_COLOR_3 = vec3(0.313, 0.784, 0.47);
 const vec3 PLAYER_COLOR_2 = vec3(1., 0.7215, 0.4235);
 const vec3 PLAYER_COLOR_1 = vec3(1., 0.3333, 0.3333);
 
-const vec3 ASTEROID_COLOR = vec3(0.7, 0.7, 0.75);
+const vec3 ASTEROID_COLOR = vec3(0.54, 0.52, 0.45);
 
 /*
 * Rotate object in one plane:
@@ -67,6 +67,13 @@ float sdBox(vec3 point, Box box) {
     return (length(max(point, 0.)) + min(max(point.x, max(point.y, point.z)), 0.));
 }
 
+float sdRoundBox( vec3 p, Box box, float r )
+{
+    vec3 d = abs(p) - vec3(box.wid, box.hig, box.dep);
+    return min(max(d.x,max(d.y,d.z)), 0.0) + length(max(d,0.0)) - r;
+}
+
+
 /* Get distance to the Torus and put it in proper position */
 float getDistTorus(vec3 point, Torus tor) {
     /// Projected distance to the outside layer of a torus
@@ -107,6 +114,28 @@ float sdCylinder(vec3 point, Cylinder cap) {
 /* Get distance to the Sphere - The fastest! */
 float sdSphere(vec3 point, Sphere sphere) {
     return length(point) - sphere.rad;
+}
+
+float sdSmoothUnion(float d1, float d2) {
+    float k = 0.25;
+    float h = max(k-abs(d1-d2),0.0);
+    return min(d1, d2) - h*h*0.25/k;
+}
+
+// Yeah, right, this somehow works
+float sdAsteroid(vec3 point, Sphere sphere, int astrIdx) {
+    float boxDecreaseRad = 2.1 + float(astrIdx) * 0.1;
+
+    Box b1 = Box(sphere.rad / boxDecreaseRad, sphere.rad / boxDecreaseRad, sphere.rad / boxDecreaseRad, vec3(0.0, 0.0, 0.0));
+
+    vec3 boxPos = point - b1.pos;
+
+    boxPos.xz *= Rotate(PI / 4.0);
+    boxPos.yz *= Rotate(PI / 4.0);
+
+    Box b2 = Box(sphere.rad / boxDecreaseRad, sphere.rad / boxDecreaseRad, sphere.rad / boxDecreaseRad, vec3(0.0, 0.0, 0.0));
+    return sdSmoothUnion(sdRoundBox(point, b2, 0.4 + 0.5 * float(astrIdx) * 0.1),
+        sdRoundBox(boxPos, b1, 0.4 + 0.5 * float(astrIdx) * 0.1));
 }
 
 /* Get distance to the Plane */
