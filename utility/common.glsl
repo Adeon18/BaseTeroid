@@ -21,8 +21,8 @@
 
 /* Projectiles properties */
 #define NUM_PROJECTILES 1.
-#define PROJECTILE_SPEED .01
-#define PROJECTILE_RADIUS 1.
+#define PROJECTILE_SPEED .0125
+#define PROJECTILE_RADIUS .7
 
 /* Player Properties */
 #define PLAYER_HEIGHT 1.5
