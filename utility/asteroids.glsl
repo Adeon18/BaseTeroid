@@ -6,7 +6,7 @@
 #include "camera.glsl"
 #iChannel0 "file://utility/data_channel.glsl"
 
-#define SUS 1
+#define SUS 0
 #define POTATO 1
 
 float createAsteroids(vec3 point) {
