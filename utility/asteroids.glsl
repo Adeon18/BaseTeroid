@@ -7,6 +7,7 @@
 #iChannel0 "file://utility/data_channel.glsl"
 
 #define SUS 1
+#define POTATO 1
 
 float createAsteroids(vec3 point) {
     float distToSphere = 99999.;
@@ -18,8 +19,14 @@ float createAsteroids(vec3 point) {
         Sphere sph = Sphere(vec3((
             texelFetch(iChannel0, ivec2(i, 0), 0).xy * 2. - 1.
         ) * screenSize, 0.), 1.);
-        if SUS {
+        if (SUS == 1) {
             distToSphere = min(distToSphere, sdAmogus(point - sph.pos));
+        } else {
+            if (POTATO == 1) {
+                distToSphere = min(distToSphere, sdAsteroid(point - sph.pos, sph, i));
+            } else {
+                distToSphere = min(distToSphere, sdSphere(point - sph.pos, sph));
+            }
         }
     }
 
