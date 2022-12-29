@@ -47,12 +47,65 @@ Here is how the game looks after the first development stage:
 ---
 
 ## Stage 2
-_To be continued..._
+- [x] Collisions and shooting system
+- [x] Life System
+- [x] Black hole light bending
+- [x] Custom asteroid sdf
 
+#### Collisions and shooting system
+
+The player can collide using the sphere to sphere intersection, with the collision results being stored
+in texels at runtime.
+
+![img](./img/collision_die.gif)
+
+You can also shoot by pressing `"E"` (or also `"SPACE"` if you are on ShaderToy). The projectile will
+destroy the upcoming asteroids.
+
+![img](./img/shooting.gif)
 ---
 
-## Stage 3
-_To be continued..._
+#### Life System
+
+The Player has 3 lifes, and the amount of lifes is represented by the color of the player and his projectiles:
+`green`, `yellow` and `red` respectively.
+
+![img](./img/grenn_takeoff.gif)
+![img](./img/yellow_takeoff.gif)
+![img](./img/red_takeoff.gif)
+
+You lose lifes after a collision with an asteroid, after which you have a few seconds of `cooldown protection`. After you use all your lifes you will get a `GAME OVER` screen and the
+game will restart.
+
+![img](./img/collison.gif)
+---
+
+### The Black Hole
+
+At the center of the screen there is the black hole, that `visually` bends the world around it. Here is how it works:
+
+![img](./img/black_hole_how_it_works.png)
+
+The black hole is positioned slightly above the player and the asteroids, that allows it to bend the rays going from the camera to the playing field. Also this allows us to **precompute** the entirely of ray travel path for layers that do not contain moving objects and that's like most of the ray path. The **precompute** allows us to achieve `60 FPS` even on wealer machines.
+
+Here is how it looks:
+
+![img](./img/black_hole_showcase.gif)
+---
+
+#### Asteroid sdf
+
+The default sphere as asteroid is a bit boring and unrealistic, right?
+
+Well, yes, but it's fast in computing, so if we want to make a fast custom object that resembles an asteroid we will need to forget about hash fucntions and random noise and make it using simple unions and intersections of primitive shapes.
+
+Hence, after a ton of trial and error we decided to take a union of 2 rounded cubes and call it a day:) Here it is in action:
+
+![img](./img/potato.png)
+
+There is also an option to turn a sphere back on by setting `#define POTATO 0` in [this file](./utility/asteroids.glsl).
+
+Also go ahead, set `#define SUS 1` [here](./utility/asteroids.glsl), see what happens >:)
 
 ---
 
