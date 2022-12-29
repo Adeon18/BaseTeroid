@@ -122,6 +122,11 @@ float sdSmoothUnion(float d1, float d2) {
     return min(d1, d2) - h*h*0.25/k;
 }
 
+float sdSmoothUnion(float d1, float d2, float k) {
+    float h = max(k-abs(d1-d2),0.0);
+    return min(d1, d2) - h*h*0.25/k;
+}
+
 // Yeah, right, this somehow works
 float sdAsteroid(vec3 point, Sphere sphere, int astrIdx) {
     float boxDecreaseRad = 2.1 + float(astrIdx) * 0.1;
@@ -141,6 +146,37 @@ float sdAsteroid(vec3 point, Sphere sphere, int astrIdx) {
 /* Get distance to the Plane */
 float sdPlane(vec3 point, vec3 plane) {
     return dot(point, normalize(plane));
+}
+
+
+// Source: https://www.shadertoy.com/view/ftsGDn
+float sdAmogus(vec3 pos)
+{
+    if(length(pos.xz) > 1.5)
+    {
+        return length(pos.xz)-1.0;
+    }
+
+    // Cylinder
+    float bean = max(length(pos.xz)-0.5, abs(pos.y)-0.25);
+
+    // Cylinder Caps
+    bean = min(bean, min(length(pos-vec3(0.0, 0.25, 0.0))-0.5, length((pos+vec3(0.0, 0.25, 0.0))*vec3(1.0, 2.0, 1.0))-0.5));
+
+    // Legs
+    float legs = max(length(vec2(abs(pos.x)-0.25, pos.z))-0.2, abs(pos.y+0.6)-0.15);
+    legs = min(legs, length(vec3(abs(pos.x)-0.25, pos.y+0.45, pos.z))-0.2);
+
+    // Legs
+    bean = sdSmoothUnion(bean, legs, 0.2);
+
+    // Backpack
+    bean = sdSmoothUnion(bean, max(max(abs(pos.x)-0.5, abs(pos.y-0.1)-0.5), abs(pos.z-0.5)-0.2), 0.05);
+
+    float visor = length((pos+vec3(0.0, -0.2, 0.5))*vec3(1.0, 2.0, 3.0))-0.35;
+
+    // Return the Sussy Bean Man
+    return min(bean, visor);
 }
 
 /*
